@@ -82,11 +82,8 @@ def _encode_filename(filename):
 
 class Surface(object):
     def __init__(self, handle):
-        self._handle = handle
-        self._check_status()
-
-    def _check_status(self):
-        _check_status(cairo.cairo_surface_status(self._handle))
+        _check_status(cairo.cairo_surface_status(handle))
+        self._handle = ffi.gc(handle, cairo.cairo_surface_destroy)
 
     def write_to_png(self, target):
         if hasattr(target, 'write'):
