@@ -10,16 +10,15 @@
 """
 
 from cffi import FFI
+from .constants import _CAIRO_HEADERS
+from .constants import *
 
 
 VERSION = '0.1'
 
 
 ffi = FFI()
-ffi.cdef("""
-    int cairo_version (void);
-    const char* cairo_version_string (void);
-""")
+ffi.cdef(_CAIRO_HEADERS)
 cairo_c = ffi.dlopen('cairo')
 
 
