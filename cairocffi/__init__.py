@@ -54,6 +54,7 @@ def cairo_version_string():
 
 
 from .surfaces import Surface, ImageSurface
+from .context import Context
 
 # For compatibility with pycairo. In cairocffi users can just use strings.
 from .constants import *

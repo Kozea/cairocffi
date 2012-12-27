@@ -18,7 +18,9 @@ import shutil
 import tempfile
 
 import cairocffi
-from . import cairo_version, cairo_version_string, ImageSurface
+import pytest
+
+from . import cairo_version, cairo_version_string, ImageSurface, Context
 from .compat import u
 
 
@@ -37,6 +39,18 @@ def test_image_surface():
     assert surface.get_width() == 20
     assert surface.get_height() == 30
     assert surface.get_stride() == 20 * 4
+
+
+def test_image_surface_from_buffer():
+    if '__pypy__' in sys.modules:
+        # See https://bitbucket.org/cffi/cffi/issue/47
+        # and https://bugs.pypy.org/issue1354
+        pytest.xfail()
+    data = bytearray(b'\x00' * 800)
+    surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20)
+    context = Context(surface)
+    context.paint()  # The default source is opaque black.
+    assert data == b'\x00\x00\x00\xFF' * 200
 
 
 def test_png():

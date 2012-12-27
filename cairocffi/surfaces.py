@@ -10,6 +10,7 @@
 """
 
 import sys
+import ctypes
 
 from . import ffi, cairo, _check_status
 
@@ -103,13 +104,26 @@ class Surface(object):
 
 
 class ImageSurface(Surface):
-    def __init__(self, format, width, height):
-        Surface.__init__(
-            self, cairo.cairo_image_surface_create(format, width, height))
+    def __init__(self, format, width, height, data=None, stride=None):
+        if data is None:
+            handle = cairo.cairo_image_surface_create(format, width, height)
+        else:
+            if stride is None:
+                stride = self.format_stride_for_width(format, width)
+            self._data = data  # keep it alive
+            data = ffi.cast(
+                'char *', ctypes.addressof(ctypes.c_char.from_buffer(data)))
+            handle = cairo.cairo_image_surface_create_for_data(
+                data, format, width, height, stride)
+        Surface.__init__(self, handle)
 
     @staticmethod
     def format_stride_for_width(format, width):
         return cairo.cairo_format_stride_for_width(format, width)
+
+    @classmethod
+    def create_for_data(cls, data, format, width, height, stride=None):
+        return cls(format, width, height, data, stride)
 
     @classmethod
     def create_from_png(cls, source):
@@ -121,6 +135,7 @@ class ImageSurface(Surface):
             handle = cairo.cairo_image_surface_create_from_png(
                 _encode_filename(source))
         surface = Surface(handle)
+        # XXX is there a cleaner way to bypass ImageSurface.__init__?
         surface.__class__ = cls
         return surface
 
