@@ -17,8 +17,17 @@ VERSION = '0.1'
 
 ffi = FFI()
 ffi.cdef("""
+    int cairo_version (void);
     const char* cairo_version_string (void);
 """)
 cairo_c = ffi.dlopen('cairo')
 
-print(ffi.string(cairo_c.cairo_version_string()))
+
+def cairo_version():
+    """Return the cairo version number a single integer."""
+    return cairo_c.cairo_version()
+
+
+def cairo_version_string():
+    """Return the cairo version number a string."""
+    return ffi.string(cairo_c.cairo_version_string()).decode('ascii')
