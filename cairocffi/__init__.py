@@ -85,6 +85,54 @@ class Surface(object):
         _check_status(cairo.cairo_surface_status(handle))
         self._handle = ffi.gc(handle, cairo.cairo_surface_destroy)
 
+    def copy_page(self):
+        raise NotImplementedError
+
+    def show_page(self):
+        raise NotImplementedError
+
+    def create_similar(self, content, width, height):
+        raise NotImplementedError
+
+    def finish(self):
+        raise NotImplementedError
+
+    def flush(self):
+        raise NotImplementedError
+
+    def get_content(self):
+        raise NotImplementedError
+
+    def get_device_offset(self):
+        raise NotImplementedError
+
+    def set_device_offset(self, x_offset, y_offset):
+        raise NotImplementedError
+
+    def get_fallback_resolution(self):
+        raise NotImplementedError
+
+    def set_fallback_resolution(self, x_pixels_per_inch, y_pixels_per_inch):
+        raise NotImplementedError
+
+    def get_font_options(self):
+        raise NotImplementedError
+
+    def get_mime_data(self, mime_type):
+        raise NotImplementedError
+
+    def set_mime_data(self, mime_type, data):
+        raise NotImplementedError
+
+    def set_supports_mime_type(self, mime_type):
+        raise NotImplementedError
+
+    def mark_dirty(self):
+        raise NotImplementedError
+
+    def mark_dirty_rectangle(self, x, y, width, height):
+        raise NotImplementedError
+
     def write_to_png(self, target):
         if hasattr(target, 'write'):
             write_func = _make_write_func(target)
