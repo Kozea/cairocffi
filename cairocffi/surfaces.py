@@ -110,6 +110,9 @@ class ImageSurface(Surface):
         else:
             if stride is None:
                 stride = self.format_stride_for_width(format, width)
+            if len(data) < stride * height:
+                raise ValueError('Got a %d bytes buffer, needs at least %d.'
+                                 % (len(data), stride * height))
             self._data = data  # keep it alive
             data = ffi.cast(
                 'char *', ctypes.addressof(ctypes.c_char.from_buffer(data)))

@@ -47,6 +47,9 @@ def test_image_surface_from_buffer():
         # and https://bugs.pypy.org/issue1354
         pytest.xfail()
     data = bytearray(b'\x00' * 800)
+    with pytest.raises(ValueError):
+        # buffer too small
+        ImageSurface.create_for_data(data, 'ARGB32', 10, 21)
     surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20)
     context = Context(surface)
     context.paint()  # The default source is opaque black.
