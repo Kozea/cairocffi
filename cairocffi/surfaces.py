@@ -40,58 +40,106 @@ def _encode_filename(filename):
     return ffi.new('char[]', filename)
 
 
+def from_buffer(data):
+    return ffi.cast('char *', ctypes.addressof(ctypes.c_char.from_buffer(data)))
+
+
+class KeepAlive(object):
+    instances = {}
+    def __init__(self, *objects):
+        self.objects = objects
+        def destroy(void_id, instances=self.instances):
+            del instances[cffi.cast('size_t*', void_id)[0]]
+        self.destroy = ffi.callback('cairo_destroy_func_t', destroy)
+        self.closure = ffi.cast('void *', ffi.new('size_t *', id(self)))
+        self.instances[id(self)] = self
+
+
 class Surface(object):
     def __init__(self, handle):
         _check_status(cairo.cairo_surface_status(handle))
         self._handle = ffi.gc(handle, cairo.cairo_surface_destroy)
 
+    @staticmethod
+    def _from_handle(handle):
+        surface = Surface(handle)
+        surface_type = cairo.cairo_surface_get_type(handle)
+        if surface_type in SURFACE_TYPE_TO_CLASS:
+            surface.__class__ = SURFACE_TYPE_TO_CLASS[surface_type]
+        return surface
+
+    # XXX needs tests
     def copy_page(self):
-        raise NotImplementedError
+        cairo.cairo_surface_copy_page(self._handle)
 
     def show_page(self):
-        raise NotImplementedError
+        cairo.cairo_surface_show_page(self._handle)
 
     def create_similar(self, content, width, height):
-        raise NotImplementedError
+        return Surface._from_handle(cairo.cairo_surface_create_similar(
+            self._handle, content, width, height))
+
+    def create_similar_image(self, content, width, height):
+        return Surface._from_handle(cairo.cairo_surface_create_similar_image(
+            self._handle, content, width, height))
 
     def finish(self):
-        raise NotImplementedError
+        cairo.cairo_surface_finish(self._handle)
 
     def flush(self):
-        raise NotImplementedError
+        cairo.cairo_surface_flush(self._handle)
 
     def get_content(self):
-        raise NotImplementedError
+        return cairo.cairo_surface_get_content(self._handle)
 
     def get_device_offset(self):
-        raise NotImplementedError
+        offsets = ffi.new('double[2]')
+        cairo.cairo_surface_get_device_offset(
+            self._handle, offsets + 0, offsets + 1)
+        return tuple(offsets)
 
     def set_device_offset(self, x_offset, y_offset):
-        raise NotImplementedError
+        cairo.cairo_surface_set_device_offset(self._handle, x_offset, y_offset)
 
     def get_fallback_resolution(self):
-        raise NotImplementedError
+        ppi = ffi.new('double[2]')
+        cairo.cairo_surface_get_fallback_resolution(
+            self._handle, ppi + 0, ppi + 1)
+        return tuple(ppi)
 
     def set_fallback_resolution(self, x_pixels_per_inch, y_pixels_per_inch):
-        raise NotImplementedError
+        cairo.cairo_surface_get_fallback_resolution(
+            self._handle, x_pixels_per_inch, y_pixels_per_inch)
 
     def get_font_options(self):
         raise NotImplementedError
 
     def get_mime_data(self, mime_type):
-        raise NotImplementedError
+        buffer_address = ffi.new('char **')
+        buffer_length = ffi.new('unsigned long *')
+        mime_type = ffi.new('char *', mime_type.encode('utf8'))
+        cairo.cairo_surface_get_mime_type(
+            self._handle, mime_type, buffer_address, buffer_length)
+        return ffi.buffer(buffer_address[0], buffer_length[0])
 
     def set_mime_data(self, mime_type, data):
-        raise NotImplementedError
+        mime_type = ffi.new('char *', mime_type.encode('utf8'))
+        keep_alive = KeepAlive(data, mime_type)
+        cairo.cairo_surface_set_mime_type(
+            self._handle, mime_type, from_buffer(data), len(data),
+            keep_alive.destroy, keep_alive.closure)
 
     def set_supports_mime_type(self, mime_type):
-        raise NotImplementedError
+        mime_type = ffi.new('char *', mime_type.encode('utf8'))
+        return bool(cairo.cairo_surface_supports_mime_type(
+            self._handle, mime_type))
 
     def mark_dirty(self):
-        raise NotImplementedError
+        return cairo.cairo_surface_mark_dirty(self._handle)
 
     def mark_dirty_rectangle(self, x, y, width, height):
-        raise NotImplementedError
+        return cairo.cairo_surface_mark_dirty_rectangle(
+            self._handle, x, y, width, height)
 
     def write_to_png(self, target):
         if hasattr(target, 'write'):
@@ -114,8 +162,7 @@ class ImageSurface(Surface):
                 raise ValueError('Got a %d bytes buffer, needs at least %d.'
                                  % (len(data), stride * height))
             self._data = data  # keep it alive
-            data = ffi.cast(
-                'char *', ctypes.addressof(ctypes.c_char.from_buffer(data)))
+            data = from_buffer(data)
             handle = cairo.cairo_image_surface_create_for_data(
                 data, format, width, height, stride)
         Surface.__init__(self, handle)
@@ -158,3 +205,8 @@ class ImageSurface(Surface):
 
     def get_stride(self):
         return cairo.cairo_image_surface_get_stride(self._handle)
+
+
+SURFACE_TYPE_TO_CLASS = dict(
+    IMAGE=ImageSurface,
+)
