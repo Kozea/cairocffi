@@ -178,7 +178,7 @@ def test_pdf_surface():
         filename = os.path.join(tempdir, 'foo.pdf')
         filename_bytes = filename.encode(sys.getfilesystemencoding())
         file_obj = io.BytesIO()
-        for target in [filename, filename_bytes, file_obj]:
+        for target in [filename, filename_bytes, file_obj, None]:
             PDFSurface(target, 123, 432).finish()
         with open(filename, 'rb') as fd:
             assert fd.read().startswith(b'%PDF-1.5')
@@ -218,7 +218,7 @@ def test_svg_surface():
         filename = os.path.join(tempdir, 'foo.svg')
         filename_bytes = filename.encode(sys.getfilesystemencoding())
         file_obj = io.BytesIO()
-        for target in [filename, filename_bytes, file_obj]:
+        for target in [filename, filename_bytes, file_obj, None]:
             SVGSurface(target, 123, 432).finish()
         with open(filename, 'rb') as fd:
             assert fd.read().startswith(b'<?xml')
@@ -238,7 +238,7 @@ def test_ps_surface():
         filename = os.path.join(tempdir, 'foo.ps')
         filename_bytes = filename.encode(sys.getfilesystemencoding())
         file_obj = io.BytesIO()
-        for target in [filename, filename_bytes, file_obj]:
+        for target in [filename, filename_bytes, file_obj, None]:
             PSSurface(target, 123, 432).finish()
         with open(filename, 'rb') as fd:
             assert fd.read().startswith(b'%!PS')

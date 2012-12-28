@@ -30,6 +30,8 @@ def _make_read_func(file_obj):
 
 
 def _make_write_func(file_obj):
+    if file_obj is None:
+        return ffi.NULL
     @ffi.callback("cairo_write_func_t", error='WRITE_ERROR')
     def read_func(_closure, data, length):
         file_obj.write(ffi.buffer(data, length))
@@ -78,7 +80,7 @@ class Surface(object):
     def __init__(self, handle, target_keep_alive=None):
         self._handle = ffi.gc(handle, cairo.cairo_surface_destroy)
         self._check_status()
-        if target_keep_alive is not None:
+        if target_keep_alive not in (None, ffi.NULL):
             keep_alive = KeepAlive(target_keep_alive)
             _check_status(cairo.cairo_surface_set_user_data(
                 self._handle, SURFACE_TARGET_KEY, *keep_alive.closure))
@@ -253,7 +255,7 @@ class ImageSurface(Surface):
 
 class PDFSurface(Surface):
     def __init__(self, target, width_in_points, height_in_points):
-        if hasattr(target, 'write'):
+        if hasattr(target, 'write') or target is None:
             write_func = _make_write_func(target)
             handle = cairo.cairo_pdf_surface_create_for_stream(
                 write_func, ffi.NULL, width_in_points, height_in_points)
@@ -288,7 +290,7 @@ class PDFSurface(Surface):
 
 class PSSurface(Surface):
     def __init__(self, target, width_in_points, height_in_points):
-        if hasattr(target, 'write'):
+        if hasattr(target, 'write') or target is None:
             write_func = _make_write_func(target)
             handle = cairo.cairo_ps_surface_create_for_stream(
                 write_func, ffi.NULL, width_in_points, height_in_points)
@@ -343,7 +345,7 @@ class PSSurface(Surface):
 
 class SVGSurface(Surface):
     def __init__(self, target, width_in_points, height_in_points):
-        if hasattr(target, 'write'):
+        if hasattr(target, 'write') or target is None:
             write_func = _make_write_func(target)
             handle = cairo.cairo_svg_surface_create_for_stream(
                 write_func, ffi.NULL, width_in_points, height_in_points)
