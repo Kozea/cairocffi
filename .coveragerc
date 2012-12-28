@@ -1,0 +1,11 @@
+[run]
+omit =
+	cairocffi/compat.py
+	cairocffi/mkconstants.py
+branch = True
+
+[report]
+show_missing = True
+exclude_lines =
+	pragma: no cover
+	if '__pypy__' in sys.modules:

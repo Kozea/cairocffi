@@ -75,6 +75,7 @@ def test_surface():
             surface.create_similar('ALPHA', 4, 100),
             surface.create_similar_image('A8', 4, 100)]:
         assert isinstance(similar, ImageSurface)
+        assert similar.get_content() == 'ALPHA'
         assert similar.get_format() == 'A8'
         assert similar.get_width() == 4
         assert similar.get_height() == 100
@@ -91,6 +92,9 @@ def test_surface():
     )
     surface.copy_page()
     surface.show_page()
+    surface.mark_dirty()
+    surface.mark_dirty_rectangle(1, 2, 300, 12000)
+    surface.flush()
 
     surface.set_device_offset(14, 3)
     assert surface.get_device_offset() == (14, 3)
@@ -117,7 +121,9 @@ def test_mime_data():
         # See https://bitbucket.org/cffi/cffi/issue/47
         # and https://bugs.pypy.org/issue1354
         pytest.xfail()
+    assert PDFSurface(None, 1, 1).supports_mime_type('image/jpeg') is True
     surface = ImageSurface('A8', 1, 1)
+    assert surface.supports_mime_type('image/jpeg') is False
     assert surface.get_mime_data('image/jpeg') is None
     assert len(cairocffi.surfaces.KeepAlive.instances) == 0
     surface.set_mime_data('image/jpeg', bytearray(b'lol'))
@@ -168,6 +174,9 @@ def test_png():
     surface.write_to_png(file_obj)
     assert file_obj.getvalue().startswith(png_magic_number)
 
+    with pytest.raises(IOError):
+        # Truncated input
+        surface = ImageSurface.create_from_png(io.BytesIO(png_bytes[:30]))
 
 def test_pdf_surface():
     assert set(PDFSurface.get_versions()) >= set([
@@ -228,6 +237,9 @@ def test_svg_surface():
         assert svg_bytes.startswith(b'<?xml')
         assert b'viewBox="0 0 123 432"' in svg_bytes
 
+    surface = SVGSurface(None, 1, 1)
+    surface.restrict_to_version('SVG_VERSION_1_1')  # Not obvious to test
+
 
 def test_ps_surface():
     assert set(PSSurface.get_levels()) >= set([
@@ -248,13 +260,14 @@ def test_ps_surface():
 
     file_obj = io.BytesIO()
     surface = PSSurface(file_obj, 1, 1)
+    surface.restrict_to_level('PS_LEVEL_2')  # Not obvious to test
     assert surface.get_eps() is False
     surface.set_eps('lol')
     assert surface.get_eps() is True
     surface.set_eps('')
     assert surface.get_eps() is False
     surface.set_size(10, 12)
-    surface.dsc_comment('%%Lorem')
+    surface.dsc_comment(u('%%Lorem'))
     surface.dsc_begin_setup()
     surface.dsc_comment('%%ipsum')
     surface.dsc_begin_page_setup()
