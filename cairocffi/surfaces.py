@@ -43,6 +43,12 @@ def _encode_filename(filename):
     return ffi.new('char[]', filename)
 
 
+def _encode_string(string):
+    if not isinstance(string, bytes):
+        string = string.encode('utf8')
+    return ffi.new('char[]', string)
+
+
 def from_buffer(data):
     return ffi.cast(
         'char *', ctypes.addressof(ctypes.c_char.from_buffer(data)))
@@ -278,6 +284,61 @@ class PDFSurface(Surface):
     def version_to_string(version):
         return ffi.string(
             cairo.cairo_pdf_version_to_string(version)).decode('ascii')
+
+
+class PSSurface(Surface):
+    def __init__(self, target, width_in_points, height_in_points):
+        if hasattr(target, 'write'):
+            write_func = _make_write_func(target)
+            handle = cairo.cairo_ps_surface_create_for_stream(
+                write_func, ffi.NULL, width_in_points, height_in_points)
+        else:
+            write_func = None
+            handle = cairo.cairo_ps_surface_create(
+                _encode_filename(target), width_in_points, height_in_points)
+        Surface.__init__(self, handle, target_keep_alive=write_func)
+
+    def dsc_comment(self, comment):
+        cairo.cairo_ps_surface_dsc_comment(
+            self._handle, _encode_string(comment))
+        self._check_status()
+
+    def dsc_begin_setup(self):
+        cairo.cairo_ps_surface_dsc_begin_setup(self._handle)
+        self._check_status()
+
+    def dsc_begin_page_setup(self):
+        cairo.cairo_ps_surface_dsc_begin_page_setup(self._handle)
+        self._check_status()
+
+    def get_eps(self):
+        return bool(cairo.cairo_ps_surface_get_eps(self._handle))
+
+    def set_eps(self, eps):
+        cairo.cairo_ps_surface_set_eps(self._handle, bool(eps))
+        self._check_status()
+
+    def set_size(self, width_in_points, height_in_points):
+        cairo.cairo_ps_surface_set_size(
+            self._handle, width_in_points, height_in_points)
+        self._check_status()
+
+    def restrict_to_level(self, level):
+        cairo.cairo_ps_surface_restrict_to_level(self._handle, level)
+        self._check_status()
+
+    @staticmethod
+    def get_levels():
+        levels = ffi.new('cairo_ps_level_t const **')
+        num_levels = ffi.new('int *')
+        cairo.cairo_ps_get_levels(levels, num_levels)
+        levels = levels[0]
+        return [levels[i] for i in range(num_levels[0])]
+
+    @staticmethod
+    def level_to_string(level):
+        return ffi.string(
+            cairo.cairo_ps_level_to_string(level)).decode('ascii')
 
 
 class SVGSurface(Surface):

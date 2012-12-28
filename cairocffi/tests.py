@@ -23,7 +23,7 @@ import pytest
 
 import cairocffi
 from . import (cairo_version, cairo_version_string, Context,
-               ImageSurface, PDFSurface, SVGSurface)
+               ImageSurface, PDFSurface, PSSurface, SVGSurface)
 from .compat import u
 
 
@@ -181,13 +181,19 @@ def test_pdf_surface():
         for target in [filename, filename_bytes, file_obj]:
             PDFSurface(target, 123, 432).finish()
         with open(filename, 'rb') as fd:
-            assert fd.read().startswith(b'%PDF')
+            assert fd.read().startswith(b'%PDF-1.5')
         with open(filename_bytes, 'rb') as fd:
-            assert fd.read().startswith(b'%PDF')
+            assert fd.read().startswith(b'%PDF-1.5')
         pdf_bytes = file_obj.getvalue()
-        assert pdf_bytes.startswith(b'%PDF')
+        assert pdf_bytes.startswith(b'%PDF-1.5')
         assert b'/MediaBox [ 0 0 123 432 ]' in pdf_bytes
         assert pdf_bytes.count(b'/Type /Page\n') == 1
+
+    file_obj = io.BytesIO()
+    surface = PDFSurface(file_obj, 1, 1)
+    surface.restrict_to_version('PDF_VERSION_1_4')
+    surface.finish()
+    assert file_obj.getvalue().startswith(b'%PDF-1.4')
 
     file_obj = io.BytesIO()
     surface = PDFSurface(file_obj, 1, 1)
@@ -221,3 +227,40 @@ def test_svg_surface():
         svg_bytes = file_obj.getvalue()
         assert svg_bytes.startswith(b'<?xml')
         assert b'viewBox="0 0 123 432"' in svg_bytes
+
+
+def test_ps_surface():
+    assert set(PSSurface.get_levels()) >= set([
+        'PS_LEVEL_2', 'PS_LEVEL_3'])
+    assert PSSurface.level_to_string('PS_LEVEL_3') == 'PS Level 3'
+
+    with temp_directory() as tempdir:
+        filename = os.path.join(tempdir, 'foo.ps')
+        filename_bytes = filename.encode(sys.getfilesystemencoding())
+        file_obj = io.BytesIO()
+        for target in [filename, filename_bytes, file_obj]:
+            PSSurface(target, 123, 432).finish()
+        with open(filename, 'rb') as fd:
+            assert fd.read().startswith(b'%!PS')
+        with open(filename_bytes, 'rb') as fd:
+            assert fd.read().startswith(b'%!PS')
+        assert file_obj.getvalue().startswith(b'%!PS')
+
+    file_obj = io.BytesIO()
+    surface = PSSurface(file_obj, 1, 1)
+    assert surface.get_eps() is False
+    surface.set_eps('lol')
+    assert surface.get_eps() is True
+    surface.set_eps('')
+    assert surface.get_eps() is False
+    surface.set_size(10, 12)
+    surface.dsc_comment('%%Lorem')
+    surface.dsc_begin_setup()
+    surface.dsc_comment('%%ipsum')
+    surface.dsc_begin_page_setup()
+    surface.dsc_comment('%%dolor')
+    surface.finish()
+    ps_bytes = file_obj.getvalue()
+    assert b'%%Lorem' in ps_bytes
+    assert b'%%ipsum' in ps_bytes
+    assert b'%%dolor' in ps_bytes
