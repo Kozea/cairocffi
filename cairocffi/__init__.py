@@ -1,3 +1,4 @@
+# coding: utf8
 """
     cairocffi
     ~~~~~~~~~
@@ -9,6 +10,7 @@
 
 """
 
+import sys
 from cffi import FFI
 
 from .constants import _CAIRO_HEADERS
@@ -51,6 +53,15 @@ def cairo_version():
 def cairo_version_string():
     """Return the cairo version number a string."""
     return ffi.string(cairo.cairo_version_string()).decode('ascii')
+
+
+def install_as_pycairo():
+    """Install cairocffi so that ``import cairo`` imports it.
+
+    cairoffi’s API is compatible with pycairo as much as possible.
+
+    """
+    sys.modules['cairo'] = sys.modules[__name__]
 
 
 from .surfaces import Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface

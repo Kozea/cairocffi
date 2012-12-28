@@ -42,6 +42,12 @@ def test_cairo_version():
     assert cairo_version() == major * 10000 + minor * 100 + micro
 
 
+def test_install_as_pycairo():
+    cairocffi.install_as_pycairo()
+    import cairo
+    assert cairo is cairocffi
+
+
 def test_image_surface():
     assert ImageSurface.format_stride_for_width('ARGB32', 100) == 400
     assert ImageSurface.format_stride_for_width('A8', 100) == 100
