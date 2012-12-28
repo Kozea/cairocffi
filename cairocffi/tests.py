@@ -22,8 +22,8 @@ import contextlib
 import pytest
 
 import cairocffi
-from . import (cairo_version, cairo_version_string,
-               ImageSurface, PDFSurface, Context)
+from . import (cairo_version, cairo_version_string, Context,
+               ImageSurface, PDFSurface, SVGSurface)
 from .compat import u
 
 
@@ -201,3 +201,23 @@ def test_pdf_surface():
     assert b'/MediaBox [ 0 0 12 100 ]' in pdf_bytes
     assert b'/MediaBox [ 0 0 42 700 ]' in pdf_bytes
     assert pdf_bytes.count(b'/Type /Page\n') == 2
+
+
+def test_svg_surface():
+    assert set(SVGSurface.get_versions()) >= set([
+        'SVG_VERSION_1_1', 'SVG_VERSION_1_2'])
+    assert SVGSurface.version_to_string('SVG_VERSION_1_1') == 'SVG 1.1'
+
+    with temp_directory() as tempdir:
+        filename = os.path.join(tempdir, 'foo.svg')
+        filename_bytes = filename.encode(sys.getfilesystemencoding())
+        file_obj = io.BytesIO()
+        for target in [filename, filename_bytes, file_obj]:
+            SVGSurface(target, 123, 432).finish()
+        with open(filename, 'rb') as fd:
+            assert fd.read().startswith(b'<?xml')
+        with open(filename_bytes, 'rb') as fd:
+            assert fd.read().startswith(b'<?xml')
+        svg_bytes = file_obj.getvalue()
+        assert svg_bytes.startswith(b'<?xml')
+        assert b'viewBox="0 0 123 432"' in svg_bytes
