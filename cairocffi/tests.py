@@ -11,17 +11,30 @@
 """
 
 import io
+import re
 import os
 import sys
 import base64
 import shutil
 import tempfile
+import contextlib
 
 import pytest
 
 import cairocffi
-from . import cairo_version, cairo_version_string, ImageSurface, Context
+from . import (cairo_version, cairo_version_string,
+               ImageSurface, PDFSurface, Context)
 from .compat import u
+
+
+@contextlib.contextmanager
+def temp_directory():
+    tempdir = tempfile.mkdtemp(u('é'))
+    assert u('é') in tempdir  # Test non-ASCII filenames
+    try:
+        yield tempdir
+    finally:
+        shutil.rmtree(tempdir)
 
 
 def test_cairo_version():
@@ -122,11 +135,9 @@ def test_png():
         b'w69x7BgAE3gJRgNit0AAAAABJRU5ErkJggg==')
     png_magic_number = png_bytes[:8]
 
-    tempdir = tempfile.mkdtemp(u('é'))
-    try:
+    with temp_directory() as tempdir:
         filename = os.path.join(tempdir, 'foo.png')
         filename_bytes = filename.encode(sys.getfilesystemencoding())
-        assert u('é') in filename
 
         surface = ImageSurface('ARGB32', 1, 1)
         surface.write_to_png(filename)
@@ -142,10 +153,8 @@ def test_png():
         with open(filename, 'wb') as fd:
             fd.write(png_bytes)
 
-        for surface in [
-                ImageSurface.create_from_png(io.BytesIO(png_bytes)),
-                ImageSurface.create_from_png(filename),
-                ImageSurface.create_from_png(filename_bytes)]:
+        for source in [io.BytesIO(png_bytes), filename, filename_bytes]:
+            surface = ImageSurface.create_from_png(source)
             assert surface.get_format() == 'ARGB32'
             assert surface.get_width() == 1
             assert surface.get_height() == 1
@@ -154,9 +163,41 @@ def test_png():
             if sys.byteorder == 'little':
                 data = data[::-1]
             assert data == b'\xcc\x32\x6e\x97'
-    finally:
-        shutil.rmtree(tempdir)
 
     file_obj = io.BytesIO()
     surface.write_to_png(file_obj)
     assert file_obj.getvalue().startswith(png_magic_number)
+
+
+def test_pdf_surface():
+    assert set(PDFSurface.get_versions()) >= set([
+        'PDF_VERSION_1_4', 'PDF_VERSION_1_5'])
+    assert PDFSurface.version_to_string('PDF_VERSION_1_4') == 'PDF 1.4'
+
+    with temp_directory() as tempdir:
+        filename = os.path.join(tempdir, 'foo.pdf')
+        filename_bytes = filename.encode(sys.getfilesystemencoding())
+        file_obj = io.BytesIO()
+        for target in [filename, filename_bytes, file_obj]:
+            PDFSurface(target, 123, 432).finish()
+        with open(filename, 'rb') as fd:
+            assert fd.read().startswith(b'%PDF')
+        with open(filename_bytes, 'rb') as fd:
+            assert fd.read().startswith(b'%PDF')
+        pdf_bytes = file_obj.getvalue()
+        assert pdf_bytes.startswith(b'%PDF')
+        assert b'/MediaBox [ 0 0 123 432 ]' in pdf_bytes
+        assert pdf_bytes.count(b'/Type /Page\n') == 1
+
+    file_obj = io.BytesIO()
+    surface = PDFSurface(file_obj, 1, 1)
+    surface.set_size(12, 100)
+    surface.show_page()
+    surface.set_size(42, 700)
+    surface.show_page()
+    surface.finish()
+    pdf_bytes = file_obj.getvalue()
+    assert b'/MediaBox [ 0 0 1 1 ]' not in pdf_bytes
+    assert b'/MediaBox [ 0 0 12 100 ]' in pdf_bytes
+    assert b'/MediaBox [ 0 0 42 700 ]' in pdf_bytes
+    assert pdf_bytes.count(b'/Type /Page\n') == 2

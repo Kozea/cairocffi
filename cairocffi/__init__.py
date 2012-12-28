@@ -53,7 +53,7 @@ def cairo_version_string():
     return ffi.string(cairo.cairo_version_string()).decode('ascii')
 
 
-from .surfaces import Surface, ImageSurface
+from .surfaces import Surface, ImageSurface, PDFSurface
 from .context import Context
 
 # For compatibility with pycairo. In cairocffi users can just use strings.

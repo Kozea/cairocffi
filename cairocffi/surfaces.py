@@ -15,6 +15,9 @@ import ctypes
 from . import ffi, cairo, _check_status
 
 
+SURFACE_TARGET_KEY = ffi.new('cairo_user_data_key_t *')
+
+
 def _make_read_func(file_obj):
     @ffi.callback("cairo_read_func_t", error='READ_ERROR')
     def read_func(closure, data, length):
@@ -237,6 +240,46 @@ class ImageSurface(Surface):
         return cairo.cairo_image_surface_get_stride(self._handle)
 
 
+class PDFSurface(Surface):
+    def __init__(self, target, width_in_points, height_in_points):
+        if hasattr(target, 'write'):
+            write_func = _make_write_func(target)
+            handle = cairo.cairo_pdf_surface_create_for_stream(
+                write_func, ffi.NULL, width_in_points, height_in_points)
+            Surface.__init__(self, handle)
+            keep_alive = KeepAlive(write_func)
+            _check_status(cairo.cairo_surface_set_user_data(
+                self._handle, SURFACE_TARGET_KEY, *keep_alive.closure))
+            keep_alive.save()
+        else:
+            handle = cairo.cairo_pdf_surface_create(
+                _encode_filename(target), width_in_points, height_in_points)
+            Surface.__init__(self, handle)
+
+    def set_size(self, width_in_points, height_in_points):
+        cairo.cairo_pdf_surface_set_size(
+            self._handle, width_in_points, height_in_points)
+        self._check_status()
+
+    def restrict_to_version(self, version):
+        cairo.cairo_pdf_surface_restrict_to_version(self._handle, version)
+        self._check_status()
+
+    @staticmethod
+    def get_versions():
+        versions = ffi.new('cairo_pdf_version_t const **')
+        num_versions = ffi.new('int *')
+        cairo.cairo_pdf_get_versions(versions, num_versions)
+        versions = versions[0]
+        return [versions[i] for i in range(num_versions[0])]
+
+    @staticmethod
+    def version_to_string(version):
+        return ffi.string(
+            cairo.cairo_pdf_version_to_string(version)).decode('ascii')
+
+
 SURFACE_TYPE_TO_CLASS = dict(
     IMAGE=ImageSurface,
+    PDF=PDFSurface,
 )
