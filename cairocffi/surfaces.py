@@ -41,18 +41,24 @@ def _encode_filename(filename):
 
 
 def from_buffer(data):
-    return ffi.cast('char *', ctypes.addressof(ctypes.c_char.from_buffer(data)))
+    return ffi.cast(
+        'char *', ctypes.addressof(ctypes.c_char.from_buffer(data)))
 
 
 class KeepAlive(object):
-    instances = {}
+    """
+    Keep some objects alive until a callback is called.
+    :attr:`closure` is a tuple of cairo_destroy_func_t and void* cdata objects,
+    as expected by cairo_surface_set_mime_data().
+
+    """
+    instances = set()
+
     def __init__(self, *objects):
+        self.instances.add(self)
         self.objects = objects
-        def destroy(void_id, instances=self.instances):
-            del instances[cffi.cast('size_t*', void_id)[0]]
-        self.destroy = ffi.callback('cairo_destroy_func_t', destroy)
-        self.closure = ffi.cast('void *', ffi.new('size_t *', id(self)))
-        self.instances[id(self)] = self
+        f = lambda _: self.instances.remove(self)
+        self.closure = (ffi.callback('cairo_destroy_func_t', f), ffi.NULL)
 
 
 class Surface(object):
@@ -124,10 +130,9 @@ class Surface(object):
 
     def set_mime_data(self, mime_type, data):
         mime_type = ffi.new('char *', mime_type.encode('utf8'))
-        keep_alive = KeepAlive(data, mime_type)
         cairo.cairo_surface_set_mime_type(
             self._handle, mime_type, from_buffer(data), len(data),
-            keep_alive.destroy, keep_alive.closure)
+            *KeepAlive(data, mime_type).closure)
 
     def set_supports_mime_type(self, mime_type):
         mime_type = ffi.new('char *', mime_type.encode('utf8'))
