@@ -38,7 +38,7 @@ class CairoError(Exception):
 
 def _check_status(status):
     if status != 'SUCCESS':
-        exception = STATUS_TO_EXCEPTION.get(status, Exception)
+        exception = STATUS_TO_EXCEPTION.get(status, CairoError)
         raise exception('cairo returned %s: %s' % (
             status, ffi.string(cairo.cairo_status_to_string(status))))
 

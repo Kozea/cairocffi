@@ -17,9 +17,9 @@ import base64
 import shutil
 import tempfile
 
-import cairocffi
 import pytest
 
+import cairocffi
 from . import cairo_version, cairo_version_string, ImageSurface, Context
 from .compat import u
 
@@ -54,6 +54,66 @@ def test_image_surface_from_buffer():
     context = Context(surface)
     context.paint()  # The default source is opaque black.
     assert data == b'\x00\x00\x00\xFF' * 200
+
+
+def test_surface():
+    surface = ImageSurface('ARGB32', 20, 30)
+    for similar in [
+            surface.create_similar('ALPHA', 4, 100),
+            surface.create_similar_image('A8', 4, 100)]:
+        assert isinstance(similar, ImageSurface)
+        assert similar.get_format() == 'A8'
+        assert similar.get_width() == 4
+        assert similar.get_height() == 100
+
+    surface = ImageSurface('A8', 4, 4)
+    data = surface.get_data()
+    assert data[:] == b'\x00' * 16
+    Context(surface.create_for_rectangle(1, 1, 2, 2)).paint()
+    assert data[:] == (
+        b'\x00\x00\x00\x00'
+        b'\x00\xFF\xFF\x00'
+        b'\x00\xFF\xFF\x00'
+        b'\x00\x00\x00\x00'
+    )
+    surface.copy_page()
+    surface.show_page()
+
+    surface.set_device_offset(14, 3)
+    assert surface.get_device_offset() == (14, 3)
+
+    surface.set_fallback_resolution(15, 6)
+    assert surface.get_fallback_resolution() == (15, 6)
+
+
+    def assert_raise_finished(func, *args, **kwargs):
+        with pytest.raises(cairocffi.CairoError) as exc:
+            func(*args, **kwargs)
+        assert 'SURFACE_FINISHED' in str(exc)
+
+    surface.finish()
+    assert_raise_finished(surface.copy_page)
+    assert_raise_finished(surface.show_page)
+    assert_raise_finished(surface.set_device_offset, 1, 2)
+    assert_raise_finished(surface.set_fallback_resolution, 3, 4)
+    assert_raise_finished(surface.set_mime_data, 'image/jpeg', None)
+
+
+def test_mime_data():
+    if '__pypy__' in sys.modules:
+        # See https://bitbucket.org/cffi/cffi/issue/47
+        # and https://bugs.pypy.org/issue1354
+        pytest.xfail()
+    surface = ImageSurface('A8', 1, 1)
+    assert surface.get_mime_data('image/jpeg') is None
+    assert len(cairocffi.surfaces.KeepAlive.instances) == 0
+    surface.set_mime_data('image/jpeg', bytearray(b'lol'))
+    assert len(cairocffi.surfaces.KeepAlive.instances) == 1
+    assert surface.get_mime_data('image/jpeg')[:] == b'lol'
+
+    surface.set_mime_data('image/jpeg', None)
+    assert len(cairocffi.surfaces.KeepAlive.instances) == 0
+    assert surface.get_mime_data('image/jpeg') is None
 
 
 def test_png():

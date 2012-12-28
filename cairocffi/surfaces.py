@@ -55,16 +55,23 @@ class KeepAlive(object):
     instances = set()
 
     def __init__(self, *objects):
-        self.instances.add(self)
         self.objects = objects
-        f = lambda _: self.instances.remove(self)
-        self.closure = (ffi.callback('cairo_destroy_func_t', f), ffi.NULL)
+        callback = ffi.callback(
+            'cairo_destroy_func_t', lambda _: self.instances.remove(self))
+        # cairo wants a non-NULL closure pointer.
+        self.closure = (callback, callback)
+
+    def save(self):
+        self.instances.add(self)
 
 
 class Surface(object):
     def __init__(self, handle):
-        _check_status(cairo.cairo_surface_status(handle))
         self._handle = ffi.gc(handle, cairo.cairo_surface_destroy)
+        self._check_status()
+
+    def _check_status(self):
+        _check_status(cairo.cairo_surface_status(self._handle))
 
     @staticmethod
     def _from_handle(handle):
@@ -74,12 +81,13 @@ class Surface(object):
             surface.__class__ = SURFACE_TYPE_TO_CLASS[surface_type]
         return surface
 
-    # XXX needs tests
     def copy_page(self):
         cairo.cairo_surface_copy_page(self._handle)
+        self._check_status()
 
     def show_page(self):
         cairo.cairo_surface_show_page(self._handle)
+        self._check_status()
 
     def create_similar(self, content, width, height):
         return Surface._from_handle(cairo.cairo_surface_create_similar(
@@ -89,11 +97,17 @@ class Surface(object):
         return Surface._from_handle(cairo.cairo_surface_create_similar_image(
             self._handle, content, width, height))
 
+    def create_for_rectangle(self, x, y, width, height):
+        return Surface._from_handle(cairo.cairo_surface_create_for_rectangle(
+            self._handle, x, y, width, height))
+
     def finish(self):
         cairo.cairo_surface_finish(self._handle)
+        self._check_status()
 
     def flush(self):
         cairo.cairo_surface_flush(self._handle)
+        self._check_status()
 
     def get_content(self):
         return cairo.cairo_surface_get_content(self._handle)
@@ -106,6 +120,7 @@ class Surface(object):
 
     def set_device_offset(self, x_offset, y_offset):
         cairo.cairo_surface_set_device_offset(self._handle, x_offset, y_offset)
+        self._check_status()
 
     def get_fallback_resolution(self):
         ppi = ffi.new('double[2]')
@@ -114,37 +129,47 @@ class Surface(object):
         return tuple(ppi)
 
     def set_fallback_resolution(self, x_pixels_per_inch, y_pixels_per_inch):
-        cairo.cairo_surface_get_fallback_resolution(
+        cairo.cairo_surface_set_fallback_resolution(
             self._handle, x_pixels_per_inch, y_pixels_per_inch)
+        self._check_status()
 
     def get_font_options(self):
         raise NotImplementedError
 
     def get_mime_data(self, mime_type):
-        buffer_address = ffi.new('char **')
+        buffer_address = ffi.new('unsigned char **')
         buffer_length = ffi.new('unsigned long *')
-        mime_type = ffi.new('char *', mime_type.encode('utf8'))
-        cairo.cairo_surface_get_mime_type(
+        mime_type = ffi.new('char[]', mime_type.encode('utf8'))
+        cairo.cairo_surface_get_mime_data(
             self._handle, mime_type, buffer_address, buffer_length)
-        return ffi.buffer(buffer_address[0], buffer_length[0])
+        return (ffi.buffer(buffer_address[0], buffer_length[0])
+                if buffer_address[0] != ffi.NULL else None)
 
     def set_mime_data(self, mime_type, data):
-        mime_type = ffi.new('char *', mime_type.encode('utf8'))
-        cairo.cairo_surface_set_mime_type(
-            self._handle, mime_type, from_buffer(data), len(data),
-            *KeepAlive(data, mime_type).closure)
+        mime_type = ffi.new('char[]', mime_type.encode('utf8'))
+        if data is None:
+            _check_status(cairo.cairo_surface_set_mime_data(
+                self._handle, mime_type, ffi.NULL, 0, ffi.NULL, ffi.NULL))
+        else:
+            keep_alive = KeepAlive(data, mime_type)
+            _check_status(cairo.cairo_surface_set_mime_data(
+                self._handle, mime_type, from_buffer(data), len(data),
+                *keep_alive.closure))
+            keep_alive.save()  # Only on success
 
     def set_supports_mime_type(self, mime_type):
-        mime_type = ffi.new('char *', mime_type.encode('utf8'))
+        mime_type = ffi.new('char[]', mime_type.encode('utf8'))
         return bool(cairo.cairo_surface_supports_mime_type(
             self._handle, mime_type))
 
     def mark_dirty(self):
-        return cairo.cairo_surface_mark_dirty(self._handle)
+        cairo.cairo_surface_mark_dirty(self._handle)
+        self._check_status()
 
     def mark_dirty_rectangle(self, x, y, width, height):
-        return cairo.cairo_surface_mark_dirty_rectangle(
+        cairo.cairo_surface_mark_dirty_rectangle(
             self._handle, x, y, width, height)
+        self._check_status()
 
     def write_to_png(self, target):
         if hasattr(target, 'write'):
