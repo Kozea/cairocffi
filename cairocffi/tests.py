@@ -14,6 +14,7 @@ import io
 import re
 import os
 import sys
+import math
 import base64
 import shutil
 import tempfile
@@ -22,7 +23,7 @@ import contextlib
 import pytest
 
 import cairocffi
-from . import (cairo_version, cairo_version_string, Context,
+from . import (cairo_version, cairo_version_string, Context, Matrix,
                ImageSurface, PDFSurface, PSSurface, SVGSurface)
 from .compat import u
 
@@ -283,3 +284,23 @@ def test_ps_surface():
     assert b'%%Lorem' in ps_bytes
     assert b'%%ipsum' in ps_bytes
     assert b'%%dolor' in ps_bytes
+
+
+def test_matrix():
+    def round_all():
+        for name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
+            setattr(m, name, round(getattr(m, name), 3))
+
+    m = Matrix()
+    values = lambda: (m.xx, m.yx,  m.xy, m.yy,  m.x0, m.y0)
+    assert values() == (1, 0,  0, 1,  0, 0)
+    m.translate(12, 4)
+    assert values() == (1, 0,  0, 1,  12, 4)
+    m.scale(2, 3)
+    assert values() == (2, 0,  0, 3,  12, 4)
+    m.rotate(math.pi / 2)
+    round_all()
+    assert values() == (0, 3,  -2, 0,  12, 4)
+    m *= Matrix.init_rotate(math.pi)
+    round_all()
+    assert values() == (0, -3,  2, 0,  -12, -4)

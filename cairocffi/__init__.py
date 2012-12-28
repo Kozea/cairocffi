@@ -64,6 +64,59 @@ def install_as_pycairo():
     sys.modules['cairo'] = sys.modules[__name__]
 
 
+class Matrix(object):
+    def __init__(self, xx=1, yx=0, xy=0, yy=1, x0=0, y0=0):
+        self._struct = ffi.new('cairo_matrix_t *')
+        cairo.cairo_matrix_init(self._struct, xx, yx, xy, yy, x0, y0)
+
+    @classmethod
+    def init_rotate(cls, radians):
+        result = cls()
+        cairo.cairo_matrix_init_rotate(result._struct, radians)
+        return result
+
+    def __getattr__(self, name):
+        if name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
+            return getattr(self._struct, name)
+        else:
+            return object.__getattr__(self, name)
+
+    def __setattr__(self, name, value):
+        if name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
+            return setattr(self._struct, name, value)
+        else:
+            return object.__setattr__(self, name, value)
+
+    def multiply(self, other):
+        res = Matrix()
+        cairo.cairo_matrix_multiply(res._struct, self._struct, other._struct)
+        return res
+
+    __mul__ = multiply
+
+    def translate(self, tx, ty):
+        cairo.cairo_matrix_translate(self._struct, tx, ty)
+
+    def scale(self, sx, sy):
+        cairo.cairo_matrix_scale(self._struct, sx, sy)
+
+    def rotate(self, radians):
+        cairo.cairo_matrix_rotate(self._struct, radians)
+
+    def invert(self):
+        _check_status(cairo.cairo_matrix_invert(self._struct))
+
+    def transform_point(self, x, y):
+        xy = ffi.new('double[2]', [x, y])
+        cairo.cairo_matrix_transform_point(self._struct, xy + 0, xy + 1)
+        return tuple(xy)
+
+    def transform_distance(self, x, y):
+        xy = ffi.new('double[2]', [x, y])
+        cairo.cairo_matrix_transform_distance(self._struct, xy + 0, xy + 1)
+        return tuple(xy)
+
+
 from .surfaces import Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface
 from .context import Context
 
