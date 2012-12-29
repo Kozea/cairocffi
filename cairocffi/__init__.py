@@ -118,6 +118,7 @@ class Matrix(object):
 
 
 from .surfaces import Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface
+from .patterns import Pattern, SurfacePattern
 from .context import Context
 
 # For compatibility with pycairo. In cairocffi users can just use strings.

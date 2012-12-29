@@ -24,7 +24,8 @@ import pytest
 
 import cairocffi
 from . import (cairo_version, cairo_version_string, Context, Matrix,
-               ImageSurface, PDFSurface, PSSurface, SVGSurface)
+               ImageSurface, PDFSurface, PSSurface, SVGSurface,
+               SurfacePattern)
 from .compat import u
 
 
@@ -304,3 +305,20 @@ def test_matrix():
     m *= Matrix.init_rotate(math.pi)
     round_all()
     assert values() == (0, -3,  2, 0,  -12, -4)
+
+
+def test_surface_pattern():
+    surface = ImageSurface('A1', 1, 1)
+    pattern = SurfacePattern(surface)
+
+    surface_again = pattern.get_surface()
+    assert surface_again is not surface
+    assert surface_again._handle == surface._handle
+
+    assert pattern.get_extend() == 'NONE'
+    pattern.set_extend('REPEAT')
+    assert pattern.get_extend() == 'REPEAT'
+
+    assert pattern.get_filter() == 'GOOD'
+    pattern.set_filter('BEST')
+    assert pattern.get_filter() == 'BEST'
