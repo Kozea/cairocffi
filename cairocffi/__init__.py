@@ -25,6 +25,12 @@ ffi.cdef(_CAIRO_HEADERS)
 cairo = ffi.dlopen('cairo')
 
 
+class CairoError(Exception):
+    """Cairo returned an error status."""
+
+
+Error = CairoError  # pycairo compat
+
 STATUS_TO_EXCEPTION = dict(
     NO_MEMORY=MemoryError,
     READ_ERROR=IOError,
@@ -32,10 +38,6 @@ STATUS_TO_EXCEPTION = dict(
     TEMP_FILE_ERROR=IOError,
     FILE_NOT_FOUND=FileNotFoundError,
 )
-
-
-class CairoError(Exception):
-    """Cairo returned an error status."""
 
 
 def _check_status(status):
