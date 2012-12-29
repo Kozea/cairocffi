@@ -87,6 +87,15 @@ class Matrix(object):
         else:
             return object.__setattr__(self, name, value)
 
+    def as_tuple(self):
+        return (self.xx, self.yx,  self.xy, self.yy,  self.x0, self.y0)
+
+    def __eq__(self, other):
+        return self.as_tuple() == other.as_tuple()
+
+    def __ne__(self, other):
+        return self.as_tuple() != other.as_tuple()
+
     def multiply(self, other):
         res = Matrix()
         cairo.cairo_matrix_multiply(res._struct, self._struct, other._struct)

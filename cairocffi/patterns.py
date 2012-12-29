@@ -9,7 +9,7 @@
 
 """
 
-from . import ffi, cairo, _check_status
+from . import ffi, cairo, _check_status, Matrix
 from .surfaces import Surface
 from .compat import xrange
 
@@ -45,6 +45,16 @@ class Pattern(object):
 
     def get_filter(self):
         return cairo.cairo_pattern_get_filter(self._handle)
+
+    def get_matrix(self):
+        matrix = Matrix()
+        cairo.cairo_pattern_get_matrix(self._handle, matrix._struct)
+        self._check_status()
+        return matrix
+
+    def set_matrix(self, matrix):
+        cairo.cairo_pattern_set_matrix(self._handle, matrix._struct)
+        self._check_status()
 
 
 class SolidPattern(Pattern):
