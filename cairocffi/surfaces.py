@@ -374,8 +374,8 @@ class SVGSurface(Surface):
             cairo.cairo_svg_version_to_string(version)).decode('ascii')
 
 
-SURFACE_TYPE_TO_CLASS = dict(
-    IMAGE=ImageSurface,
-    PDF=PDFSurface,
-    SVG=SVGSurface,
-)
+SURFACE_TYPE_TO_CLASS = {
+    'IMAGE': ImageSurface,
+    'PDF': PDFSurface,
+    'SVG': SVGSurface,
+}

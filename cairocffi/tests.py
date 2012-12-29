@@ -25,7 +25,7 @@ import pytest
 import cairocffi
 from . import (cairo_version, cairo_version_string, Context, Matrix,
                ImageSurface, PDFSurface, PSSurface, SVGSurface,
-               SurfacePattern)
+               SolidPattern, SurfacePattern, LinearGradient, RadialGradient)
 from .compat import u
 
 
@@ -322,3 +322,32 @@ def test_surface_pattern():
     assert pattern.get_filter() == 'GOOD'
     pattern.set_filter('BEST')
     assert pattern.get_filter() == 'BEST'
+
+
+def test_solid_pattern():
+    assert SolidPattern(1, .5, .25).get_rgba() == (1, .5, .25, 1)
+    assert SolidPattern(1, .5, .25, .75).get_rgba() == (1, .5, .25, .75)
+
+
+def test_linear_gradient():
+    gradient = LinearGradient(1, 2, 10, 20)
+    assert gradient.get_linear_points() == (1, 2, 10, 20)
+    gradient.add_color_stop_rgb(1, 1, .5, .25)
+    gradient.add_color_stop_rgb(offset=.5, red=1, green=.5, blue=.25)
+    gradient.add_color_stop_rgba(.5, 1, .5, .75, .25)
+    assert gradient.get_color_stops() == [
+        (.5, 1, .5, .25, 1),
+        (.5, 1, .5, .75, .25),
+        (1, 1, .5, .25, 1)]
+
+
+def test_radial_gradient():
+    gradient = RadialGradient(42, 420, 10, 43, 430, 20)
+    assert gradient.get_radial_circles() == (42, 420, 10, 43, 430, 20)
+    gradient.add_color_stop_rgb(1, 1, .5, .25)
+    gradient.add_color_stop_rgb(offset=.5, red=1, green=.5, blue=.25)
+    gradient.add_color_stop_rgba(.5, 1, .5, .75, .25)
+    assert gradient.get_color_stops() == [
+        (.5, 1, .5, .25, 1),
+        (.5, 1, .5, .75, .25),
+        (1, 1, .5, .25, 1)]

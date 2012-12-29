@@ -11,6 +11,7 @@
 
 from . import ffi, cairo, _check_status
 from .surfaces import Surface
+from .compat import xrange
 
 
 class Pattern(object):
@@ -46,6 +47,18 @@ class Pattern(object):
         return cairo.cairo_pattern_get_filter(self._handle)
 
 
+class SolidPattern(Pattern):
+    def __init__(self, red, green, blue, alpha=1):
+        Pattern.__init__(
+            self, cairo.cairo_pattern_create_rgba(red, green, blue, alpha))
+
+    def get_rgba(self):
+        rgba = ffi.new('double[4]')
+        _check_status(cairo.cairo_pattern_get_rgba(
+            self._handle, rgba + 0, rgba + 1, rgba + 2, rgba + 3))
+        return tuple(rgba)
+
+
 class SurfacePattern(Pattern):
     def __init__(self, surface):
         Pattern.__init__(
@@ -59,6 +72,59 @@ class SurfacePattern(Pattern):
         return surface
 
 
-PATTERN_TYPE_TO_CLASS = dict(
-    SURFACE=SurfacePattern,
-)
+class Gradient(Pattern):
+    def add_color_stop_rgb(self, offset, red, green, blue):
+        cairo.cairo_pattern_add_color_stop_rgb(
+            self._handle, offset, red, green, blue)
+        self._check_status()
+
+    def add_color_stop_rgba(self, offset, red, green, blue, alpha):
+        cairo.cairo_pattern_add_color_stop_rgba(
+            self._handle, offset, red, green, blue, alpha)
+        self._check_status()
+
+    def get_color_stops(self):
+        count = ffi.new('int *')
+        _check_status(cairo.cairo_pattern_get_color_stop_count(
+            self._handle, count))
+        stops = []
+        stop = ffi.new('double[5]')
+        for i in xrange(count[0]):
+            _check_status(cairo.cairo_pattern_get_color_stop_rgba(
+                self._handle, i,
+                stop + 0, stop + 1, stop + 2, stop + 3, stop + 4))
+            stops.append(tuple(stop))
+        return stops
+
+
+class LinearGradient(Gradient):
+    def __init__(self, x0, y0, x1, y1):
+        Pattern.__init__(
+            self, cairo.cairo_pattern_create_linear(x0, y0, x1, y1))
+
+    def get_linear_points(self):
+        points = ffi.new('double[4]')
+        _check_status(cairo.cairo_pattern_get_linear_points(
+            self._handle, points + 0, points + 1, points + 2, points + 3))
+        return tuple(points)
+
+
+class RadialGradient(Gradient):
+    def __init__(self, cx0, cy0, radius0, cx1, cy1, radius1):
+        Pattern.__init__(self, cairo.cairo_pattern_create_radial(
+            cx0, cy0, radius0, cx1, cy1, radius1))
+
+    def get_radial_circles(self):
+        circles = ffi.new('double[6]')
+        _check_status(cairo.cairo_pattern_get_radial_circles(
+            self._handle,  circles + 0, circles + 1, circles + 2,
+            circles + 3, circles + 4, circles + 5))
+        return tuple(circles)
+
+
+PATTERN_TYPE_TO_CLASS = {
+    'SOLID': SolidPattern,
+    'SURFACE': SurfacePattern,
+    'LINEAR': LinearGradient,
+    'RADIAL': RadialGradient,
+}

@@ -18,12 +18,19 @@ try:
 except NameError:
     FileNotFoundError = IOError
 
+
 try:
     callable = callable
-except:
+except NameError:
     from collections import Callable
     from cffi import api
     api.callable = callable = lambda x: isinstance(x, Callable)
+
+
+try:
+    xrange = xrange
+except NameError:
+    xrange = range
 
 
 if sys.version_info >= (3,):
