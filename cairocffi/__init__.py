@@ -14,7 +14,7 @@ import sys
 from cffi import FFI
 
 from .constants import _CAIRO_HEADERS
-from .compat import FileNotFoundError
+from .compat import FileNotFoundError, xrange
 
 
 VERSION = '0.1'
@@ -126,6 +126,34 @@ class Matrix(object):
         xy = ffi.new('double[2]', [x, y])
         cairo.cairo_matrix_transform_distance(self._struct, xy + 0, xy + 1)
         return tuple(xy)
+
+
+class Path(object):
+    def __init__(self, handle):
+        self._handle = ffi.gc(handle, cairo.cairo_path_destroy)
+        self._check_status()
+
+    def _check_status(self):
+        _check_status(self._handle.status)
+
+    def __iter__(self):
+        data = self._handle.data
+        num_data = self._handle.num_data
+        position = 0
+        length_per_type = {
+            'MOVE_TO': 1,
+            'LINE_TO': 1,
+            'CURVE_TO': 3,
+            'CLOSE_PATH': 0}
+        while position < num_data:
+            path_data = data[position]
+            path_type = path_data.header.type
+            points = ()
+            for i in xrange(length_per_type[path_type]):
+                point = data[position + i + 1].point
+                points += (point.x, point.y)
+            yield (path_type, points)
+            position += path_data.header.length
 
 
 from .surfaces import Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface

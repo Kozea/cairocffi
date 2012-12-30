@@ -11,7 +11,7 @@
 
 import contextlib
 
-from . import ffi, cairo, _check_status
+from . import ffi, cairo, _check_status, Path
 from .patterns import Pattern
 from .surfaces import _encode_string
 
@@ -110,6 +110,16 @@ class Context(object):
 
     def close_path(self):
         cairo.cairo_close_path(self._handle)
+        self._check_status()
+
+    def copy_path(self):
+        return Path(cairo.cairo_copy_path(self._handle))
+
+    def copy_path_flat(self):
+        return Path(cairo.cairo_copy_path_flat(self._handle))
+
+    def append_path(self, path):
+        cairo.cairo_append_path(self._handle, path._handle)
         self._check_status()
 
     def new_path(self):
