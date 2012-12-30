@@ -293,11 +293,24 @@ def test_matrix():
             setattr(m, name, round(getattr(m, name), 3))
 
     m = Matrix()
+    with pytest.raises(AttributeError):
+        m.some_inexistent_attribute
     assert m.as_tuple() == (1, 0,  0, 1,  0, 0)
     m.translate(12, 4)
     assert m.as_tuple() == (1, 0,  0, 1,  12, 4)
     m.scale(2, 3)
     assert m.as_tuple() == (2, 0,  0, 3,  12, 4)
+
+    assert m.transform_distance(1, 2) == (2, 6)
+    assert m.transform_point(1, 2) == (14, 10)
+
+    m2 = m.copy()
+    assert m2 == m
+    m2.invert()
+    assert m2.as_tuple() == (0.5, 0,  0, 1./3,  -12 / 2, -4. / 3)
+    assert m.inverted() == m2
+    assert m.as_tuple() == (2, 0,  0, 3,  12, 4)  # Unchanged
+
     m.rotate(math.pi / 2)
     round_all(m)
     assert m.as_tuple() == (0, 3,  -2, 0,  12, 4)
@@ -326,6 +339,7 @@ def test_surface_pattern():
     matrix = Matrix.init_rotate(0.5)
     pattern.set_matrix(matrix)
     assert pattern.get_matrix() == matrix
+    assert pattern.get_matrix() != Matrix()
 
 
 def test_solid_pattern():

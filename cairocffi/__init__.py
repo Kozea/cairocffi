@@ -92,6 +92,9 @@ class Matrix(object):
     def as_tuple(self):
         return (self.xx, self.yx,  self.xy, self.yy,  self.x0, self.y0)
 
+    def copy(self):
+        return type(self)(*self.as_tuple())
+
     def __eq__(self, other):
         return self.as_tuple() == other.as_tuple()
 
@@ -116,6 +119,11 @@ class Matrix(object):
 
     def invert(self):
         _check_status(cairo.cairo_matrix_invert(self._struct))
+
+    def inverted(self):
+        matrix = self.copy()
+        matrix.invert()
+        return matrix
 
     def transform_point(self, x, y):
         xy = ffi.new('double[2]', [x, y])
