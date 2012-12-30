@@ -1,6 +1,6 @@
 *.pyc
 __pycache__
 *.egg-info
-/sdist
+/dist
 /.tox
 .coverage
