@@ -16,14 +16,14 @@ from .compat import xrange
 
 class Pattern(object):
     def __init__(self, handle):
-        self._handle = ffi.gc(handle, cairo.cairo_pattern_destroy)
+        self._pointer = ffi.gc(handle, cairo.cairo_pattern_destroy)
         self._check_status()
 
     def _check_status(self):
-        _check_status(cairo.cairo_pattern_status(self._handle))
+        _check_status(cairo.cairo_pattern_status(self._pointer))
 
     @staticmethod
-    def _from_handle(handle):
+    def _from_pointer(handle):
         pattern = Pattern(handle)
         pattern_type = cairo.cairo_pattern_get_type(handle)
         if pattern_type in PATTERN_TYPE_TO_CLASS:
@@ -31,29 +31,29 @@ class Pattern(object):
         return pattern
 
     def set_extend(self, extend):
-        cairo.cairo_pattern_set_extend(self._handle, extend)
+        cairo.cairo_pattern_set_extend(self._pointer, extend)
         self._check_status()
 
     def get_extend(self):
-        return cairo.cairo_pattern_get_extend(self._handle)
+        return cairo.cairo_pattern_get_extend(self._pointer)
 
     # pycairo only has filters on SurfacePattern,
     # but cairo seems to accept it on any pattern.
     def set_filter(self, filter):
-        cairo.cairo_pattern_set_filter(self._handle, filter)
+        cairo.cairo_pattern_set_filter(self._pointer, filter)
         self._check_status()
 
     def get_filter(self):
-        return cairo.cairo_pattern_get_filter(self._handle)
+        return cairo.cairo_pattern_get_filter(self._pointer)
 
     def get_matrix(self):
         matrix = Matrix()
-        cairo.cairo_pattern_get_matrix(self._handle, matrix._struct)
+        cairo.cairo_pattern_get_matrix(self._pointer, matrix._pointer)
         self._check_status()
         return matrix
 
     def set_matrix(self, matrix):
-        cairo.cairo_pattern_set_matrix(self._handle, matrix._struct)
+        cairo.cairo_pattern_set_matrix(self._pointer, matrix._pointer)
         self._check_status()
 
 
@@ -65,19 +65,19 @@ class SolidPattern(Pattern):
     def get_rgba(self):
         rgba = ffi.new('double[4]')
         _check_status(cairo.cairo_pattern_get_rgba(
-            self._handle, rgba + 0, rgba + 1, rgba + 2, rgba + 3))
+            self._pointer, rgba + 0, rgba + 1, rgba + 2, rgba + 3))
         return tuple(rgba)
 
 
 class SurfacePattern(Pattern):
     def __init__(self, surface):
         Pattern.__init__(
-            self, cairo.cairo_pattern_create_for_surface(surface._handle))
+            self, cairo.cairo_pattern_create_for_surface(surface._pointer))
 
     def get_surface(self):
         surface_p = ffi.new('cairo_surface_t **')
-        _check_status(cairo.cairo_pattern_get_surface(self._handle, surface_p))
-        surface = Surface._from_handle(surface_p[0])
+        _check_status(cairo.cairo_pattern_get_surface(self._pointer, surface_p))
+        surface = Surface._from_pointer(surface_p[0])
         cairo.cairo_surface_reference(surface_p[0])
         return surface
 
@@ -85,23 +85,23 @@ class SurfacePattern(Pattern):
 class Gradient(Pattern):
     def add_color_stop_rgb(self, offset, red, green, blue):
         cairo.cairo_pattern_add_color_stop_rgb(
-            self._handle, offset, red, green, blue)
+            self._pointer, offset, red, green, blue)
         self._check_status()
 
     def add_color_stop_rgba(self, offset, red, green, blue, alpha):
         cairo.cairo_pattern_add_color_stop_rgba(
-            self._handle, offset, red, green, blue, alpha)
+            self._pointer, offset, red, green, blue, alpha)
         self._check_status()
 
     def get_color_stops(self):
         count = ffi.new('int *')
         _check_status(cairo.cairo_pattern_get_color_stop_count(
-            self._handle, count))
+            self._pointer, count))
         stops = []
         stop = ffi.new('double[5]')
         for i in xrange(count[0]):
             _check_status(cairo.cairo_pattern_get_color_stop_rgba(
-                self._handle, i,
+                self._pointer, i,
                 stop + 0, stop + 1, stop + 2, stop + 3, stop + 4))
             stops.append(tuple(stop))
         return stops
@@ -115,7 +115,7 @@ class LinearGradient(Gradient):
     def get_linear_points(self):
         points = ffi.new('double[4]')
         _check_status(cairo.cairo_pattern_get_linear_points(
-            self._handle, points + 0, points + 1, points + 2, points + 3))
+            self._pointer, points + 0, points + 1, points + 2, points + 3))
         return tuple(points)
 
 
@@ -127,7 +127,7 @@ class RadialGradient(Gradient):
     def get_radial_circles(self):
         circles = ffi.new('double[6]')
         _check_status(cairo.cairo_pattern_get_radial_circles(
-            self._handle,  circles + 0, circles + 1, circles + 2,
+            self._pointer,  circles + 0, circles + 1, circles + 2,
             circles + 3, circles + 4, circles + 5))
         return tuple(circles)
 

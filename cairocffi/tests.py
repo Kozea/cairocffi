@@ -325,7 +325,7 @@ def test_surface_pattern():
 
     surface_again = pattern.get_surface()
     assert surface_again is not surface
-    assert surface_again._handle == surface._handle
+    assert surface_again._pointer == surface._pointer
 
     assert pattern.get_extend() == 'NONE'
     pattern.set_extend('REPEAT')

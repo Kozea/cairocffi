@@ -79,19 +79,19 @@ class KeepAlive(object):
 
 class Surface(object):
     def __init__(self, handle, target_keep_alive=None):
-        self._handle = ffi.gc(handle, cairo.cairo_surface_destroy)
+        self._pointer = ffi.gc(handle, cairo.cairo_surface_destroy)
         self._check_status()
         if target_keep_alive not in (None, ffi.NULL):
             keep_alive = KeepAlive(target_keep_alive)
             _check_status(cairo.cairo_surface_set_user_data(
-                self._handle, SURFACE_TARGET_KEY, *keep_alive.closure))
+                self._pointer, SURFACE_TARGET_KEY, *keep_alive.closure))
             keep_alive.save()
 
     def _check_status(self):
-        _check_status(cairo.cairo_surface_status(self._handle))
+        _check_status(cairo.cairo_surface_status(self._pointer))
 
     @staticmethod
-    def _from_handle(handle):
+    def _from_pointer(handle):
         surface = Surface(handle)
         surface_type = cairo.cairo_surface_get_type(handle)
         if surface_type in SURFACE_TYPE_TO_CLASS:
@@ -99,55 +99,55 @@ class Surface(object):
         return surface
 
     def copy_page(self):
-        cairo.cairo_surface_copy_page(self._handle)
+        cairo.cairo_surface_copy_page(self._pointer)
         self._check_status()
 
     def show_page(self):
-        cairo.cairo_surface_show_page(self._handle)
+        cairo.cairo_surface_show_page(self._pointer)
         self._check_status()
 
     def create_similar(self, content, width, height):
-        return Surface._from_handle(cairo.cairo_surface_create_similar(
-            self._handle, content, width, height))
+        return Surface._from_pointer(cairo.cairo_surface_create_similar(
+            self._pointer, content, width, height))
 
     def create_similar_image(self, content, width, height):
-        return Surface._from_handle(cairo.cairo_surface_create_similar_image(
-            self._handle, content, width, height))
+        return Surface._from_pointer(cairo.cairo_surface_create_similar_image(
+            self._pointer, content, width, height))
 
     def create_for_rectangle(self, x, y, width, height):
-        return Surface._from_handle(cairo.cairo_surface_create_for_rectangle(
-            self._handle, x, y, width, height))
+        return Surface._from_pointer(cairo.cairo_surface_create_for_rectangle(
+            self._pointer, x, y, width, height))
 
     def finish(self):
-        cairo.cairo_surface_finish(self._handle)
+        cairo.cairo_surface_finish(self._pointer)
         self._check_status()
 
     def flush(self):
-        cairo.cairo_surface_flush(self._handle)
+        cairo.cairo_surface_flush(self._pointer)
         self._check_status()
 
     def get_content(self):
-        return cairo.cairo_surface_get_content(self._handle)
+        return cairo.cairo_surface_get_content(self._pointer)
 
     def get_device_offset(self):
         offsets = ffi.new('double[2]')
         cairo.cairo_surface_get_device_offset(
-            self._handle, offsets + 0, offsets + 1)
+            self._pointer, offsets + 0, offsets + 1)
         return tuple(offsets)
 
     def set_device_offset(self, x_offset, y_offset):
-        cairo.cairo_surface_set_device_offset(self._handle, x_offset, y_offset)
+        cairo.cairo_surface_set_device_offset(self._pointer, x_offset, y_offset)
         self._check_status()
 
     def get_fallback_resolution(self):
         ppi = ffi.new('double[2]')
         cairo.cairo_surface_get_fallback_resolution(
-            self._handle, ppi + 0, ppi + 1)
+            self._pointer, ppi + 0, ppi + 1)
         return tuple(ppi)
 
     def set_fallback_resolution(self, x_pixels_per_inch, y_pixels_per_inch):
         cairo.cairo_surface_set_fallback_resolution(
-            self._handle, x_pixels_per_inch, y_pixels_per_inch)
+            self._pointer, x_pixels_per_inch, y_pixels_per_inch)
         self._check_status()
 
     def get_mime_data(self, mime_type):
@@ -155,7 +155,7 @@ class Surface(object):
         buffer_length = ffi.new('unsigned long *')
         mime_type = ffi.new('char[]', mime_type.encode('utf8'))
         cairo.cairo_surface_get_mime_data(
-            self._handle, mime_type, buffer_address, buffer_length)
+            self._pointer, mime_type, buffer_address, buffer_length)
         return (ffi.buffer(buffer_address[0], buffer_length[0])
                 if buffer_address[0] != ffi.NULL else None)
 
@@ -163,36 +163,36 @@ class Surface(object):
         mime_type = ffi.new('char[]', mime_type.encode('utf8'))
         if data is None:
             _check_status(cairo.cairo_surface_set_mime_data(
-                self._handle, mime_type, ffi.NULL, 0, ffi.NULL, ffi.NULL))
+                self._pointer, mime_type, ffi.NULL, 0, ffi.NULL, ffi.NULL))
         else:
             keep_alive = KeepAlive(data, mime_type)
             _check_status(cairo.cairo_surface_set_mime_data(
-                self._handle, mime_type, from_buffer(data), len(data),
+                self._pointer, mime_type, from_buffer(data), len(data),
                 *keep_alive.closure))
             keep_alive.save()  # Only on success
 
     def supports_mime_type(self, mime_type):
         mime_type = ffi.new('char[]', mime_type.encode('utf8'))
         return bool(cairo.cairo_surface_supports_mime_type(
-            self._handle, mime_type))
+            self._pointer, mime_type))
 
     def mark_dirty(self):
-        cairo.cairo_surface_mark_dirty(self._handle)
+        cairo.cairo_surface_mark_dirty(self._pointer)
         self._check_status()
 
     def mark_dirty_rectangle(self, x, y, width, height):
         cairo.cairo_surface_mark_dirty_rectangle(
-            self._handle, x, y, width, height)
+            self._pointer, x, y, width, height)
         self._check_status()
 
     def write_to_png(self, target):
         if hasattr(target, 'write'):
             write_func = _make_write_func(target)
             _check_status(cairo.cairo_surface_write_to_png_stream(
-                self._handle, write_func, ffi.NULL))
+                self._pointer, write_func, ffi.NULL))
         else:
             _check_status(cairo.cairo_surface_write_to_png(
-                self._handle, _encode_filename(target)))
+                self._pointer, _encode_filename(target)))
 
 
 class ImageSurface(Surface):
@@ -235,20 +235,20 @@ class ImageSurface(Surface):
 
     def get_data(self):
         return ffi.buffer(
-            cairo.cairo_image_surface_get_data(self._handle),
+            cairo.cairo_image_surface_get_data(self._pointer),
             size=self.get_stride() * self.get_height())
 
     def get_format(self):
-        return cairo.cairo_image_surface_get_format(self._handle)
+        return cairo.cairo_image_surface_get_format(self._pointer)
 
     def get_width(self):
-        return cairo.cairo_image_surface_get_width(self._handle)
+        return cairo.cairo_image_surface_get_width(self._pointer)
 
     def get_height(self):
-        return cairo.cairo_image_surface_get_height(self._handle)
+        return cairo.cairo_image_surface_get_height(self._pointer)
 
     def get_stride(self):
-        return cairo.cairo_image_surface_get_stride(self._handle)
+        return cairo.cairo_image_surface_get_stride(self._pointer)
 
 
 class PDFSurface(Surface):
@@ -265,11 +265,11 @@ class PDFSurface(Surface):
 
     def set_size(self, width_in_points, height_in_points):
         cairo.cairo_pdf_surface_set_size(
-            self._handle, width_in_points, height_in_points)
+            self._pointer, width_in_points, height_in_points)
         self._check_status()
 
     def restrict_to_version(self, version):
-        cairo.cairo_pdf_surface_restrict_to_version(self._handle, version)
+        cairo.cairo_pdf_surface_restrict_to_version(self._pointer, version)
         self._check_status()
 
     @staticmethod
@@ -300,31 +300,31 @@ class PSSurface(Surface):
 
     def dsc_comment(self, comment):
         cairo.cairo_ps_surface_dsc_comment(
-            self._handle, _encode_string(comment))
+            self._pointer, _encode_string(comment))
         self._check_status()
 
     def dsc_begin_setup(self):
-        cairo.cairo_ps_surface_dsc_begin_setup(self._handle)
+        cairo.cairo_ps_surface_dsc_begin_setup(self._pointer)
         self._check_status()
 
     def dsc_begin_page_setup(self):
-        cairo.cairo_ps_surface_dsc_begin_page_setup(self._handle)
+        cairo.cairo_ps_surface_dsc_begin_page_setup(self._pointer)
         self._check_status()
 
     def get_eps(self):
-        return bool(cairo.cairo_ps_surface_get_eps(self._handle))
+        return bool(cairo.cairo_ps_surface_get_eps(self._pointer))
 
     def set_eps(self, eps):
-        cairo.cairo_ps_surface_set_eps(self._handle, bool(eps))
+        cairo.cairo_ps_surface_set_eps(self._pointer, bool(eps))
         self._check_status()
 
     def set_size(self, width_in_points, height_in_points):
         cairo.cairo_ps_surface_set_size(
-            self._handle, width_in_points, height_in_points)
+            self._pointer, width_in_points, height_in_points)
         self._check_status()
 
     def restrict_to_level(self, level):
-        cairo.cairo_ps_surface_restrict_to_level(self._handle, level)
+        cairo.cairo_ps_surface_restrict_to_level(self._pointer, level)
         self._check_status()
 
     @staticmethod
@@ -354,7 +354,7 @@ class SVGSurface(Surface):
         Surface.__init__(self, handle, target_keep_alive=write_func)
 
     def restrict_to_version(self, version):
-        cairo.cairo_svg_surface_restrict_to_version(self._handle, version)
+        cairo.cairo_svg_surface_restrict_to_version(self._pointer, version)
         self._check_status()
 
     @staticmethod

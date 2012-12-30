@@ -68,24 +68,24 @@ def install_as_pycairo():
 
 class Matrix(object):
     def __init__(self, xx=1, yx=0, xy=0, yy=1, x0=0, y0=0):
-        self._struct = ffi.new('cairo_matrix_t *')
-        cairo.cairo_matrix_init(self._struct, xx, yx, xy, yy, x0, y0)
+        self._pointer = ffi.new('cairo_matrix_t *')
+        cairo.cairo_matrix_init(self._pointer, xx, yx, xy, yy, x0, y0)
 
     @classmethod
     def init_rotate(cls, radians):
         result = cls()
-        cairo.cairo_matrix_init_rotate(result._struct, radians)
+        cairo.cairo_matrix_init_rotate(result._pointer, radians)
         return result
 
     def __getattr__(self, name):
         if name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
-            return getattr(self._struct, name)
+            return getattr(self._pointer, name)
         else:
             return object.__getattr__(self, name)
 
     def __setattr__(self, name, value):
         if name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
-            return setattr(self._struct, name, value)
+            return setattr(self._pointer, name, value)
         else:
             return object.__setattr__(self, name, value)
 
@@ -103,22 +103,22 @@ class Matrix(object):
 
     def multiply(self, other):
         res = Matrix()
-        cairo.cairo_matrix_multiply(res._struct, self._struct, other._struct)
+        cairo.cairo_matrix_multiply(res._pointer, self._pointer, other._pointer)
         return res
 
     __mul__ = multiply
 
     def translate(self, tx, ty):
-        cairo.cairo_matrix_translate(self._struct, tx, ty)
+        cairo.cairo_matrix_translate(self._pointer, tx, ty)
 
     def scale(self, sx, sy):
-        cairo.cairo_matrix_scale(self._struct, sx, sy)
+        cairo.cairo_matrix_scale(self._pointer, sx, sy)
 
     def rotate(self, radians):
-        cairo.cairo_matrix_rotate(self._struct, radians)
+        cairo.cairo_matrix_rotate(self._pointer, radians)
 
     def invert(self):
-        _check_status(cairo.cairo_matrix_invert(self._struct))
+        _check_status(cairo.cairo_matrix_invert(self._pointer))
 
     def inverted(self):
         matrix = self.copy()
@@ -127,26 +127,26 @@ class Matrix(object):
 
     def transform_point(self, x, y):
         xy = ffi.new('double[2]', [x, y])
-        cairo.cairo_matrix_transform_point(self._struct, xy + 0, xy + 1)
+        cairo.cairo_matrix_transform_point(self._pointer, xy + 0, xy + 1)
         return tuple(xy)
 
     def transform_distance(self, x, y):
         xy = ffi.new('double[2]', [x, y])
-        cairo.cairo_matrix_transform_distance(self._struct, xy + 0, xy + 1)
+        cairo.cairo_matrix_transform_distance(self._pointer, xy + 0, xy + 1)
         return tuple(xy)
 
 
 class Path(object):
     def __init__(self, handle):
-        self._handle = ffi.gc(handle, cairo.cairo_path_destroy)
+        self._pointer = ffi.gc(handle, cairo.cairo_path_destroy)
         self._check_status()
 
     def _check_status(self):
-        _check_status(self._handle.status)
+        _check_status(self._pointer.status)
 
     def __iter__(self):
-        data = self._handle.data
-        num_data = self._handle.num_data
+        data = self._pointer.data
+        num_data = self._pointer.num_data
         position = 0
         length_per_type = {
             'MOVE_TO': 1,
