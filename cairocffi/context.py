@@ -293,6 +293,9 @@ class Context(object):
         self._check_status()
         return tuple(extents)
 
+    def in_clip(self, x, y):
+        return bool(cairo.cairo_in_clip(self._pointer, x, y))
+
     def reset_clip(self):
         cairo.cairo_reset_clip(self._pointer)
         self._check_status()

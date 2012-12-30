@@ -76,7 +76,8 @@ class SurfacePattern(Pattern):
 
     def get_surface(self):
         surface_p = ffi.new('cairo_surface_t **')
-        _check_status(cairo.cairo_pattern_get_surface(self._pointer, surface_p))
+        _check_status(cairo.cairo_pattern_get_surface(
+            self._pointer, surface_p))
         surface = Surface._from_pointer(surface_p[0])
         cairo.cairo_surface_reference(surface_p[0])
         return surface
