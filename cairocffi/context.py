@@ -11,9 +11,9 @@
 
 import contextlib
 
-from . import ffi, cairo, _check_status, Path
+from . import ffi, cairo, _check_status, Matrix, Path
 from .patterns import Pattern
-from .surfaces import _encode_string
+from .surfaces import Surface, _encode_string
 
 
 class Context(object):
@@ -24,6 +24,10 @@ class Context(object):
 
     def _check_status(self):
         _check_status(cairo.cairo_status(self._handle))
+
+    def get_target(self):
+        return Surface._from_handle(cairo.cairo_surface_reference(
+            cairo.cairo_get_target(self._handle)))
 
     def save(self):
         cairo.cairo_save(self._handle)
@@ -56,6 +60,10 @@ class Context(object):
         cairo.cairo_pop_group_to_source(self._handle)
         self._check_status()
 
+    def get_group_target(self):
+        return Surface._from_handle(cairo.cairo_surface_reference(
+            cairo.cairo_get_group_target(self._handle)))
+
     def translate(self, tx, ty):
         cairo.cairo_translate(self._handle, tx, ty)
         self._check_status()
@@ -68,16 +76,30 @@ class Context(object):
         cairo.cairo_rotate(self._handle, radians)
         self._check_status()
 
+    def transform(self, matrix):
+        cairo.cairo_transform(self._handle, matrix._struct)
+        self._check_status()
+
+    def get_matrix(self):
+        matrix = Matrix()
+        cairo.cairo_get_matrix(self._handle, matrix._struct)
+        self._check_status()
+        return matrix
+
+    def set_matrix(self, matrix):
+        cairo.cairo_set_matrix(self._handle, matrix._struct)
+        self._check_status()
+
+    def identity_matrix(self):
+        cairo.cairo_identity_matrix(self._handle)
+        self._check_status()
+
     def arc(self, xc, yc, radius, angle1, angle2):
         cairo.cairo_arc(self._handle, xc, yc, radius, angle1, angle2)
         self._check_status()
 
     def arc_negative(self, xc, yc, radius, angle1, angle2):
         cairo.cairo_arc_negative(self._handle, xc, yc, radius, angle1, angle2)
-        self._check_status()
-
-    def transform(self, matrix):
-        cairo.cairo_transform(self._handle, matrix._struct)
         self._check_status()
 
     def rectangle(self, x, y, width, height):
@@ -121,6 +143,13 @@ class Context(object):
     def append_path(self, path):
         cairo.cairo_append_path(self._handle, path._handle)
         self._check_status()
+
+    def path_extents(self):
+        extents = ffi.new('double[4]')
+        cairo.cairo_path_extents(
+            self._handle, extents + 0, extents + 1, extents + 2, extents + 3)
+        self._check_status()
+        return tuple(extents)
 
     def new_path(self):
         cairo.cairo_new_path(self._handle)
@@ -191,6 +220,20 @@ class Context(object):
     def get_miter_limit(self, miter_limit):
         return cairo.cairo_get_miter_limit(self._handle)
 
+    def set_operator(self, operator):
+        cairo.cairo_set_operator(self._handle, operator)
+        self._check_status()
+
+    def get_operator(self, operator):
+        return cairo.cairo_get_operator(self._handle)
+
+    def set_tolerance(self, tolerance):
+        cairo.cairo_set_tolerance(self._handle, tolerance)
+        self._check_status()
+
+    def get_tolerance(self, tolerance):
+        return cairo.cairo_get_tolerance(self._handle)
+
     def paint(self):
         cairo.cairo_paint(self._handle)
         self._check_status()
@@ -207,6 +250,16 @@ class Context(object):
         cairo.cairo_fill_preserve(self._handle)
         self._check_status()
 
+    def fill_extents(self):
+        extents = ffi.new('double[4]')
+        cairo.cairo_fill_extents(
+            self._handle, extents + 0, extents + 1, extents + 2, extents + 3)
+        self._check_status()
+        return tuple(extents)
+
+    def in_fill(self, x, y):
+        return bool(cairo.cairo_in_fill(self._handle, x, y))
+
     def stroke(self):
         cairo.cairo_stroke(self._handle)
         self._check_status()
@@ -215,8 +268,22 @@ class Context(object):
         cairo.cairo_stroke_preserve(self._handle)
         self._check_status()
 
+    def stroke_extents(self):
+        extents = ffi.new('double[4]')
+        cairo.cairo_stroke_extents(
+            self._handle, extents + 0, extents + 1, extents + 2, extents + 3)
+        self._check_status()
+        return tuple(extents)
+
+    def in_stroke(self, x, y):
+        return bool(cairo.cairo_in_stroke(self._handle, x, y))
+
     def clip(self):
         cairo.cairo_clip(self._handle)
+        self._check_status()
+
+    def clip_preserve(self):
+        cairo.cairo_clip_preserve(self._handle)
         self._check_status()
 
     def clip_extents(self):
@@ -225,6 +292,10 @@ class Context(object):
             self._handle, extents + 0, extents + 1, extents + 2, extents + 3)
         self._check_status()
         return tuple(extents)
+
+    def reset_clip(self):
+        cairo.cairo_reset_clip(self._handle)
+        self._check_status()
 
     def mask(self, pattern):
         cairo.cairo_mask(self._handle, pattern._handle)
@@ -295,6 +366,26 @@ class Context(object):
         cairo.cairo_set_font_size(self._handle, size)
         self._check_status()
 
+    def get_font_matrix(self):
+        matrix = Matrix()
+        cairo.cairo_get_font_matrix(self._handle, matrix._struct)
+        self._check_status()
+        return matrix
+
+    def set_font_matrix(self, matrix):
+        cairo.cairo_set_font_matrix(self._handle, matrix._struct)
+        self._check_status()
+
+    def font_extents(self):
+        extents = ffi.new('cairo_font_extents_t *')
+        cairo.cairo_font_extents(self._handle, extents)
+        self._check_status()
+        # returning extents as is would be a nice API,
+        # but return a tuple for compat with pycairo.
+        return (
+            extents.ascent, extents.descent, extents.height,
+            extents.max_x_advance, extents.max_y_advance)
+
     def text_extents(self, text):
         extents = ffi.new('cairo_text_extents_t *')
         cairo.cairo_text_extents(self._handle, _encode_string(text), extents)
@@ -312,4 +403,12 @@ class Context(object):
 
     def show_text(self, text):
         cairo.cairo_show_text(self._handle, _encode_string(text))
+        self._check_status()
+
+    def show_page(self):
+        cairo.cairo_show_page(self._handle)
+        self._check_status()
+
+    def copy_page(self):
+        cairo.cairo_copy_page(self._handle)
         self._check_status()

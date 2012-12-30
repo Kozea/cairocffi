@@ -67,10 +67,10 @@ def test_image_surface_from_buffer():
         # See https://bitbucket.org/cffi/cffi/issue/47
         # and https://bugs.pypy.org/issue1354
         pytest.xfail()
-    data = bytearray(b'\x00' * 800)
     with pytest.raises(ValueError):
         # buffer too small
-        ImageSurface.create_for_data(data, 'ARGB32', 10, 21)
+        ImageSurface.create_for_data(bytearray(b'\x00' * 799), 'ARGB32', 10, 20)
+    data = bytearray(b'\x00' * 800)
     surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20)
     context = Context(surface)
     context.paint()  # The default source is opaque black.
@@ -252,7 +252,7 @@ def test_svg_surface():
 def test_ps_surface():
     assert set(PSSurface.get_levels()) >= set([
         'PS_LEVEL_2', 'PS_LEVEL_3'])
-    assert PSSurface.level_to_string('PS_LEVEL_3') == 'PS Level 3'
+    assert PSSurface.ps_level_to_string('PS_LEVEL_3') == 'PS Level 3'
 
     with temp_directory() as tempdir:
         filename = os.path.join(tempdir, 'foo.ps')

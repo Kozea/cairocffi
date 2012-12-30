@@ -150,9 +150,6 @@ class Surface(object):
             self._handle, x_pixels_per_inch, y_pixels_per_inch)
         self._check_status()
 
-    def get_font_options(self):
-        raise NotImplementedError
-
     def get_mime_data(self, mime_type):
         buffer_address = ffi.new('unsigned char **')
         buffer_length = ffi.new('unsigned long *')
@@ -339,7 +336,7 @@ class PSSurface(Surface):
         return [levels[i] for i in range(num_levels[0])]
 
     @staticmethod
-    def level_to_string(level):
+    def ps_level_to_string(level):
         return ffi.string(
             cairo.cairo_ps_level_to_string(level)).decode('ascii')
 
