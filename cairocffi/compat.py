@@ -37,3 +37,13 @@ if sys.version_info >= (3,):
     u = lambda x: x
 else:
     u = lambda x: x.decode('utf8')
+
+
+if sys.byteorder == 'little':
+    def pixel(argb):
+        """Convert a 4-byte ARGB string to native-endian."""
+        return argb[::-1]
+else:
+    def pixel(argb):
+        """Convert a 4-byte ARGB string to native-endian."""
+        return argb

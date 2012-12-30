@@ -26,7 +26,7 @@ import cairocffi
 from . import (cairo_version, cairo_version_string, Context, Matrix,
                ImageSurface, PDFSurface, PSSurface, SVGSurface,
                SolidPattern, SurfacePattern, LinearGradient, RadialGradient)
-from .compat import u
+from .compat import u, pixel
 
 
 @contextlib.contextmanager
@@ -73,8 +73,10 @@ def test_image_surface_from_buffer():
     data = bytearray(b'\x00' * 800)
     surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20)
     context = Context(surface)
-    context.paint()  # The default source is opaque black.
-    assert data == b'\x00\x00\x00\xFF' * 200
+    # The default source is opaque black:
+    assert context.get_source().get_rgba() == (0, 0, 0, 1)
+    context.paint_with_alpha(0.5)
+    assert data == pixel(b'\x80\x00\x00\x00') * 200
 
 
 def test_surface():
@@ -173,10 +175,7 @@ def test_png():
             assert surface.get_width() == 1
             assert surface.get_height() == 1
             assert surface.get_stride() == 4
-            data = surface.get_data()[:]
-            if sys.byteorder == 'little':
-                data = data[::-1]
-            assert data == b'\xcc\x32\x6e\x97'
+            data = surface.get_data()[:] == pixel(b'\xcc\x32\x6e\x97')
 
     file_obj = io.BytesIO()
     surface.write_to_png(file_obj)
@@ -369,3 +368,200 @@ def test_radial_gradient():
         (.5, 1, .5, .25, 1),
         (.5, 1, .5, .75, .25),
         (1, 1, .5, .25, 1)]
+
+
+def test_context_as_context_manager():
+    surface = ImageSurface('ARGB32', 1, 1)
+    context = Context(surface)
+    # The default source is opaque black:
+    assert context.get_source().get_rgba() == (0, 0, 0, 1)
+    with context:
+        context.set_source_rgb(1, .25, .5)
+        assert context.get_source().get_rgba() == (1, .25, .5, 1)
+    # Context restored at the end of with statement.
+    assert context.get_source().get_rgba() == (0, 0, 0, 1)
+    try:
+        with context:
+            context.set_source_rgba(1, .25, .75, .5)
+            assert context.get_source().get_rgba() == (1, .25, .75, .5)
+            raise ValueError
+    except ValueError:
+        pass
+    # Context also restored on exceptions.
+    assert context.get_source().get_rgba() == (0, 0, 0, 1)
+
+
+def test_context_groups():
+    surface = ImageSurface('ARGB32', 1, 1)
+    context = Context(surface)
+    assert isinstance(context.get_target(), ImageSurface)
+    assert context.get_target()._pointer == surface._pointer
+    assert context.get_group_target()._pointer == surface._pointer
+    assert context.get_group_target().get_content() == 'COLOR_ALPHA'
+    assert surface.get_data()[:] == pixel(b'\x00\x00\x00\x00')
+
+    with context:
+        context.push_group_with_content('ALPHA')
+        assert context.get_group_target().get_content() == 'ALPHA'
+        context.set_source_rgba(1, .2, .4, .8)  # Only A is actually used
+        assert isinstance(context.get_source(), SolidPattern)
+        context.paint()
+        context.pop_group_to_source()
+        assert isinstance(context.get_source(), SurfacePattern)
+        # Still nothing on the original surface
+        assert surface.get_data()[:] == pixel(b'\x00\x00\x00\x00')
+        context.paint()
+        assert surface.get_data()[:] == pixel(b'\xCC\x00\x00\x00')
+
+    with context:
+        context.push_group()
+        context.set_source_rgba(1, .2, .4)
+        context.paint()
+        group = context.pop_group()
+        assert isinstance(context.get_source(), SolidPattern)
+        assert isinstance(group, SurfacePattern)
+        context.set_source(group)
+        assert surface.get_data()[:] == pixel(b'\xCC\x00\x00\x00')
+        context.paint()
+        assert surface.get_data()[:] == pixel(b'\xFF\xFF\x33\x66')
+
+
+def test_context_current_transform_matrix():
+    def round_all(m):
+        for name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
+            setattr(m, name, round(getattr(m, name), 3))
+        return m
+
+    surface = ImageSurface('ARGB32', 1, 1)
+    context = Context(surface)
+    assert isinstance(context.get_matrix(), Matrix)
+    assert context.get_matrix().as_tuple() == (1, 0, 0, 1, 0, 0)
+    context.translate(6, 5)
+    assert context.get_matrix().as_tuple() == (1, 0, 0, 1, 6, 5)
+    context.scale(.5, 3)
+    assert context.get_matrix().as_tuple() == (.5, 0, 0, 3, 6, 5)
+    context.rotate(math.pi / 2)
+    assert round_all(context.get_matrix()).as_tuple() == (0, 3, -.5, 0, 6, 5)
+
+    context.identity_matrix()
+    assert context.get_matrix().as_tuple() == (1, 0, 0, 1, 0, 0)
+    context.set_matrix(Matrix(2, 1, 3, 7, 8, 2))
+    assert context.get_matrix().as_tuple() == (2, 1, 3, 7, 8, 2)
+    context.transform(Matrix(2, 0, 0, .5, 0, 0))
+    assert context.get_matrix().as_tuple() == (4, 2, 1.5, 3.5, 8, 2)
+
+    context.set_matrix(Matrix(2, 0,  0, 3,  12, 4))
+    assert context.user_to_device_distance(1, 2) == (2, 6)
+    assert context.user_to_device(1, 2) == (14, 10)
+    assert context.device_to_user_distance(2, 6) == (1, 2)
+    x, y = context.device_to_user(14, 10)
+    assert (round(x, 6), round(y, 6)) == (1, 2)
+
+
+def test_context_path():
+    surface = ImageSurface('ARGB32', 1, 1)
+    context = Context(surface)
+
+    assert list(context.copy_path()) == []
+    assert context.get_current_point() is None
+    context.arc(100, 200, 20, math.pi/2, 0)
+    path_1 = list(context.copy_path())
+    assert path_1[0] == ('MOVE_TO', (100, 220))
+    assert len(path_1) > 1
+    assert all(part[0] == 'CURVE_TO' for part in path_1[1:])
+    assert context.get_current_point() == (120, 200)
+
+    context.new_sub_path()
+    assert list(context.copy_path()) == path_1
+    assert context.get_current_point() is None
+    context.new_path()
+    assert list(context.copy_path()) == []
+    assert context.get_current_point() is None
+
+    assert context.get_current_point() is None
+    context.arc_negative(100, 200, 20, math.pi/2, 0)
+    path_2 = list(context.copy_path())
+    assert path_2[0] == ('MOVE_TO', (100, 220))
+    assert len(path_2) > 1
+    assert all(part[0] == 'CURVE_TO' for part in path_2[1:])
+    assert path_2 != path_1
+
+    context.new_path()
+    context.rectangle(10, 20, 100, 200)
+    assert list(context.copy_path()) == [
+        ('MOVE_TO', (10, 20)),
+        ('LINE_TO', (110, 20)),
+        ('LINE_TO', (110, 220)),
+        ('LINE_TO', (10, 220)),
+        ('CLOSE_PATH', ())]
+    assert context.path_extents() == (10, 20, 110, 220)
+
+    context.new_path()
+    context.move_to(10, 20)
+    context.line_to(10, 30)
+    context.rel_move_to(2, 5)
+    context.rel_line_to(2, 5)
+    context.curve_to(20, 30, 70, 50, 100, 120)
+    context.rel_curve_to(20, 30, 70, 50, 100, 120)
+    context.close_path()
+    path = context.copy_path()
+    assert list(path) == [
+        ('MOVE_TO', (10, 20)),
+        ('LINE_TO', (10, 30)),
+        ('MOVE_TO', (12, 35)),
+        ('LINE_TO', (14, 40)),
+        ('CURVE_TO', (20, 30, 70, 50, 100, 120)),
+        ('CURVE_TO', (120, 150, 170, 170, 200, 240)),
+        ('CLOSE_PATH', ())]
+    context.append_path(path)
+    assert list(context.copy_path()) == list(path) * 2
+
+    context.new_path()
+    context.curve_to(20, 30, 70, 50, 100, 120)
+    path = list(context.copy_path_flat())
+    assert len(path) > 2
+    assert path[0] == ('MOVE_TO', (20, 30))
+    assert all(part[0] == 'LINE_TO' for part in path[1:])
+    assert path[-1] == ('LINE_TO', (100, 120))
+
+
+def test_context_properties():
+    surface = ImageSurface('ARGB32', 1, 1)
+    context = Context(surface)
+
+    assert context.get_antialias() == 'DEFAULT'
+    context.set_antialias('BEST')
+    assert context.get_antialias() == 'BEST'
+
+    assert context.get_dash() == ([], 0)
+    context.set_dash([4, 1, 3, 2], 1.5)
+    assert context.get_dash() == ([4, 1, 3, 2], 1.5)
+    assert context.get_dash_count() == 4
+
+    assert context.get_fill_rule() == 'WINDING'
+    context.set_fill_rule('EVEN_ODD')
+    assert context.get_fill_rule() == 'EVEN_ODD'
+
+    assert context.get_line_cap() == 'BUTT'
+    context.set_line_cap('SQUARE')
+    assert context.get_line_cap() == 'SQUARE'
+
+    assert context.get_line_join() == 'MITER'
+    context.set_line_join('ROUND')
+    assert context.get_line_join() == 'ROUND'
+
+    assert context.get_line_width() == 2
+    context.set_line_width(13)
+    assert context.get_line_width() == 13
+
+    assert context.get_miter_limit() == 10
+    context.set_miter_limit(4)
+    assert context.get_miter_limit() == 4
+
+    assert context.get_operator() == 'OVER'
+    context.set_operator('XOR')
+    assert context.get_operator() == 'XOR'
+
+    assert context.get_tolerance() == 0.1
+    context.set_tolerance(0.25)
+    assert context.get_tolerance() == 0.25

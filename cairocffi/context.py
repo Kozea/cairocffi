@@ -9,8 +9,6 @@
 
 """
 
-import contextlib
-
 from . import ffi, cairo, _check_status, Matrix, Path
 from .patterns import Pattern
 from .surfaces import Surface, _encode_string
@@ -37,13 +35,12 @@ class Context(object):
         cairo.cairo_restore(self._pointer)
         self._check_status()
 
-    @contextlib.contextmanager
-    def save_restore(self):
+    def __enter__(self):
         self.save()
-        try:
-            yield
-        finally:
-            self.restore()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.restore()
 
     def push_group(self):
         cairo.cairo_push_group(self._pointer)
@@ -160,10 +157,11 @@ class Context(object):
         self._check_status()
 
     def get_current_point(self):
-        xy = ffi.new('double[2]')
-        cairo.cairo_get_current_point(self._pointer, xy + 0, xy + 1)
-        self._check_status()
-        return tuple(xy)
+        if self.has_current_point():
+            xy = ffi.new('double[2]')
+            cairo.cairo_get_current_point(self._pointer, xy + 0, xy + 1)
+            self._check_status()
+            return tuple(xy)
 
     def has_current_point(self):
         return bool(cairo.cairo_has_current_point(self._pointer))
@@ -172,6 +170,13 @@ class Context(object):
         cairo.cairo_set_dash(
             self._pointer, ffi.new('double[]', dashes), len(dashes), offset)
         self._check_status()
+
+    def set_antialias(self, antialias):
+        cairo.cairo_set_antialias(self._pointer, antialias)
+        self._check_status()
+
+    def get_antialias(self):
+        return cairo.cairo_get_antialias(self._pointer)
 
     def get_dash(self):
         dashes = ffi.new('double[]', cairo.cairo_get_dash_count(self._pointer))
@@ -217,21 +222,21 @@ class Context(object):
         cairo.cairo_set_miter_limit(self._pointer, miter_limit)
         self._check_status()
 
-    def get_miter_limit(self, miter_limit):
+    def get_miter_limit(self):
         return cairo.cairo_get_miter_limit(self._pointer)
 
     def set_operator(self, operator):
         cairo.cairo_set_operator(self._pointer, operator)
         self._check_status()
 
-    def get_operator(self, operator):
+    def get_operator(self):
         return cairo.cairo_get_operator(self._pointer)
 
     def set_tolerance(self, tolerance):
         cairo.cairo_set_tolerance(self._pointer, tolerance)
         self._check_status()
 
-    def get_tolerance(self, tolerance):
+    def get_tolerance(self):
         return cairo.cairo_get_tolerance(self._pointer)
 
     def paint(self):
@@ -308,13 +313,6 @@ class Context(object):
         cairo.cairo_mask_surface(
             self._pointer, surface._pointer, surface_x, surface_y)
         self._check_status()
-
-    def set_antialias(self, antialias):
-        cairo.cairo_set_antialias(self._pointer, antialias)
-        self._check_status()
-
-    def get_antialias(self):
-        return cairo.cairo_get_antialias(self._pointer)
 
     def set_source_rgb(self, r, g, b):
         cairo.cairo_set_source_rgb(self._pointer, r, g, b)
