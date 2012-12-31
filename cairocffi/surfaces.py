@@ -136,7 +136,8 @@ class Surface(object):
         return tuple(offsets)
 
     def set_device_offset(self, x_offset, y_offset):
-        cairo.cairo_surface_set_device_offset(self._pointer, x_offset, y_offset)
+        cairo.cairo_surface_set_device_offset(
+            self._pointer, x_offset, y_offset)
         self._check_status()
 
     def get_fallback_resolution(self):

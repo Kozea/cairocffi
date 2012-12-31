@@ -9,3 +9,7 @@ show_missing = True
 exclude_lines =
 	pragma: no cover
 	pytest.xfail()
+partial_branches =
+    pragma: no branch
+    assert
+    fd.write\(

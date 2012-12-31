@@ -24,8 +24,9 @@ import pytest
 
 import cairocffi
 from . import (cairo_version, cairo_version_string, Context, Matrix,
-               ImageSurface, PDFSurface, PSSurface, SVGSurface,
-               SolidPattern, SurfacePattern, LinearGradient, RadialGradient)
+               Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface,
+               Pattern, SolidPattern, SurfacePattern,
+               LinearGradient, RadialGradient)
 from .compat import u, pixel
 
 
@@ -37,6 +38,10 @@ def temp_directory():
         yield tempdir
     finally:
         shutil.rmtree(tempdir)
+
+
+def round_tuple(values):
+    return tuple(round(v, 6) for v in values)
 
 
 def test_cairo_version():
@@ -71,7 +76,7 @@ def test_image_surface_from_buffer():
         # buffer too small
         ImageSurface.create_for_data(bytearray(b'\x00' * 799), 'ARGB32', 10, 20)
     data = bytearray(b'\x00' * 800)
-    surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20)
+    surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20, stride=40)
     context = Context(surface)
     # The default source is opaque black:
     assert context.get_source().get_rgba() == (0, 0, 0, 1)
@@ -112,6 +117,17 @@ def test_surface():
     surface.set_fallback_resolution(15, 6)
     assert surface.get_fallback_resolution() == (15, 6)
 
+    context = Context(surface)
+    assert isinstance(context.get_target(), ImageSurface)
+    try:
+        del cairocffi.surfaces.SURFACE_TYPE_TO_CLASS['IMAGE']
+        target = context.get_target()
+        assert target._pointer == surface._pointer
+        assert isinstance(target, Surface)
+        assert not isinstance(target, ImageSurface)
+    finally:
+        cairocffi.surfaces.SURFACE_TYPE_TO_CLASS['IMAGE'] = ImageSurface
+
 
     def assert_raise_finished(func, *args, **kwargs):
         with pytest.raises(cairocffi.CairoError) as exc:
@@ -131,6 +147,7 @@ def test_mime_data():
         # See https://bitbucket.org/cffi/cffi/issue/47
         # and https://bugs.pypy.org/issue1354
         pytest.xfail()
+    # Also test we get actually booleans:
     assert PDFSurface(None, 1, 1).supports_mime_type('image/jpeg') is True
     surface = ImageSurface('A8', 1, 1)
     assert surface.supports_mime_type('image/jpeg') is False
@@ -164,7 +181,7 @@ def test_png():
             assert fd.read() == b''
         surface.write_to_png(filename_bytes)
         with open(filename, 'rb') as fd:
-            fd.read().startswith(png_magic_number)
+            assert fd.read().startswith(png_magic_number)
 
         with open(filename, 'wb') as fd:
             fd.write(png_bytes)
@@ -213,10 +230,11 @@ def test_pdf_surface():
 
     file_obj = io.BytesIO()
     surface = PDFSurface(file_obj, 1, 1)
+    context = Context(surface)
     surface.set_size(12, 100)
-    surface.show_page()
+    context.show_page()
     surface.set_size(42, 700)
-    surface.show_page()
+    context.copy_page()
     surface.finish()
     pdf_bytes = file_obj.getvalue()
     assert b'/MediaBox [ 0 0 1 1 ]' not in pdf_bytes
@@ -287,17 +305,16 @@ def test_ps_surface():
 
 
 def test_matrix():
-    def round_all(m):
-        for name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
-            setattr(m, name, round(getattr(m, name), 3))
-
     m = Matrix()
     with pytest.raises(AttributeError):
         m.some_inexistent_attribute
     assert m.as_tuple() == (1, 0,  0, 1,  0, 0)
     m.translate(12, 4)
     assert m.as_tuple() == (1, 0,  0, 1,  12, 4)
-    m.scale(2, 3)
+    m.scale(2, 7)
+    assert m.as_tuple() == (2, 0,  0, 7,  12, 4)
+    assert m.yy == 7
+    m.yy = 3
     assert m.as_tuple() == (2, 0,  0, 3,  12, 4)
 
     assert m.transform_distance(1, 2) == (2, 6)
@@ -311,11 +328,9 @@ def test_matrix():
     assert m.as_tuple() == (2, 0,  0, 3,  12, 4)  # Unchanged
 
     m.rotate(math.pi / 2)
-    round_all(m)
-    assert m.as_tuple() == (0, 3,  -2, 0,  12, 4)
+    assert round_tuple(m.as_tuple()) == (0, 3,  -2, 0,  12, 4)
     m *= Matrix.init_rotate(math.pi)
-    round_all(m)
-    assert m.as_tuple() == (0, -3,  2, 0,  -12, -4)
+    assert round_tuple(m.as_tuple()) == (0, -3,  2, 0,  -12, -4)
 
 
 def test_surface_pattern():
@@ -345,6 +360,20 @@ def test_solid_pattern():
     assert SolidPattern(1, .5, .25).get_rgba() == (1, .5, .25, 1)
     assert SolidPattern(1, .5, .25, .75).get_rgba() == (1, .5, .25, .75)
 
+    surface = PDFSurface(None, 1, 1)
+    context = Context(surface)
+    pattern = SolidPattern(1, .5, .25)
+    context.set_source(pattern)
+    assert isinstance(context.get_source(), SolidPattern)
+    try:
+        del cairocffi.patterns.PATTERN_TYPE_TO_CLASS['SOLID']
+        re_pattern = context.get_source()
+        assert re_pattern._pointer == pattern._pointer
+        assert isinstance(re_pattern, Pattern)
+        assert not isinstance(re_pattern, SolidPattern)
+    finally:
+        cairocffi.patterns.PATTERN_TYPE_TO_CLASS['SOLID'] = SolidPattern
+
 
 def test_linear_gradient():
     gradient = LinearGradient(1, 2, 10, 20)
@@ -356,6 +385,16 @@ def test_linear_gradient():
         (.5, 1, .5, .25, 1),
         (.5, 1, .5, .75, .25),
         (1, 1, .5, .25, 1)]
+
+    surface = ImageSurface('A8', 4, 4)
+    assert surface.get_data()[:] == b'\x00' * 16
+    gradient = LinearGradient(1, 0, 3, 0)
+    gradient.add_color_stop_rgba(0, 0, 0, 0, 0)
+    gradient.add_color_stop_rgba(1, 0, 0, 0, 1)
+    context = Context(surface)
+    context.set_source(gradient)
+    context.paint()
+    assert surface.get_data()[:] == b'\x00\x3f\xbf\xff' * 4
 
 
 def test_radial_gradient():
@@ -420,18 +459,13 @@ def test_context_groups():
         group = context.pop_group()
         assert isinstance(context.get_source(), SolidPattern)
         assert isinstance(group, SurfacePattern)
-        context.set_source(group)
+        context.set_source_surface(group.get_surface())
         assert surface.get_data()[:] == pixel(b'\xCC\x00\x00\x00')
         context.paint()
         assert surface.get_data()[:] == pixel(b'\xFF\xFF\x33\x66')
 
 
 def test_context_current_transform_matrix():
-    def round_all(m):
-        for name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
-            setattr(m, name, round(getattr(m, name), 3))
-        return m
-
     surface = ImageSurface('ARGB32', 1, 1)
     context = Context(surface)
     assert isinstance(context.get_matrix(), Matrix)
@@ -441,7 +475,7 @@ def test_context_current_transform_matrix():
     context.scale(.5, 3)
     assert context.get_matrix().as_tuple() == (.5, 0, 0, 3, 6, 5)
     context.rotate(math.pi / 2)
-    assert round_all(context.get_matrix()).as_tuple() == (0, 3, -.5, 0, 6, 5)
+    assert round_tuple(context.get_matrix().as_tuple()) == (0, 3, -.5, 0, 6, 5)
 
     context.identity_matrix()
     assert context.get_matrix().as_tuple() == (1, 0, 0, 1, 0, 0)
@@ -454,8 +488,7 @@ def test_context_current_transform_matrix():
     assert context.user_to_device_distance(1, 2) == (2, 6)
     assert context.user_to_device(1, 2) == (14, 10)
     assert context.device_to_user_distance(2, 6) == (1, 2)
-    x, y = context.device_to_user(14, 10)
-    assert (round(x, 6), round(y, 6)) == (1, 2)
+    assert round_tuple(context.device_to_user(14, 10)) == (1, 2)
 
 
 def test_context_path():
@@ -565,3 +598,157 @@ def test_context_properties():
     assert context.get_tolerance() == 0.1
     context.set_tolerance(0.25)
     assert context.get_tolerance() == 0.25
+
+
+def test_context_fill():
+    surface = ImageSurface('A8', 4, 4)
+    assert surface.get_data()[:] == b'\x00' * 16
+    context = Context(surface)
+    context.set_source_rgba(0, 0, 0, .5)
+    context.set_line_width(.5)
+    context.rectangle(1, 1, 2, 2)
+    assert context.fill_extents() == (1, 1, 3, 3)
+    assert context.stroke_extents() == (.75, .75, 3.25, 3.25)
+    assert context.in_fill(2, 2) is True
+    assert context.in_fill(.8, 2) is False
+    assert context.in_stroke(2, 2) is False
+    assert context.in_stroke(.8, 2) is True
+    path = list(context.copy_path())
+    assert path
+    context.fill_preserve()
+    assert list(context.copy_path()) == path
+    assert surface.get_data()[:] == (
+        b'\x00\x00\x00\x00'
+        b'\x00\x80\x80\x00'
+        b'\x00\x80\x80\x00'
+        b'\x00\x00\x00\x00'
+    )
+    context.fill()
+    assert list(context.copy_path()) == []
+    assert surface.get_data()[:] == (
+        b'\x00\x00\x00\x00'
+        b'\x00\xC0\xC0\x00'
+        b'\x00\xC0\xC0\x00'
+        b'\x00\x00\x00\x00'
+    )
+
+
+def test_context_stroke():
+    surface = ImageSurface('A8', 4, 4)
+    assert surface.get_data()[:] == b'\x00' * 16
+    context = Context(surface)
+    context.set_source_rgba(0, 0, 0, 1)
+    context.set_line_width(.5)
+    context.rectangle(.5, .5, 2, 2)
+    path = list(context.copy_path())
+    assert path
+    context.stroke_preserve()
+    assert list(context.copy_path()) == path
+    assert surface.get_data()[:] == (
+        b'\x80\x80\x80\x00'
+        b'\x80\x00\x80\x00'
+        b'\x80\x80\x80\x00'
+        b'\x00\x00\x00\x00'
+    )
+    context.stroke()
+    assert list(context.copy_path()) == []
+    assert surface.get_data()[:] == (
+        b'\xC0\xC0\xC0\x00'
+        b'\xC0\x00\xC0\x00'
+        b'\xC0\xC0\xC0\x00'
+        b'\x00\x00\x00\x00'
+    )
+
+
+def test_context_clip():
+    surface = ImageSurface('A8', 4, 4)
+    assert surface.get_data()[:] == b'\x00' * 16
+    context = Context(surface)
+    context.rectangle(1, 1, 2, 2)
+    assert context.clip_extents() == (0, 0, 4, 4)
+    assert context.in_clip(.5, 2) is True
+    assert context.in_clip(1.5, 2) is True
+    path = list(context.copy_path())
+    assert path
+    context.clip_preserve()
+    assert list(context.copy_path()) == path
+    assert context.clip_extents() == (1, 1, 3, 3)
+    assert context.in_clip(.5, 2) is False
+    assert context.in_clip(1.5, 2) is True
+    context.clip()
+    assert list(context.copy_path()) == []
+    assert context.clip_extents() == (1, 1, 3, 3)
+    context.reset_clip()
+    assert context.clip_extents() == (0, 0, 4, 4)
+
+
+def test_context_mask():
+    mask_surface = ImageSurface('ARGB32', 2, 2)
+    context = Context(mask_surface)
+    context.set_source_rgba(1, 0, .5, 1)
+    context.rectangle(0, 0, 1, 1)
+    context.fill()
+    context.set_source_rgba(1, .5, 1, .5)
+    context.rectangle(1, 1, 1, 1)
+    context.fill()
+
+    surface = ImageSurface('ARGB32', 4, 4)
+    context = Context(surface)
+    context.mask(SurfacePattern(mask_surface))
+    o = pixel(b'\x00\x00\x00\x00')
+    b = pixel(b'\x80\x00\x00\x00')
+    B = pixel(b'\xFF\x00\x00\x00')
+    assert surface.get_data()[:] == (
+        B + o + o + o +
+        o + b + o + o +
+        o + o + o + o +
+        o + o + o + o
+    )
+
+    surface = ImageSurface('ARGB32', 4, 4)
+    context = Context(surface)
+    context.mask_surface(mask_surface, surface_x=1, surface_y=2)
+    o = pixel(b'\x00\x00\x00\x00')
+    b = pixel(b'\x80\x00\x00\x00')
+    B = pixel(b'\xFF\x00\x00\x00')
+    assert surface.get_data()[:] == (
+        o + o + o + o +
+        o + o + o + o +
+        o + B + o + o +
+        o + o + b + o
+    )
+
+
+def test_context_font():
+    surface = ImageSurface('ARGB32', 10, 10)
+    context = Context(surface)
+    assert context.get_font_matrix().as_tuple() == (10, 0, 0, 10, 0, 0)
+    context.set_font_matrix(Matrix(2, 0,  0, 3,  12, 4))
+    assert context.get_font_matrix().as_tuple() == (2, 0,  0, 3,  12, 4)
+    context.set_font_size(14)
+    assert context.get_font_matrix().as_tuple() == (14, 0, 0, 14, 0, 0)
+
+    context.set_font_size(10)
+    context.select_font_face('serif', 'ITALIC')
+    ascent, descent, height, max_x_advance, max_y_advance = round_tuple(
+        context.font_extents())
+    # That’s about all we can assume for a default font.
+    assert height > ascent + descent
+    assert max_x_advance > 0
+    assert max_y_advance == 0
+    _, _, _, _, x_advance, y_advance = round_tuple(
+        context.text_extents('i' * 10))
+    assert x_advance > 0
+    assert y_advance == 0
+    context.select_font_face('monospace', weight='BOLD')
+    _, _, _, _, x_advance_mono, y_advance = round_tuple(
+        context.text_extents('i' * 10))
+    assert x_advance_mono > x_advance
+    assert y_advance == 0
+    assert list(context.copy_path()) == []
+    context.text_path('a')
+    assert list(context.copy_path())
+    assert surface.get_data()[:] == b'\x00' * 400
+    context.move_to(1, 9)
+    context.show_text('a')
+    assert surface.get_data()[:] != b'\x00' * 400

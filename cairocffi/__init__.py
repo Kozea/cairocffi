@@ -103,7 +103,8 @@ class Matrix(object):
 
     def multiply(self, other):
         res = Matrix()
-        cairo.cairo_matrix_multiply(res._pointer, self._pointer, other._pointer)
+        cairo.cairo_matrix_multiply(
+            res._pointer, self._pointer, other._pointer)
         return res
 
     __mul__ = multiply

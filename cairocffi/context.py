@@ -322,7 +322,7 @@ class Context(object):
         cairo.cairo_set_source_rgba(self._pointer, r, g, b, a)
         self._check_status()
 
-    def set_source_surface(self, surface, x, y):
+    def set_source_surface(self, surface, x=0, y=0):
         cairo.cairo_set_source_surface(self._pointer, surface._pointer, x, y)
         self._check_status()
 
@@ -358,7 +358,7 @@ class Context(object):
         self._check_status()
         return tuple(xy)
 
-    def select_font_face(self, family, slant, weight):
+    def select_font_face(self, family, slant='NORMAL', weight='NORMAL'):
         cairo.cairo_select_font_face(
             self._pointer, _encode_string(family), slant, weight)
         self._check_status()
