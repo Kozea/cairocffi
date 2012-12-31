@@ -15,17 +15,17 @@ from .compat import xrange
 
 
 class Pattern(object):
-    def __init__(self, handle):
-        self._pointer = ffi.gc(handle, cairo.cairo_pattern_destroy)
+    def __init__(self, pointer):
+        self._pointer = ffi.gc(pointer, cairo.cairo_pattern_destroy)
         self._check_status()
 
     def _check_status(self):
         _check_status(cairo.cairo_pattern_status(self._pointer))
 
     @staticmethod
-    def _from_pointer(handle):
-        pattern = Pattern(handle)
-        pattern_type = cairo.cairo_pattern_get_type(handle)
+    def _from_pointer(pointer):
+        pattern = Pattern(pointer)
+        pattern_type = cairo.cairo_pattern_get_type(pointer)
         if pattern_type in PATTERN_TYPE_TO_CLASS:
             pattern.__class__ = PATTERN_TYPE_TO_CLASS[pattern_type]
         return pattern

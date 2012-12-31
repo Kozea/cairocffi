@@ -78,8 +78,8 @@ class KeepAlive(object):
 
 
 class Surface(object):
-    def __init__(self, handle, target_keep_alive=None):
-        self._pointer = ffi.gc(handle, cairo.cairo_surface_destroy)
+    def __init__(self, pointer, target_keep_alive=None):
+        self._pointer = ffi.gc(pointer, cairo.cairo_surface_destroy)
         self._check_status()
         if target_keep_alive not in (None, ffi.NULL):
             keep_alive = KeepAlive(target_keep_alive)
@@ -91,9 +91,9 @@ class Surface(object):
         _check_status(cairo.cairo_surface_status(self._pointer))
 
     @staticmethod
-    def _from_pointer(handle):
-        surface = Surface(handle)
-        surface_type = cairo.cairo_surface_get_type(handle)
+    def _from_pointer(pointer):
+        surface = Surface(pointer)
+        surface_type = cairo.cairo_surface_get_type(pointer)
         if surface_type in SURFACE_TYPE_TO_CLASS:
             surface.__class__ = SURFACE_TYPE_TO_CLASS[surface_type]
         return surface
@@ -199,7 +199,7 @@ class Surface(object):
 class ImageSurface(Surface):
     def __init__(self, format, width, height, data=None, stride=None):
         if data is None:
-            handle = cairo.cairo_image_surface_create(format, width, height)
+            pointer = cairo.cairo_image_surface_create(format, width, height)
         else:
             if stride is None:
                 stride = self.format_stride_for_width(format, width)
@@ -208,9 +208,9 @@ class ImageSurface(Surface):
                                  % (len(data), stride * height))
             self._data = data  # keep it alive
             data = from_buffer(data)
-            handle = cairo.cairo_image_surface_create_for_data(
+            pointer = cairo.cairo_image_surface_create_for_data(
                 data, format, width, height, stride)
-        Surface.__init__(self, handle)
+        Surface.__init__(self, pointer)
 
     @staticmethod
     def format_stride_for_width(format, width):
@@ -224,12 +224,12 @@ class ImageSurface(Surface):
     def create_from_png(cls, source):
         if hasattr(source, 'read'):
             read_func = _make_read_func(source)
-            handle = cairo.cairo_image_surface_create_from_png_stream(
+            pointer = cairo.cairo_image_surface_create_from_png_stream(
                 read_func, ffi.NULL)
         else:
-            handle = cairo.cairo_image_surface_create_from_png(
+            pointer = cairo.cairo_image_surface_create_from_png(
                 _encode_filename(source))
-        surface = Surface(handle)
+        surface = Surface(pointer)
         # XXX is there a cleaner way to bypass ImageSurface.__init__?
         surface.__class__ = cls
         return surface
@@ -256,13 +256,13 @@ class PDFSurface(Surface):
     def __init__(self, target, width_in_points, height_in_points):
         if hasattr(target, 'write') or target is None:
             write_func = _make_write_func(target)
-            handle = cairo.cairo_pdf_surface_create_for_stream(
+            pointer = cairo.cairo_pdf_surface_create_for_stream(
                 write_func, ffi.NULL, width_in_points, height_in_points)
         else:
             write_func = None
-            handle = cairo.cairo_pdf_surface_create(
+            pointer = cairo.cairo_pdf_surface_create(
                 _encode_filename(target), width_in_points, height_in_points)
-        Surface.__init__(self, handle, target_keep_alive=write_func)
+        Surface.__init__(self, pointer, target_keep_alive=write_func)
 
     def set_size(self, width_in_points, height_in_points):
         cairo.cairo_pdf_surface_set_size(
@@ -291,13 +291,13 @@ class PSSurface(Surface):
     def __init__(self, target, width_in_points, height_in_points):
         if hasattr(target, 'write') or target is None:
             write_func = _make_write_func(target)
-            handle = cairo.cairo_ps_surface_create_for_stream(
+            pointer = cairo.cairo_ps_surface_create_for_stream(
                 write_func, ffi.NULL, width_in_points, height_in_points)
         else:
             write_func = None
-            handle = cairo.cairo_ps_surface_create(
+            pointer = cairo.cairo_ps_surface_create(
                 _encode_filename(target), width_in_points, height_in_points)
-        Surface.__init__(self, handle, target_keep_alive=write_func)
+        Surface.__init__(self, pointer, target_keep_alive=write_func)
 
     def dsc_comment(self, comment):
         cairo.cairo_ps_surface_dsc_comment(
@@ -346,13 +346,13 @@ class SVGSurface(Surface):
     def __init__(self, target, width_in_points, height_in_points):
         if hasattr(target, 'write') or target is None:
             write_func = _make_write_func(target)
-            handle = cairo.cairo_svg_surface_create_for_stream(
+            pointer = cairo.cairo_svg_surface_create_for_stream(
                 write_func, ffi.NULL, width_in_points, height_in_points)
         else:
             write_func = None
-            handle = cairo.cairo_svg_surface_create(
+            pointer = cairo.cairo_svg_surface_create(
                 _encode_filename(target), width_in_points, height_in_points)
-        Surface.__init__(self, handle, target_keep_alive=write_func)
+        Surface.__init__(self, pointer, target_keep_alive=write_func)
 
     def restrict_to_version(self, version):
         cairo.cairo_svg_surface_restrict_to_version(self._pointer, version)

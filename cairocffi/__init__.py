@@ -138,8 +138,8 @@ class Matrix(object):
 
 
 class Path(object):
-    def __init__(self, handle):
-        self._pointer = ffi.gc(handle, cairo.cairo_path_destroy)
+    def __init__(self, pointer):
+        self._pointer = ffi.gc(pointer, cairo.cairo_path_destroy)
         self._check_status()
 
     def _check_status(self):
