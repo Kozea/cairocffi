@@ -13,6 +13,7 @@ import sys
 import ctypes
 
 from . import ffi, cairo, _check_status
+from .fonts import FontOptions
 
 
 SURFACE_TARGET_KEY = ffi.new('cairo_user_data_key_t *')
@@ -150,6 +151,12 @@ class Surface(object):
         cairo.cairo_surface_set_fallback_resolution(
             self._pointer, x_pixels_per_inch, y_pixels_per_inch)
         self._check_status()
+
+    def get_font_options(self):
+        font_options = FontOptions()
+        cairo.cairo_surface_get_font_options(
+            self._pointer, font_options._pointer)
+        return font_options
 
     def get_mime_data(self, mime_type):
         buffer_address = ffi.new('unsigned char **')

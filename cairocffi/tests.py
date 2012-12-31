@@ -26,7 +26,8 @@ import cairocffi
 from . import (cairo_version, cairo_version_string, Context, Matrix,
                Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface,
                Pattern, SolidPattern, SurfacePattern,
-               LinearGradient, RadialGradient)
+               LinearGradient, RadialGradient,
+               FontOptions)
 from .compat import u, pixel
 
 
@@ -757,3 +758,41 @@ def test_context_font():
     context.move_to(1, 9)
     context.show_text('a')
     assert surface.get_data()[:] != b'\x00' * 400
+
+    assert context.get_font_options().get_hint_metrics() == 'DEFAULT'
+    context.set_font_options(FontOptions(hint_metrics='ON'))
+    assert context.get_font_options().get_hint_metrics() == 'ON'
+    assert surface.get_font_options().get_hint_metrics() == 'ON'
+
+
+def test_font_options():
+    options = FontOptions()
+
+    assert options.get_antialias() == 'DEFAULT'
+    options.set_antialias('FAST')
+    assert options.get_antialias() == 'FAST'
+
+    assert options.get_subpixel_order() == 'DEFAULT'
+    options.set_subpixel_order('BGR')
+    assert options.get_subpixel_order() == 'BGR'
+
+    assert options.get_hint_style() == 'DEFAULT'
+    options.set_hint_style('SLIGHT')
+    assert options.get_hint_style() == 'SLIGHT'
+
+    assert options.get_hint_metrics() == 'DEFAULT'
+    options.set_hint_metrics('OFF')
+    assert options.get_hint_metrics() == 'OFF'
+
+
+    options_1 = FontOptions(hint_metrics='ON')
+    assert options_1.get_hint_metrics() == 'ON'
+    assert options_1.get_antialias() == 'DEFAULT'
+    options_2 = options_1.copy()
+    assert options_2 == options_1
+    assert len(set([options_1, options_2])) == 1  # test __hash__
+    options_2.set_antialias('BEST')
+    assert options_2 != options_1
+    assert len(set([options_1, options_2])) == 2
+    options_1.merge(options_2)
+    assert options_2 == options_1

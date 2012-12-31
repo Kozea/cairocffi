@@ -12,6 +12,7 @@
 from . import ffi, cairo, _check_status, Matrix, Path
 from .patterns import Pattern
 from .surfaces import Surface, _encode_string
+from .fonts import FontOptions
 from .compat import xrange
 
 
@@ -375,8 +376,13 @@ class Context(object):
             self._pointer, _encode_string(family), slant, weight)
         self._check_status()
 
-    def set_font_size(self, size):
-        cairo.cairo_set_font_size(self._pointer, size)
+    def get_font_options(self):
+        font_options = FontOptions()
+        cairo.cairo_get_font_options(self._pointer, font_options._pointer)
+        return font_options
+
+    def set_font_options(self, font_options):
+        cairo.cairo_set_font_options(self._pointer, font_options._pointer)
         self._check_status()
 
     def get_font_matrix(self):
@@ -387,6 +393,10 @@ class Context(object):
 
     def set_font_matrix(self, matrix):
         cairo.cairo_set_font_matrix(self._pointer, matrix._pointer)
+        self._check_status()
+
+    def set_font_size(self, size):
+        cairo.cairo_set_font_size(self._pointer, size)
         self._check_status()
 
     def font_extents(self):
