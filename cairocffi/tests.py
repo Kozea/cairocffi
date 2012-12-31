@@ -681,6 +681,11 @@ def test_context_clip():
     context.reset_clip()
     assert context.clip_extents() == (0, 0, 4, 4)
 
+    context.rectangle(1, 1, 2, 2)
+    context.rectangle(1, 2, 1, 2)
+    context.clip()
+    assert context.copy_clip_rectangle_list() == [(1, 1, 2, 2), (1, 3, 1, 1)]
+    assert context.clip_extents() == (1, 1, 3, 4)
 
 def test_context_mask():
     mask_surface = ImageSurface('ARGB32', 2, 2)

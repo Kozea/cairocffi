@@ -12,6 +12,7 @@
 from . import ffi, cairo, _check_status, Matrix, Path
 from .patterns import Pattern
 from .surfaces import Surface, _encode_string
+from .compat import xrange
 
 
 class Context(object):
@@ -297,6 +298,17 @@ class Context(object):
             self._pointer, extents + 0, extents + 1, extents + 2, extents + 3)
         self._check_status()
         return tuple(extents)
+
+    def copy_clip_rectangle_list(self):
+        rectangle_list = cairo.cairo_copy_clip_rectangle_list(self._pointer)
+        _check_status(rectangle_list.status)
+        rectangles = rectangle_list.rectangles
+        result = []
+        for i in xrange(rectangle_list.num_rectangles):
+            rect = rectangles[i]
+            result.append((rect.x, rect.y, rect.width, rect.height))
+        cairo.cairo_rectangle_list_destroy(rectangle_list)
+        return result
 
     def in_clip(self, x, y):
         return bool(cairo.cairo_in_clip(self._pointer, x, y))
