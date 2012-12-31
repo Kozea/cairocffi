@@ -11,8 +11,8 @@
 
 from . import ffi, cairo, _check_status, Matrix, Path
 from .patterns import Pattern
-from .surfaces import Surface, _encode_string
-from .fonts import FontOptions
+from .surfaces import Surface
+from .fonts import FontFace, FontOptions, _encode_string
 from .compat import xrange
 
 
@@ -371,9 +371,17 @@ class Context(object):
         self._check_status()
         return tuple(xy)
 
-    def select_font_face(self, family, slant='NORMAL', weight='NORMAL'):
+    def select_font_face(self, family='', slant='NORMAL', weight='NORMAL'):
         cairo.cairo_select_font_face(
             self._pointer, _encode_string(family), slant, weight)
+        self._check_status()
+
+    def get_font_face(self):
+        return FontFace._from_pointer(cairo.cairo_font_face_reference(
+            cairo.cairo_get_font_face(self._pointer)))
+
+    def set_font_face(self, font_face):
+        cairo.cairo_set_font_face(self._pointer, font_face._pointer)
         self._check_status()
 
     def get_font_options(self):

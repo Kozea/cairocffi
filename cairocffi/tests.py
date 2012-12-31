@@ -27,7 +27,7 @@ from . import (cairo_version, cairo_version_string, Context, Matrix,
                Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface,
                Pattern, SolidPattern, SurfacePattern,
                LinearGradient, RadialGradient,
-               FontOptions)
+               FontFace, ToyFontFace, FontOptions)
 from .compat import u, pixel
 
 
@@ -736,6 +736,21 @@ def test_context_font():
 
     context.set_font_size(10)
     context.select_font_face('serif', 'ITALIC')
+    font_face = context.get_font_face()
+    assert isinstance(font_face, ToyFontFace)
+    assert font_face.get_family() == 'serif'
+    assert font_face.get_slant() == 'ITALIC'
+    assert font_face.get_weight() == 'NORMAL'
+
+    try:
+        del cairocffi.fonts.FONT_TYPE_TO_CLASS['TOY']
+        re_font_face = context.get_font_face()
+        assert re_font_face._pointer == font_face._pointer
+        assert isinstance(re_font_face, FontFace)
+        assert not isinstance(re_font_face, ToyFontFace)
+    finally:
+        cairocffi.fonts.FONT_TYPE_TO_CLASS['TOY'] = ToyFontFace
+
     ascent, descent, height, max_x_advance, max_y_advance = round_tuple(
         context.font_extents())
     # That’s about all we can assume for a default font.
@@ -746,7 +761,7 @@ def test_context_font():
         context.text_extents('i' * 10))
     assert x_advance > 0
     assert y_advance == 0
-    context.select_font_face('monospace', weight='BOLD')
+    context.set_font_face(ToyFontFace('monospace', weight='BOLD'))
     _, _, _, _, x_advance_mono, y_advance = round_tuple(
         context.text_extents('i' * 10))
     assert x_advance_mono > x_advance

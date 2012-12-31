@@ -168,7 +168,7 @@ class Path(object):
 from .surfaces import Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface
 from .patterns import (Pattern, SolidPattern, SurfacePattern,
                        Gradient, LinearGradient, RadialGradient)
-from .fonts import FontOptions
+from .fonts import FontFace, ToyFontFace, FontOptions
 from .context import Context
 
 # For compatibility with pycairo. In cairocffi users can just use strings.

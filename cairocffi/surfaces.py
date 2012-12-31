@@ -13,7 +13,7 @@ import sys
 import ctypes
 
 from . import ffi, cairo, _check_status
-from .fonts import FontOptions
+from .fonts import FontOptions, _encode_string
 
 
 SURFACE_TARGET_KEY = ffi.new('cairo_user_data_key_t *')
@@ -45,12 +45,6 @@ def _encode_filename(filename):
     if not isinstance(filename, bytes):
         filename = filename.encode(sys.getfilesystemencoding())
     return ffi.new('char[]', filename)
-
-
-def _encode_string(string):
-    if not isinstance(string, bytes):
-        string = string.encode('utf8')
-    return ffi.new('char[]', string)
 
 
 def from_buffer(data):

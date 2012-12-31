@@ -12,6 +12,49 @@
 from . import ffi, cairo, _check_status
 
 
+def _encode_string(string):
+    if not isinstance(string, bytes):
+        string = string.encode('utf8')
+    return ffi.new('char[]', string)
+
+
+class FontFace(object):
+    def __init__(self, pointer):
+        self._pointer = ffi.gc(pointer, cairo.cairo_font_face_destroy)
+        self._check_status()
+
+    def _check_status(self):
+        _check_status(cairo.cairo_font_face_status(self._pointer))
+
+    @staticmethod
+    def _from_pointer(pointer):
+        face = FontFace(pointer)
+        face_type = cairo.cairo_font_face_get_type(pointer)
+        if face_type in FONT_TYPE_TO_CLASS:
+            face.__class__ = FONT_TYPE_TO_CLASS[face_type]
+        return face
+
+
+class ToyFontFace(FontFace):
+    def __init__(self, family='', slant='NORMAL', weight='NORMAL'):
+        FontFace.__init__(self, cairo.cairo_toy_font_face_create(
+            _encode_string(family), slant, weight))
+
+    def get_family(self):
+        return ffi.string(cairo.cairo_toy_font_face_get_family(
+            self._pointer)).decode('utf8', 'replace')
+
+    def get_slant(self):
+        return cairo.cairo_toy_font_face_get_slant(self._pointer)
+
+    def get_weight(self):
+        return cairo.cairo_toy_font_face_get_weight(self._pointer)
+
+
+FONT_TYPE_TO_CLASS = {
+    'TOY': ToyFontFace}
+
+
 class FontOptions(object):
     def __init__(self, _pointer=None, **values):
         if _pointer is None:
