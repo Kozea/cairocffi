@@ -167,9 +167,12 @@ class Surface(object):
             _check_status(cairo.cairo_surface_set_mime_data(
                 self._pointer, mime_type, ffi.NULL, 0, ffi.NULL, ffi.NULL))
         else:
+            # TODO: avoid making a copy here if possible.
+            length = len(data)
+            data = ffi.new('char[]', data)
             keep_alive = KeepAlive(data, mime_type)
             _check_status(cairo.cairo_surface_set_mime_data(
-                self._pointer, mime_type, from_buffer(data), len(data),
+                self._pointer, mime_type, data, length,
                 *keep_alive.closure))
             keep_alive.save()  # Only on success
 

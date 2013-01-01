@@ -81,7 +81,8 @@ def test_image_surface_from_buffer():
         pytest.xfail()
     with pytest.raises(ValueError):
         # buffer too small
-        ImageSurface.create_for_data(bytearray(b'\x00' * 799), 'ARGB32', 10, 20)
+        data = bytearray(b'\x00' * 799)
+        ImageSurface.create_for_data(data, 'ARGB32', 10, 20)
     data = bytearray(b'\x00' * 800)
     surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20, stride=40)
     context = Context(surface)
@@ -158,17 +159,13 @@ def test_surface():
 def test_mime_data():
     if cairo_version() < 11000:
         pytest.xfail()
-    if '__pypy__' in sys.modules:
-        # See https://bitbucket.org/cffi/cffi/issue/47
-        # and https://bugs.pypy.org/issue1354
-        pytest.xfail()
     # Also test we get actually booleans:
     assert PDFSurface(None, 1, 1).supports_mime_type('image/jpeg') is True
     surface = ImageSurface('A8', 1, 1)
     assert surface.supports_mime_type('image/jpeg') is False
     assert surface.get_mime_data('image/jpeg') is None
     assert len(cairocffi.surfaces.KeepAlive.instances) == 0
-    surface.set_mime_data('image/jpeg', bytearray(b'lol'))
+    surface.set_mime_data('image/jpeg', b'lol')
     assert len(cairocffi.surfaces.KeepAlive.instances) == 1
     assert surface.get_mime_data('image/jpeg')[:] == b'lol'
 
