@@ -45,6 +45,12 @@ def round_tuple(values):
     return tuple(round(v, 6) for v in values)
 
 
+def assert_raise_finished(func, *args, **kwargs):
+    with pytest.raises(cairocffi.CairoError) as exc:
+        func(*args, **kwargs)
+    assert 'SURFACE_FINISHED' in str(exc)
+
+
 def test_cairo_version():
     major, minor, micro = map(int, cairo_version_string().split('.'))
     assert cairo_version() == major * 10000 + minor * 100 + micro
@@ -85,17 +91,21 @@ def test_image_surface_from_buffer():
     assert data == pixel(b'\x80\x00\x00\x00') * 200
 
 
-def test_surface():
+def test_surface_create_similar_image():
+    if cairo_version() < 11200:
+        pytest.xfail()
     surface = ImageSurface('ARGB32', 20, 30)
-    for similar in [
-            surface.create_similar('ALPHA', 4, 100),
-            surface.create_similar_image('A8', 4, 100)]:
-        assert isinstance(similar, ImageSurface)
-        assert similar.get_content() == 'ALPHA'
-        assert similar.get_format() == 'A8'
-        assert similar.get_width() == 4
-        assert similar.get_height() == 100
+    similar = surface.create_similar_image('A8', 4, 100)
+    assert isinstance(similar, ImageSurface)
+    assert similar.get_content() == 'ALPHA'
+    assert similar.get_format() == 'A8'
+    assert similar.get_width() == 4
+    assert similar.get_height() == 100
 
+
+def test_surface_create_for_rectangle():
+    if cairo_version() < 11000:
+        pytest.xfail()
     surface = ImageSurface('A8', 4, 4)
     data = surface.get_data()
     assert data[:] == b'\x00' * 16
@@ -104,8 +114,17 @@ def test_surface():
         b'\x00\x00\x00\x00'
         b'\x00\xFF\xFF\x00'
         b'\x00\xFF\xFF\x00'
-        b'\x00\x00\x00\x00'
-    )
+        b'\x00\x00\x00\x00')
+
+
+def test_surface():
+    surface = ImageSurface('ARGB32', 20, 30)
+    similar = surface.create_similar('ALPHA', 4, 100)
+    assert isinstance(similar, ImageSurface)
+    assert similar.get_content() == 'ALPHA'
+    assert similar.get_format() == 'A8'
+    assert similar.get_width() == 4
+    assert similar.get_height() == 100
     surface.copy_page()
     surface.show_page()
     surface.mark_dirty()
@@ -129,21 +148,16 @@ def test_surface():
     finally:
         cairocffi.surfaces.SURFACE_TYPE_TO_CLASS['IMAGE'] = ImageSurface
 
-
-    def assert_raise_finished(func, *args, **kwargs):
-        with pytest.raises(cairocffi.CairoError) as exc:
-            func(*args, **kwargs)
-        assert 'SURFACE_FINISHED' in str(exc)
-
     surface.finish()
     assert_raise_finished(surface.copy_page)
     assert_raise_finished(surface.show_page)
     assert_raise_finished(surface.set_device_offset, 1, 2)
     assert_raise_finished(surface.set_fallback_resolution, 3, 4)
-    assert_raise_finished(surface.set_mime_data, 'image/jpeg', None)
 
 
 def test_mime_data():
+    if cairo_version() < 11000:
+        pytest.xfail()
     if '__pypy__' in sys.modules:
         # See https://bitbucket.org/cffi/cffi/issue/47
         # and https://bugs.pypy.org/issue1354
@@ -161,6 +175,8 @@ def test_mime_data():
     surface.set_mime_data('image/jpeg', None)
     assert len(cairocffi.surfaces.KeepAlive.instances) == 0
     assert surface.get_mime_data('image/jpeg') is None
+    surface.finish()
+    assert_raise_finished(surface.set_mime_data, 'image/jpeg', None)
 
 
 def test_png():
@@ -203,31 +219,41 @@ def test_png():
         # Truncated input
         surface = ImageSurface.create_from_png(io.BytesIO(png_bytes[:30]))
 
-def test_pdf_surface():
+
+def test_pdf_versions():
+    if cairo_version() < 11000:
+        pytest.xfail()
     assert set(PDFSurface.get_versions()) >= set([
         'PDF_VERSION_1_4', 'PDF_VERSION_1_5'])
     assert PDFSurface.version_to_string('PDF_VERSION_1_4') == 'PDF 1.4'
 
-    with temp_directory() as tempdir:
-        filename = os.path.join(tempdir, 'foo.pdf')
-        filename_bytes = filename.encode(sys.getfilesystemencoding())
-        file_obj = io.BytesIO()
-        for target in [filename, filename_bytes, file_obj, None]:
-            PDFSurface(target, 123, 432).finish()
-        with open(filename, 'rb') as fd:
-            assert fd.read().startswith(b'%PDF-1.5')
-        with open(filename_bytes, 'rb') as fd:
-            assert fd.read().startswith(b'%PDF-1.5')
-        pdf_bytes = file_obj.getvalue()
-        assert pdf_bytes.startswith(b'%PDF-1.5')
-        assert b'/MediaBox [ 0 0 123 432 ]' in pdf_bytes
-        assert pdf_bytes.count(b'/Type /Page\n') == 1
+    file_obj = io.BytesIO()
+    PDFSurface(file_obj, 1, 1).finish()
+    assert file_obj.getvalue().startswith(b'%PDF-1.5')
 
     file_obj = io.BytesIO()
     surface = PDFSurface(file_obj, 1, 1)
     surface.restrict_to_version('PDF_VERSION_1_4')
     surface.finish()
     assert file_obj.getvalue().startswith(b'%PDF-1.4')
+
+
+def test_pdf_surface():
+    with temp_directory() as tempdir:
+        filename = os.path.join(tempdir, 'foo.pdf')
+        filename_bytes = filename.encode(sys.getfilesystemencoding())
+        file_obj = io.BytesIO()
+        for target in [filename, filename_bytes, file_obj, None]:
+            surface = PDFSurface(target, 123, 432)
+            surface.finish()
+        with open(filename, 'rb') as fd:
+            assert fd.read().startswith(b'%PDF')
+        with open(filename_bytes, 'rb') as fd:
+            assert fd.read().startswith(b'%PDF')
+        pdf_bytes = file_obj.getvalue()
+        assert pdf_bytes.startswith(b'%PDF')
+        assert b'/MediaBox [ 0 0 123 432 ]' in pdf_bytes
+        assert pdf_bytes.count(b'/Type /Page\n') == 1
 
     file_obj = io.BytesIO()
     surface = PDFSurface(file_obj, 1, 1)
@@ -522,7 +548,11 @@ def test_context_path():
 
     context.new_path()
     context.rectangle(10, 20, 100, 200)
-    assert list(context.copy_path()) == [
+    path = list(context.copy_path())
+    # Some cairo versions add a MOVE_TO after a CLOSE_PATH
+    if path[-1] == ('MOVE_TO', (10, 20)):
+        path = path[:-1]
+    assert path == [
         ('MOVE_TO', (10, 20)),
         ('LINE_TO', (110, 20)),
         ('LINE_TO', (110, 220)),
@@ -538,8 +568,11 @@ def test_context_path():
     context.curve_to(20, 30, 70, 50, 100, 120)
     context.rel_curve_to(20, 30, 70, 50, 100, 120)
     context.close_path()
-    path = context.copy_path()
-    assert list(path) == [
+    path_obj = context.copy_path()
+    path = list(path_obj)
+    if path[-1] == ('MOVE_TO', (12, 35)):
+        path = path[:-1]
+    assert path == [
         ('MOVE_TO', (10, 20)),
         ('LINE_TO', (10, 30)),
         ('MOVE_TO', (12, 35)),
@@ -547,8 +580,8 @@ def test_context_path():
         ('CURVE_TO', (20, 30, 70, 50, 100, 120)),
         ('CURVE_TO', (120, 150, 170, 170, 200, 240)),
         ('CLOSE_PATH', ())]
-    context.append_path(path)
-    assert list(context.copy_path()) == list(path) * 2
+    context.append_path(path_obj)
+    assert list(context.copy_path()) == path + list(path_obj)
 
     context.new_path()
     context.curve_to(20, 30, 70, 50, 100, 120)
@@ -635,30 +668,22 @@ def test_context_fill():
 
 
 def test_context_stroke():
-    surface = ImageSurface('A8', 4, 4)
-    assert surface.get_data()[:] == b'\x00' * 16
-    context = Context(surface)
-    context.set_source_rgba(0, 0, 0, 1)
-    context.set_line_width(.5)
-    context.rectangle(.5, .5, 2, 2)
-    path = list(context.copy_path())
-    assert path
-    context.stroke_preserve()
-    assert list(context.copy_path()) == path
-    assert surface.get_data()[:] == (
-        b'\x80\x80\x80\x00'
-        b'\x80\x00\x80\x00'
-        b'\x80\x80\x80\x00'
-        b'\x00\x00\x00\x00'
-    )
-    context.stroke()
-    assert list(context.copy_path()) == []
-    assert surface.get_data()[:] == (
-        b'\xC0\xC0\xC0\x00'
-        b'\xC0\x00\xC0\x00'
-        b'\xC0\xC0\xC0\x00'
-        b'\x00\x00\x00\x00'
-    )
+    for preserve in [True, False]:
+        surface = ImageSurface('A8', 4, 4)
+        assert surface.get_data()[:] == b'\x00' * 16
+        context = Context(surface)
+        context.set_source_rgba(0, 0, 0, 1)
+        context.set_line_width(1)
+        context.rectangle(.5, .5, 2, 2)
+        path = list(context.copy_path())
+        assert path
+        context.stroke_preserve() if preserve else context.stroke()
+        assert list(context.copy_path()) == (path if preserve else [])
+        assert surface.get_data()[:] == (
+            b'\xFF\xFF\xFF\x00'
+            b'\xFF\x00\xFF\x00'
+            b'\xFF\xFF\xFF\x00'
+            b'\x00\x00\x00\x00')
 
 
 def test_context_clip():
@@ -667,15 +692,11 @@ def test_context_clip():
     context = Context(surface)
     context.rectangle(1, 1, 2, 2)
     assert context.clip_extents() == (0, 0, 4, 4)
-    assert context.in_clip(.5, 2) is True
-    assert context.in_clip(1.5, 2) is True
     path = list(context.copy_path())
     assert path
     context.clip_preserve()
     assert list(context.copy_path()) == path
     assert context.clip_extents() == (1, 1, 3, 3)
-    assert context.in_clip(.5, 2) is False
-    assert context.in_clip(1.5, 2) is True
     context.clip()
     assert list(context.copy_path()) == []
     assert context.clip_extents() == (1, 1, 3, 3)
@@ -687,6 +708,20 @@ def test_context_clip():
     context.clip()
     assert context.copy_clip_rectangle_list() == [(1, 1, 2, 2), (1, 3, 1, 1)]
     assert context.clip_extents() == (1, 1, 3, 4)
+
+
+def test_context_in_clip():
+    if cairo_version() < 11000:
+        pytest.xfail()
+    surface = ImageSurface('A8', 4, 4)
+    context = Context(surface)
+    context.rectangle(1, 1, 2, 2)
+    assert context.in_clip(.5, 2) is True
+    assert context.in_clip(1.5, 2) is True
+    context.clip()
+    assert context.in_clip(.5, 2) is False
+    assert context.in_clip(1.5, 2) is True
+
 
 def test_context_mask():
     mask_surface = ImageSurface('ARGB32', 2, 2)
