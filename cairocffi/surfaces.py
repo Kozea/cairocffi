@@ -87,11 +87,10 @@ class Surface(object):
 
     @staticmethod
     def _from_pointer(pointer):
-        surface = Surface(pointer)
-        surface_type = cairo.cairo_surface_get_type(pointer)
-        if surface_type in SURFACE_TYPE_TO_CLASS:
-            surface.__class__ = SURFACE_TYPE_TO_CLASS[surface_type]
-        return surface
+        self = object.__new__(SURFACE_TYPE_TO_CLASS.get(
+            cairo.cairo_surface_get_type(pointer), Surface))
+        Surface.__init__(self, pointer)  # Skip the subclass’s __init__
+        return self
 
     def copy_page(self):
         cairo.cairo_surface_copy_page(self._pointer)
@@ -230,10 +229,9 @@ class ImageSurface(Surface):
         else:
             pointer = cairo.cairo_image_surface_create_from_png(
                 _encode_filename(source))
-        surface = Surface(pointer)
-        # XXX is there a cleaner way to bypass ImageSurface.__init__?
-        surface.__class__ = cls
-        return surface
+        self = object.__new__(ImageSurface)
+        Surface.__init__(self, pointer)  # Skip ImageSurface.__init__
+        return self
 
     def get_data(self):
         return ffi.buffer(

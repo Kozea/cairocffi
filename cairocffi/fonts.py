@@ -26,13 +26,12 @@ class FontFace(object):
     def _check_status(self):
         _check_status(cairo.cairo_font_face_status(self._pointer))
 
-    @staticmethod
-    def _from_pointer(pointer):
-        face = FontFace(pointer)
-        face_type = cairo.cairo_font_face_get_type(pointer)
-        if face_type in FONT_TYPE_TO_CLASS:
-            face.__class__ = FONT_TYPE_TO_CLASS[face_type]
-        return face
+    @classmethod
+    def _from_pointer(cls, pointer):
+        self = object.__new__(FONT_TYPE_TO_CLASS.get(
+            cairo.cairo_font_face_get_type(pointer), cls))
+        cls.__init__(self, pointer)  # Skip the subclass’s __init__
+        return self
 
 
 class ToyFontFace(FontFace):
@@ -52,7 +51,10 @@ class ToyFontFace(FontFace):
 
 
 FONT_TYPE_TO_CLASS = {
-    'TOY': ToyFontFace}
+    'TOY': ToyFontFace,
+}
+
+
 
 
 class FontOptions(object):

@@ -735,7 +735,7 @@ def test_context_font():
     assert context.get_font_matrix().as_tuple() == (14, 0, 0, 14, 0, 0)
 
     context.set_font_size(10)
-    context.select_font_face('serif', 'ITALIC')
+    context.select_font_face(b'serif', 'ITALIC')
     font_face = context.get_font_face()
     assert isinstance(font_face, ToyFontFace)
     assert font_face.get_family() == 'serif'
@@ -761,7 +761,7 @@ def test_context_font():
         context.text_extents('i' * 10))
     assert x_advance > 0
     assert y_advance == 0
-    context.set_font_face(ToyFontFace('monospace', weight='BOLD'))
+    context.set_font_face(ToyFontFace(u('monospace'), weight='BOLD'))
     _, _, _, _, x_advance_mono, y_advance = round_tuple(
         context.text_extents('i' * 10))
     assert x_advance_mono > x_advance

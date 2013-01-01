@@ -5,7 +5,8 @@ import cairocffi
 ALL_THE_CODE = ''.join(
     line
     for module in [
-        cairocffi, cairocffi.surfaces, cairocffi.patterns, cairocffi.context]
+        cairocffi, cairocffi.surfaces, cairocffi.patterns,
+        cairocffi.fonts, cairocffi.context]
     for line in inspect.getsourcelines(module)[0])
 
 

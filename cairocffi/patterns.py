@@ -22,13 +22,12 @@ class Pattern(object):
     def _check_status(self):
         _check_status(cairo.cairo_pattern_status(self._pointer))
 
-    @staticmethod
-    def _from_pointer(pointer):
-        pattern = Pattern(pointer)
-        pattern_type = cairo.cairo_pattern_get_type(pointer)
-        if pattern_type in PATTERN_TYPE_TO_CLASS:
-            pattern.__class__ = PATTERN_TYPE_TO_CLASS[pattern_type]
-        return pattern
+    @classmethod
+    def _from_pointer(cls, pointer):
+        self = object.__new__(PATTERN_TYPE_TO_CLASS.get(
+            cairo.cairo_pattern_get_type(pointer), cls))
+        cls.__init__(self, pointer)  # Skip the subclass’s __init__
+        return self
 
     def set_extend(self, extend):
         cairo.cairo_pattern_set_extend(self._pointer, extend)
