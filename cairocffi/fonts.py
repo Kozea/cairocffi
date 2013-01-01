@@ -1,3 +1,4 @@
+# coding: utf8
 """
     cairocffi.fonts
     ~~~~~~~~~~~~~~~
@@ -9,7 +10,7 @@
 
 """
 
-from . import ffi, cairo, _check_status
+from . import ffi, cairo, _check_status, Matrix
 
 
 def _encode_string(string):
@@ -55,6 +56,78 @@ FONT_TYPE_TO_CLASS = {
 }
 
 
+class ScaledFont(object):
+    def __init__(self, font_face, font_matrix=None, ctm=None, options=None):
+        if font_matrix is None:
+            font_matrix = Matrix()
+            font_matrix.scale(10)  # Default font size
+        if ctm is None:
+            ctm = Matrix()
+        if options is None:
+            options = FontOptions()
+        self._init_pointer(cairo.cairo_scaled_font_create(
+            font_face._pointer, font_matrix._pointer,
+            ctm._pointer, options._pointer))
+
+    def _init_pointer(self, pointer):
+        self._pointer = ffi.gc(pointer, cairo.cairo_scaled_font_destroy)
+        self._check_status()
+
+    def _check_status(self):
+        _check_status(cairo.cairo_scaled_font_status(self._pointer))
+
+    @classmethod
+    def _from_pointer(cls, pointer):
+        self = object.__new__(cls)
+        cls._init_pointer(self, pointer)
+        return self
+
+    def extents(self):
+        extents = ffi.new('cairo_font_extents_t *')
+        cairo.cairo_scaled_font_extents(self._pointer, extents)
+        self._check_status()
+        return (
+            extents.ascent, extents.descent, extents.height,
+            extents.max_x_advance, extents.max_y_advance)
+
+    def text_extents(self, text):
+        extents = ffi.new('cairo_text_extents_t *')
+        cairo.cairo_scaled_font_text_extents(
+            self._pointer, _encode_string(text), extents)
+        self._check_status()
+        return (
+            extents.x_bearing, extents.y_bearing,
+            extents.width, extents.height,
+            extents.x_advance, extents.y_advance)
+
+    def get_font_face(self):
+        return FontFace._from_pointer(cairo.cairo_font_face_reference(
+            cairo.cairo_scaled_font_get_font_face(self._pointer)))
+
+    def get_font_options(self):
+        font_options = FontOptions()
+        cairo.cairo_scaled_font_get_font_options(
+            self._pointer, font_options._pointer)
+        return font_options
+
+    def get_font_matrix(self):
+        matrix = Matrix()
+        cairo.cairo_scaled_font_get_font_matrix(self._pointer, matrix._pointer)
+        self._check_status()
+        return matrix
+
+    def get_ctm(self):
+        matrix = Matrix()
+        cairo.cairo_scaled_font_get_ctm(self._pointer, matrix._pointer)
+        self._check_status()
+        return matrix
+
+    def get_scale_matrix(self):
+        matrix = Matrix()
+        cairo.cairo_scaled_font_get_scale_matrix(
+            self._pointer, matrix._pointer)
+        self._check_status()
+        return matrix
 
 
 class FontOptions(object):

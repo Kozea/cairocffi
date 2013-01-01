@@ -112,7 +112,9 @@ class Matrix(object):
     def translate(self, tx, ty):
         cairo.cairo_matrix_translate(self._pointer, tx, ty)
 
-    def scale(self, sx, sy):
+    def scale(self, sx, sy=None):
+        if sy is None:
+            sy = sx
         cairo.cairo_matrix_scale(self._pointer, sx, sy)
 
     def rotate(self, radians):
@@ -168,7 +170,7 @@ class Path(object):
 from .surfaces import Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface
 from .patterns import (Pattern, SolidPattern, SurfacePattern,
                        Gradient, LinearGradient, RadialGradient)
-from .fonts import FontFace, ToyFontFace, FontOptions
+from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions
 from .context import Context
 
 # For compatibility with pycairo. In cairocffi users can just use strings.

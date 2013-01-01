@@ -27,7 +27,7 @@ from . import (cairo_version, cairo_version_string, Context, Matrix,
                Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface,
                Pattern, SolidPattern, SurfacePattern,
                LinearGradient, RadialGradient,
-               FontFace, ToyFontFace, FontOptions)
+               FontFace, ToyFontFace, ScaledFont, FontOptions)
 from .compat import u, pixel
 
 
@@ -751,19 +751,17 @@ def test_context_font():
     finally:
         cairocffi.fonts.FONT_TYPE_TO_CLASS['TOY'] = ToyFontFace
 
-    ascent, descent, height, max_x_advance, max_y_advance = round_tuple(
+    ascent, descent, height, max_x_advance, max_y_advance = (
         context.font_extents())
     # That’s about all we can assume for a default font.
     assert height > ascent + descent
     assert max_x_advance > 0
     assert max_y_advance == 0
-    _, _, _, _, x_advance, y_advance = round_tuple(
-        context.text_extents('i' * 10))
+    _, _, _, _, x_advance, y_advance = context.text_extents('i' * 10)
     assert x_advance > 0
     assert y_advance == 0
     context.set_font_face(ToyFontFace(u('monospace'), weight='BOLD'))
-    _, _, _, _, x_advance_mono, y_advance = round_tuple(
-        context.text_extents('i' * 10))
+    _, _, _, _, x_advance_mono, y_advance = context.text_extents('i' * 10)
     assert x_advance_mono > x_advance
     assert y_advance == 0
     assert list(context.copy_path()) == []
@@ -778,6 +776,46 @@ def test_context_font():
     context.set_font_options(FontOptions(hint_metrics='ON'))
     assert context.get_font_options().get_hint_metrics() == 'ON'
     assert surface.get_font_options().get_hint_metrics() == 'ON'
+
+    context.set_font_matrix(Matrix(2, 0,  0, 3,  12, 4))
+    assert context.get_scaled_font().get_font_matrix().as_tuple() == (
+        2, 0,  0, 3,  12, 4)
+    context.set_scaled_font(ScaledFont(ToyFontFace(), font_matrix=Matrix(
+        0, 1,  4, 0,  12, 4)))
+    assert context.get_font_matrix().as_tuple() == (0, 1,  4, 0,  12, 4)
+
+
+def test_scaled_font():
+    font = ScaledFont(ToyFontFace())
+    font_extents = font.extents()
+    ascent, descent, height, max_x_advance, max_y_advance = font_extents
+    assert height > ascent + descent
+    assert max_x_advance > 0
+    assert max_y_advance == 0
+    _, _, _, _, x_advance, y_advance = font.text_extents('i' * 10)
+    assert x_advance > 0
+    assert y_advance == 0
+
+    font = ScaledFont(ToyFontFace('monospace'))
+    _, _, _, _, x_advance_mono, y_advance = font.text_extents('i' * 10)
+    assert x_advance_mono > x_advance
+    assert y_advance == 0
+    # Not much we can test:
+    # Che toy font face was "materialized" into a specific backend.
+    assert isinstance(font.get_font_face(), FontFace)
+
+    font = ScaledFont(
+        ToyFontFace('monospace'), Matrix(xx=20, yy=20), Matrix(xx=3, yy=.5),
+        FontOptions(antialias='BEST'))
+    assert font.get_font_options().get_antialias() == 'BEST'
+    assert font.get_font_matrix().as_tuple() == (20, 0, 0, 20, 0, 0)
+    assert font.get_ctm().as_tuple() == (3, 0, 0, .5, 0, 0)
+    assert font.get_scale_matrix().as_tuple() == (60, 0, 0, 10, 0, 0)
+    _, _, _, _, x_advance_mono_2, y_advance_2 = font.text_extents('i' * 10)
+    # Same yy as before:
+    assert y_advance == y_advance_2
+    # Bigger xx:
+    assert x_advance_mono_2 > x_advance_mono
 
 
 def test_font_options():

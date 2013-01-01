@@ -1,3 +1,4 @@
+# coding: utf8
 """
     cairocffi.context
     ~~~~~~~~~~~~~~~~~
@@ -12,7 +13,7 @@
 from . import ffi, cairo, _check_status, Matrix, Path
 from .patterns import Pattern
 from .surfaces import Surface
-from .fonts import FontFace, FontOptions, _encode_string
+from .fonts import FontFace, ScaledFont, FontOptions, _encode_string
 from .compat import xrange
 
 
@@ -382,6 +383,14 @@ class Context(object):
 
     def set_font_face(self, font_face):
         cairo.cairo_set_font_face(self._pointer, font_face._pointer)
+        self._check_status()
+
+    def get_scaled_font(self):
+        return ScaledFont._from_pointer(cairo.cairo_scaled_font_reference(
+            cairo.cairo_get_scaled_font(self._pointer)))
+
+    def set_scaled_font(self, scaled_font):
+        cairo.cairo_set_scaled_font(self._pointer, scaled_font._pointer)
         self._check_status()
 
     def get_font_options(self):
