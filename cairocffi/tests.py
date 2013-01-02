@@ -519,25 +519,25 @@ def test_context_path():
     surface = ImageSurface('ARGB32', 1, 1)
     context = Context(surface)
 
-    assert list(context.copy_path()) == []
+    assert context.copy_path() == []
     assert context.get_current_point() is None
     context.arc(100, 200, 20, math.pi/2, 0)
-    path_1 = list(context.copy_path())
+    path_1 = context.copy_path()
     assert path_1[0] == ('MOVE_TO', (100, 220))
     assert len(path_1) > 1
     assert all(part[0] == 'CURVE_TO' for part in path_1[1:])
     assert context.get_current_point() == (120, 200)
 
     context.new_sub_path()
-    assert list(context.copy_path()) == path_1
+    assert context.copy_path() == path_1
     assert context.get_current_point() is None
     context.new_path()
-    assert list(context.copy_path()) == []
+    assert context.copy_path() == []
     assert context.get_current_point() is None
 
     assert context.get_current_point() is None
     context.arc_negative(100, 200, 20, math.pi/2, 0)
-    path_2 = list(context.copy_path())
+    path_2 = context.copy_path()
     assert path_2[0] == ('MOVE_TO', (100, 220))
     assert len(path_2) > 1
     assert all(part[0] == 'CURVE_TO' for part in path_2[1:])
@@ -545,7 +545,7 @@ def test_context_path():
 
     context.new_path()
     context.rectangle(10, 20, 100, 200)
-    path = list(context.copy_path())
+    path = context.copy_path()
     # Some cairo versions add a MOVE_TO after a CLOSE_PATH
     if path[-1] == ('MOVE_TO', (10, 20)):
         path = path[:-1]
@@ -565,8 +565,7 @@ def test_context_path():
     context.curve_to(20, 30, 70, 50, 100, 120)
     context.rel_curve_to(20, 30, 70, 50, 100, 120)
     context.close_path()
-    path_obj = context.copy_path()
-    path = list(path_obj)
+    path = context.copy_path()
     if path[-1] == ('MOVE_TO', (12, 35)):
         path = path[:-1]
     assert path == [
@@ -577,16 +576,34 @@ def test_context_path():
         ('CURVE_TO', (20, 30, 70, 50, 100, 120)),
         ('CURVE_TO', (120, 150, 170, 170, 200, 240)),
         ('CLOSE_PATH', ())]
-    context.append_path(path_obj)
-    assert list(context.copy_path()) == path + list(path_obj)
 
     context.new_path()
+    context.move_to(10, 15)
     context.curve_to(20, 30, 70, 50, 100, 120)
-    path = list(context.copy_path_flat())
+    assert context.copy_path() == [
+        ('MOVE_TO', (10, 15)),
+        ('CURVE_TO', (20, 30, 70, 50, 100, 120))]
+    path = context.copy_path_flat()
     assert len(path) > 2
-    assert path[0] == ('MOVE_TO', (20, 30))
+    assert path[0] == ('MOVE_TO', (10, 15))
     assert all(part[0] == 'LINE_TO' for part in path[1:])
     assert path[-1] == ('LINE_TO', (100, 120))
+
+    context.new_path()
+    context.move_to(10, 20)
+    context.line_to(10, 30)
+    path = context.copy_path()
+    assert path == [
+        ('MOVE_TO', (10, 20)),
+        ('LINE_TO', (10, 30))]
+    additional_path = [('LINE_TO', (30, 150))]
+    context.append_path(additional_path)
+    assert context.copy_path() == path + additional_path
+    # Incorrect number of points:
+    with pytest.raises(ValueError):
+        context.append_path([('LINE_TO', (30, 150, 1))])
+    with pytest.raises(ValueError):
+        context.append_path([('LINE_TO', (30, 150, 1, 4))])
 
 
 def test_context_properties():

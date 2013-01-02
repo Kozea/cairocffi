@@ -10,11 +10,62 @@
 
 """
 
-from . import ffi, cairo, _check_status, Matrix, Path
+from . import ffi, cairo, _check_status, Matrix
 from .patterns import Pattern
 from .surfaces import Surface
 from .fonts import FontFace, ScaledFont, FontOptions, _encode_string
 from .compat import xrange
+
+
+PATH_POINTS_PER_TYPE = {
+    'MOVE_TO': 1,
+    'LINE_TO': 1,
+    'CURVE_TO': 3,
+    'CLOSE_PATH': 0}
+
+
+def _encode_path(path_items):
+    points_per_type = PATH_POINTS_PER_TYPE
+    path_items = list(path_items)
+    length = 0
+    for path_type, coordinates in path_items:
+        num_points = points_per_type[path_type]
+        length += 1 + num_points  # 1 header + N points
+        if len(coordinates) != 2 * num_points:
+            raise ValueError('Expected %d coordinates, got %d.' % (
+                2 * num_points, len(coordinates)))
+
+    data = ffi.new('cairo_path_data_t[]', length)
+    position = 0
+    for path_type, coordinates in path_items:
+        header = data[position].header
+        header.type = path_type
+        header.length = 1 + len(coordinates) // 2
+        position += 1
+        for i in xrange(0, len(coordinates), 2):
+            point = data[position].point
+            point.x = coordinates[i]
+            point.y = coordinates[i + 1]
+            position += 1
+    path = ffi.new('cairo_path_t *', ('SUCCESS', data, length))
+    return path, data
+
+
+def _iter_path(pointer):
+    _check_status(pointer.status)
+    data = pointer.data
+    num_data = pointer.num_data
+    points_per_type = PATH_POINTS_PER_TYPE
+    position = 0
+    while position < num_data:
+        path_data = data[position]
+        path_type = path_data.header.type
+        points = ()
+        for i in xrange(points_per_type[path_type]):
+            point = data[position + i + 1].point
+            points += (point.x, point.y)
+        yield (path_type, points)
+        position += path_data.header.length
 
 
 class Context(object):
@@ -135,13 +186,20 @@ class Context(object):
         self._check_status()
 
     def copy_path(self):
-        return Path(cairo.cairo_copy_path(self._pointer))
+        path = cairo.cairo_copy_path(self._pointer)
+        result = list(_iter_path(path))
+        cairo.cairo_path_destroy(path)
+        return result
 
     def copy_path_flat(self):
-        return Path(cairo.cairo_copy_path_flat(self._pointer))
+        path = cairo.cairo_copy_path_flat(self._pointer)
+        result = list(_iter_path(path))
+        cairo.cairo_path_destroy(path)
+        return result
 
     def append_path(self, path):
-        cairo.cairo_append_path(self._pointer, path._pointer)
+        path, _ = _encode_path(path)
+        cairo.cairo_append_path(self._pointer, path)
         self._check_status()
 
     def path_extents(self):
