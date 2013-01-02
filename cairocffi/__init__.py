@@ -173,5 +173,18 @@ from .patterns import (Pattern, SolidPattern, SurfacePattern,
 from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions
 from .context import Context
 
+def _relocate(obj):
+    """Pretend that stuff is defined here instead of in sub-modules."""
+    for attr in vars(obj).values():
+        if getattr(attr, '__module__', '').startswith('cairocffi.'):
+            attr.__module__ = 'cairocffi'
+            _relocate(attr)
+
+_relocate(surfaces)
+_relocate(patterns)
+_relocate(fonts)
+_relocate(context)
+del _relocate
+
 # For compatibility with pycairo. In cairocffi users can just use strings.
 from .constants import *
