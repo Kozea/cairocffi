@@ -500,12 +500,42 @@ class Context(object):
             extents.width, extents.height,
             extents.x_advance, extents.y_advance)
 
+    def glyph_extents(self, glyphs):
+        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
+        extents = ffi.new('cairo_text_extents_t *')
+        cairo.cairo_glyph_extents(
+            self._pointer, glyphs, len(glyphs), extents)
+        self._check_status()
+        return (
+            extents.x_bearing, extents.y_bearing,
+            extents.width, extents.height,
+            extents.x_advance, extents.y_advance)
+
     def text_path(self, text):
         cairo.cairo_text_path(self._pointer, _encode_string(text))
         self._check_status()
 
+    def glyph_path(self, glyphs):
+        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
+        cairo.cairo_glyph_path(self._pointer, glyphs, len(glyphs))
+        self._check_status()
+
     def show_text(self, text):
         cairo.cairo_show_text(self._pointer, _encode_string(text))
+        self._check_status()
+
+    def show_glyphs(self, glyphs):
+        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
+        cairo.cairo_show_glyphs(self._pointer, glyphs, len(glyphs))
+        self._check_status()
+
+    def show_text_glyphs(self, text, glyphs, clusters, is_backwards):
+        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
+        clusters = ffi.new('cairo_text_cluster_t[]', clusters)
+        flags = 'BACKWARDS' if is_backwards else 0
+        cairo.cairo_show_text_glyphs(
+            self._pointer, _encode_string(text), -1,
+            glyphs, len(glyphs), clusters, len(clusters), flags)
         self._check_status()
 
     def show_page(self):

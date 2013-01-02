@@ -11,6 +11,7 @@
 """
 
 from . import ffi, cairo, _check_status, Matrix
+from .compat import xrange
 
 
 def _encode_string(string):
@@ -82,24 +83,6 @@ class ScaledFont(object):
         cls._init_pointer(self, pointer)
         return self
 
-    def extents(self):
-        extents = ffi.new('cairo_font_extents_t *')
-        cairo.cairo_scaled_font_extents(self._pointer, extents)
-        self._check_status()
-        return (
-            extents.ascent, extents.descent, extents.height,
-            extents.max_x_advance, extents.max_y_advance)
-
-    def text_extents(self, text):
-        extents = ffi.new('cairo_text_extents_t *')
-        cairo.cairo_scaled_font_text_extents(
-            self._pointer, _encode_string(text), extents)
-        self._check_status()
-        return (
-            extents.x_bearing, extents.y_bearing,
-            extents.width, extents.height,
-            extents.x_advance, extents.y_advance)
-
     def get_font_face(self):
         return FontFace._from_pointer(cairo.cairo_font_face_reference(
             cairo.cairo_scaled_font_get_font_face(self._pointer)))
@@ -128,6 +111,60 @@ class ScaledFont(object):
             self._pointer, matrix._pointer)
         self._check_status()
         return matrix
+
+    def extents(self):
+        extents = ffi.new('cairo_font_extents_t *')
+        cairo.cairo_scaled_font_extents(self._pointer, extents)
+        self._check_status()
+        return (
+            extents.ascent, extents.descent, extents.height,
+            extents.max_x_advance, extents.max_y_advance)
+
+    def text_extents(self, text):
+        extents = ffi.new('cairo_text_extents_t *')
+        cairo.cairo_scaled_font_text_extents(
+            self._pointer, _encode_string(text), extents)
+        self._check_status()
+        return (
+            extents.x_bearing, extents.y_bearing,
+            extents.width, extents.height,
+            extents.x_advance, extents.y_advance)
+
+    def glyph_extents(self, glyphs):
+        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
+        extents = ffi.new('cairo_text_extents_t *')
+        cairo.cairo_scaled_font_glyph_extents(
+            self._pointer, glyphs, len(glyphs), extents)
+        self._check_status()
+        return (
+            extents.x_bearing, extents.y_bearing,
+            extents.width, extents.height,
+            extents.x_advance, extents.y_advance)
+
+    def text_to_glyphs(self, x, y, text):
+        glyphs = ffi.new('cairo_glyph_t **', ffi.NULL)
+        clusters = ffi.new('cairo_text_cluster_t **', ffi.NULL)
+        num_glyphs = ffi.new('int *')
+        num_clusters = ffi.new('int *')
+        cluster_flags = ffi.new('cairo_text_cluster_flags_t *')
+        # TODO: Pass len_utf8 explicitly to support NULL bytes?
+        status = cairo.cairo_scaled_font_text_to_glyphs(
+            self._pointer, x, y, _encode_string(text), -1,
+            glyphs, num_glyphs, clusters, num_clusters, cluster_flags)
+        glyphs = ffi.gc(glyphs[0], cairo.cairo_glyph_free)
+        clusters = ffi.gc(clusters[0], cairo.cairo_text_cluster_free)
+        _check_status(status)
+        glyphs = [
+            (glyph.index, glyph.x, glyph.y)
+            for i in xrange(num_glyphs[0])
+            for glyph in [glyphs[i]]]
+        clusters = [
+            (cluster.num_bytes, cluster.num_glyphs)
+            for i in xrange(num_clusters[0])
+            for cluster in [clusters[i]]]
+        # Intentionally trigger a KeyError on unknown flags
+        is_backwards = {'BACKWARDS': True, '#0': False}[cluster_flags[0]]
+        return glyphs, clusters, is_backwards
 
 
 class FontOptions(object):

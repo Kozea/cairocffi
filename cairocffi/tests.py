@@ -11,7 +11,6 @@
 """
 
 import io
-import re
 import os
 import sys
 import math
@@ -206,7 +205,7 @@ def test_png():
             assert surface.get_width() == 1
             assert surface.get_height() == 1
             assert surface.get_stride() == 4
-            data = surface.get_data()[:] == pixel(b'\xcc\x32\x6e\x97')
+            assert surface.get_data()[:] == pixel(b'\xcc\x32\x6e\x97')
 
     file_obj = io.BytesIO()
     surface.write_to_png(file_obj)
@@ -520,19 +519,23 @@ def test_context_path():
     context = Context(surface)
 
     assert context.copy_path() == []
+    assert context.has_current_point() is False
     assert context.get_current_point() == (0, 0)
     context.arc(100, 200, 20, math.pi/2, 0)
     path_1 = context.copy_path()
     assert path_1[0] == ('MOVE_TO', (100, 220))
     assert len(path_1) > 1
     assert all(part[0] == 'CURVE_TO' for part in path_1[1:])
+    assert context.has_current_point() is True
     assert context.get_current_point() == (120, 200)
 
     context.new_sub_path()
     assert context.copy_path() == path_1
+    assert context.has_current_point() is False
     assert context.get_current_point() == (0, 0)
     context.new_path()
     assert context.copy_path() == []
+    assert context.has_current_point() is False
     assert context.get_current_point() == (0, 0)
 
     context.arc_negative(100, 200, 20, math.pi/2, 0)
@@ -546,7 +549,7 @@ def test_context_path():
     context.rectangle(10, 20, 100, 200)
     path = context.copy_path()
     # Some cairo versions add a MOVE_TO after a CLOSE_PATH
-    if path[-1] == ('MOVE_TO', (10, 20)):
+    if path[-1] == ('MOVE_TO', (10, 20)):  # pragma: no cover
         path = path[:-1]
     assert path == [
         ('MOVE_TO', (10, 20)),
@@ -565,7 +568,7 @@ def test_context_path():
     context.rel_curve_to(20, 30, 70, 50, 100, 120)
     context.close_path()
     path = context.copy_path()
-    if path[-1] == ('MOVE_TO', (12, 35)):
+    if path[-1] == ('MOVE_TO', (12, 35)):  # pragma: no cover
         path = path[:-1]
     assert path == [
         ('MOVE_TO', (10, 20)),
@@ -885,7 +888,6 @@ def test_font_options():
     options.set_hint_metrics('OFF')
     assert options.get_hint_metrics() == 'OFF'
 
-
     options_1 = FontOptions(hint_metrics='ON')
     assert options_1.get_hint_metrics() == 'ON'
     assert options_1.get_antialias() == 'DEFAULT'
@@ -897,3 +899,57 @@ def test_font_options():
     assert len(set([options_1, options_2])) == 2
     options_1.merge(options_2)
     assert options_2 == options_1
+
+
+def test_glyphs():
+    surface = ImageSurface('ARGB32', 100, 20)
+    context = Context(surface)
+    font = context.get_scaled_font()
+    text = u('Étt')
+    glyphs, clusters, is_backwards = font.text_to_glyphs(5, 15, text)
+    (idx1, x1, y1), (idx2, x2, y2), (idx3, x3, y3) = glyphs
+    assert idx1 != idx2 == idx3
+    assert y1 == y2 == y3 == 15
+    assert 5 == x1 < x2 < x3
+    assert clusters == [(2, 1), (1, 1), (1, 1)]
+    assert is_backwards is False
+    assert font.glyph_extents(glyphs) == font.text_extents(text)
+    assert font.glyph_extents(glyphs) == context.glyph_extents(glyphs)
+
+    assert context.copy_path() == []
+    context.glyph_path(glyphs)
+    glyph_path = context.copy_path()
+    assert glyph_path
+    context.new_path()
+    assert context.copy_path() == []
+    context.move_to(10, 20)  # Not the same coordinates as text_to_glyphs
+    context.text_path(text)
+    assert context.copy_path() != []
+    assert context.copy_path() != glyph_path
+    context.new_path()
+    assert context.copy_path() == []
+    context.move_to(5, 15)
+    context.text_path(text)
+    text_path = context.copy_path()
+    # For some reason, paths end with a different on old cairo.
+    assert text_path[:-1] == glyph_path[:-1]
+
+    empty = b'\x00' * 100 * 20 * 4
+    assert surface.get_data()[:] == empty
+    context.show_glyphs(glyphs)
+    glyph_pixels = surface.get_data()[:]
+    assert glyph_pixels != empty
+
+    surface = ImageSurface('ARGB32', 100, 20)
+    context = Context(surface)
+    context.move_to(5, 15)
+    context.show_text_glyphs(text, glyphs, clusters, is_backwards)
+    text_glyphs_pixels = surface.get_data()[:]
+    assert glyph_pixels == text_glyphs_pixels
+
+    surface = ImageSurface('ARGB32', 100, 20)
+    context = Context(surface)
+    context.move_to(5, 15)
+    context.show_text(text)
+    text_pixels = surface.get_data()[:]
+    assert glyph_pixels == text_pixels
