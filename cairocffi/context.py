@@ -218,11 +218,16 @@ class Context(object):
         self._check_status()
 
     def get_current_point(self):
-        if self.has_current_point():
-            xy = ffi.new('double[2]')
-            cairo.cairo_get_current_point(self._pointer, xy + 0, xy + 1)
-            self._check_status()
-            return tuple(xy)
+        """Return the (x, y) coordinates of the current point,
+        or (0., 0.) if there is no current point.
+
+        """
+        # I’d prefer returning None if self.has_current_point() is False
+        # But keep (0, 0) for compat with pycairo.
+        xy = ffi.new('double[2]')
+        cairo.cairo_get_current_point(self._pointer, xy + 0, xy + 1)
+        self._check_status()
+        return tuple(xy)
 
     def has_current_point(self):
         return bool(cairo.cairo_has_current_point(self._pointer))

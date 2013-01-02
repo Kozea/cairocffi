@@ -520,7 +520,7 @@ def test_context_path():
     context = Context(surface)
 
     assert context.copy_path() == []
-    assert context.get_current_point() is None
+    assert context.get_current_point() == (0, 0)
     context.arc(100, 200, 20, math.pi/2, 0)
     path_1 = context.copy_path()
     assert path_1[0] == ('MOVE_TO', (100, 220))
@@ -530,12 +530,11 @@ def test_context_path():
 
     context.new_sub_path()
     assert context.copy_path() == path_1
-    assert context.get_current_point() is None
+    assert context.get_current_point() == (0, 0)
     context.new_path()
     assert context.copy_path() == []
-    assert context.get_current_point() is None
+    assert context.get_current_point() == (0, 0)
 
-    assert context.get_current_point() is None
     context.arc_negative(100, 200, 20, math.pi/2, 0)
     path_2 = context.copy_path()
     assert path_2[0] == ('MOVE_TO', (100, 220))
