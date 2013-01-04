@@ -1,20 +1,95 @@
-API reference
-#############
+Python API reference
+####################
 
 .. module:: cairocffi
 .. autofunction:: install_as_pycairo
 .. autofunction:: cairo_version
 .. autofunction:: cairo_version_string
+.. autoexception:: CairoError
+.. data:: Error
+
+    An alias for :exc:`CairoError`, for compatibility with pycairo.
 
 
 Surfaces
 ========
 
 .. autoclass:: Surface()
+
+ImageSurface
+------------
 .. autoclass:: ImageSurface
+
+PDFSurface
+----------
 .. autoclass:: PDFSurface
+
+PSSurface
+---------
 .. autoclass:: PSSurface
+
+SVGSurface
+----------
 .. autoclass:: SVGSurface
+
+
+Context
+=======
+
+.. autoclass:: Context
+
+
+Matrix
+======
+
+.. autoclass:: Matrix
+
+
+Patterns
+========
+
+.. autoclass:: Pattern()
+
+SolidPattern
+------------
+.. autoclass:: SolidPattern
+
+SurfacePattern
+--------------
+.. autoclass:: SurfacePattern
+
+Gradient
+--------
+.. autoclass:: Gradient()
+
+LinearGradient
+..............
+.. autoclass:: LinearGradient
+
+RadialGradient
+..............
+.. autoclass:: RadialGradient
+
+
+Fonts
+=====
+
+Font faces
+----------
+.. autoclass:: FontFace()
+
+ToyFontFace
+...........
+.. autoclass:: ToyFontFace
+
+
+ScaledFont
+----------
+.. autoclass:: ScaledFont
+
+FontOptions
+-----------
+.. autoclass:: FontOptions(**values)
 
 
 Enumerated values
