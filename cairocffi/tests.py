@@ -188,17 +188,22 @@ def test_png():
         surface = ImageSurface('ARGB32', 1, 1)
         surface.write_to_png(filename)
         with open(filename, 'rb') as fd:
-            assert fd.read().startswith(png_magic_number)
+            written_png_bytes = fd.read()
+            assert written_png_bytes.startswith(png_magic_number)
         open(filename, 'wb').close()
         with open(filename, 'rb') as fd:
             assert fd.read() == b''
         surface.write_to_png(filename_bytes)
         with open(filename, 'rb') as fd:
-            assert fd.read().startswith(png_magic_number)
+            assert fd.read() == written_png_bytes
+        file_obj = io.BytesIO()
+        surface.write_to_png(file_obj)
+        assert file_obj.getvalue() == written_png_bytes
+        assert surface.write_to_png() == written_png_bytes
+
 
         with open(filename, 'wb') as fd:
             fd.write(png_bytes)
-
         for source in [io.BytesIO(png_bytes), filename, filename_bytes]:
             surface = ImageSurface.create_from_png(source)
             assert surface.get_format() == 'ARGB32'
@@ -206,10 +211,6 @@ def test_png():
             assert surface.get_height() == 1
             assert surface.get_stride() == 4
             assert surface.get_data()[:] == pixel(b'\xcc\x32\x6e\x97')
-
-    file_obj = io.BytesIO()
-    surface.write_to_png(file_obj)
-    assert file_obj.getvalue().startswith(png_magic_number)
 
     with pytest.raises(IOError):
         # Truncated input
