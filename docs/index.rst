@@ -8,3 +8,4 @@ Documentation
    :maxdepth: 2
 
    api
+   cffi_api

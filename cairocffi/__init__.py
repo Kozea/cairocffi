@@ -14,7 +14,7 @@ import sys
 from cffi import FFI
 
 from .constants import _CAIRO_HEADERS
-from .compat import FileNotFoundError, xrange
+from .compat import FileNotFoundError
 
 
 VERSION = '0.1'
@@ -27,6 +27,9 @@ cairo = ffi.dlopen('cairo')
 
 class CairoError(Exception):
     """Cairo returned an error status."""
+    def __init__(self, message, status):
+        super(CairoError, self).__init__(message)
+        self.status = status
 
 
 Error = CairoError  # pycairo compat
@@ -43,17 +46,18 @@ STATUS_TO_EXCEPTION = dict(
 def _check_status(status):
     if status != 'SUCCESS':
         exception = STATUS_TO_EXCEPTION.get(status, CairoError)
-        raise exception('cairo returned %s: %s' % (
-            status, ffi.string(cairo.cairo_status_to_string(status))))
+        message = 'cairo returned %s: %s' % (
+            status, ffi.string(cairo.cairo_status_to_string(status)))
+        raise exception(message, status)
 
 
 def cairo_version():
-    """Return the cairo version number a single integer."""
+    """Return the cairo version number as a single integer."""
     return cairo.cairo_version()
 
 
 def cairo_version_string():
-    """Return the cairo version number a string."""
+    """Return the cairo version number as a string."""
     return ffi.string(cairo.cairo_version_string()).decode('ascii')
 
 
@@ -90,7 +94,7 @@ class Matrix(object):
             return object.__setattr__(self, name, value)
 
     def as_tuple(self):
-        return (self.xx, self.yx,  self.xy, self.yy,  self.x0, self.y0)
+        return (self.xx, self.yx, self.xy, self.yy, self.x0, self.y0)
 
     def copy(self):
         return type(self)(*self.as_tuple())
@@ -144,19 +148,6 @@ from .patterns import (Pattern, SolidPattern, SurfacePattern,
                        Gradient, LinearGradient, RadialGradient)
 from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions
 from .context import Context
-
-def _relocate(obj):
-    """Pretend that stuff is defined here instead of in sub-modules."""
-    for attr in vars(obj).values():
-        if getattr(attr, '__module__', '').startswith('cairocffi.'):
-            attr.__module__ = 'cairocffi'
-            _relocate(attr)
-
-_relocate(surfaces)
-_relocate(patterns)
-_relocate(fonts)
-_relocate(context)
-del _relocate
 
 # For compatibility with pycairo. In cairocffi users can just use strings.
 from .constants import *

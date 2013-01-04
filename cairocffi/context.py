@@ -198,6 +198,8 @@ class Context(object):
         return result
 
     def append_path(self, path):
+        # Both objects need to stay alive
+        # until after cairo.cairo_append_path() is finished, but not after.
         path, _ = _encode_path(path)
         cairo.cairo_append_path(self._pointer, path)
         self._check_status()

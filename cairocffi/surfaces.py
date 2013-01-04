@@ -74,6 +74,13 @@ class KeepAlive(object):
 
 
 class Surface(object):
+    """The base class for all surface types.
+
+    Should not be instanciated directly, but see :ref:`cffi_api`.
+    An instance may be returned for cairo surface type
+    that are not (yet) defined in cairocffi.
+
+    """
     def __init__(self, pointer, target_keep_alive=None):
         self._pointer = ffi.gc(pointer, cairo.cairo_surface_destroy)
         self._check_status()
@@ -93,32 +100,92 @@ class Surface(object):
         Surface.__init__(self, pointer)  # Skip the subclass’s __init__
         return self
 
-    def copy_page(self):
-        cairo.cairo_surface_copy_page(self._pointer)
-        self._check_status()
-
-    def show_page(self):
-        cairo.cairo_surface_show_page(self._pointer)
-        self._check_status()
-
     def create_similar(self, content, width, height):
+        """Create a new surface that is as compatible as possible
+        for uploading to and the use in conjunction with this surface.
+        For example the new surface will have the same fallback resolution
+        and :class:`FontOptions`.
+        Generally, the new surface will also use the same backend as other,
+        unless that is not possible for some reason.
+
+        Initially the surface contents are all 0
+        (transparent if contents have transparency, black otherwise.)
+
+        Use :meth:`create_similar_image` if you need an image surface
+        which can be painted quickly to the target surface.
+
+        :param content: the content for the new surface
+        :param width: width of the new surface (in device-space units)
+        :type width: int
+        :param height: height of the new surface (in device-space units)
+        :type height: int
+        :returns: A new instance of :class:`Surface` or one of its subclasses.
+
+        """
         return Surface._from_pointer(cairo.cairo_surface_create_similar(
             self._pointer, content, width, height))
 
     def create_similar_image(self, content, width, height):
+        """
+        Create a new image surface that is as compatible as possible
+        for uploading to and the use in conjunction with this surface.
+        However, this surface can still be used like any normal image surface.
+
+        Initially the surface contents are all 0
+        (transparent if contents have transparency, black otherwise.)
+
+        Use :meth:`create_similar` if you don't need an image surface.
+
+        :param format: the format for the new surface
+        :param width: width of the new surface, (in device-space units)
+        :type width: int
+        :param height: height of the new surface (in device-space units)
+        :type height: int
+        :returns: A new :class:`ImageSurface` instance.
+
+        """
         return Surface._from_pointer(cairo.cairo_surface_create_similar_image(
             self._pointer, content, width, height))
 
     def create_for_rectangle(self, x, y, width, height):
+        """
+        Create a new surface that is a rectangle within this surface.
+        All operations drawn to this surface are then clipped and translated
+        onto the target surface.
+        Nothing drawn via this sub-surface outside of its bounds
+        is drawn onto the target surface,
+        making this a useful method for passing constrained child surfaces
+        to library routines that draw directly onto the parent surface,
+        i.e. with no further backend allocations,
+        double buffering or copies.
+
+        .. note::
+
+            As of cairo 1.12,
+            the semantics of subsurfaces have not been finalized yet
+            unless the rectangle is in full device units,
+            is contained within the extents of the target surface,
+            and the target or subsurface's device transforms are not changed.
+
+        :param x:
+            The x-origin of the sub-surface
+            from the top-left of the target surface (in device-space units)
+        :param y:
+            The y-origin of the sub-surface
+            from the top-left of the target surface (in device-space units)
+        :param width:
+            Width of the sub-surface (in device-space units)
+        :param height:
+            Height of the sub-surface (in device-space units)
+        :returns:
+            A new :class:`Surface` object.
+
+        """
         return Surface._from_pointer(cairo.cairo_surface_create_for_rectangle(
             self._pointer, x, y, width, height))
 
-    def finish(self):
-        cairo.cairo_surface_finish(self._pointer)
-        self._check_status()
-
-    def flush(self):
-        cairo.cairo_surface_flush(self._pointer)
+    def copy_page(self):
+        cairo.cairo_surface_copy_page(self._pointer)
         self._check_status()
 
     def get_content(self):
@@ -188,6 +255,43 @@ class Surface(object):
     def mark_dirty_rectangle(self, x, y, width, height):
         cairo.cairo_surface_mark_dirty_rectangle(
             self._pointer, x, y, width, height)
+        self._check_status()
+
+    def show_page(self):
+        cairo.cairo_surface_show_page(self._pointer)
+        self._check_status()
+
+    def flush(self):
+        """Do any pending drawing for the surface
+        and also restore any temporary modifications
+        cairo has made to the surface's state.
+        This function must be called before switching
+        from drawing on the surface with cairo
+        to drawing on it directly with native APIs.
+        If the surface doesn't support direct access,
+        then this function does nothing.
+
+        """
+        cairo.cairo_surface_flush(self._pointer)
+        self._check_status()
+
+    def finish(self):
+        """This function finishes the surface
+        and drops all references to external resources.
+        For example, for the Xlib backend it means that
+        cairo will no longer access the drawable, which can be freed.
+        After calling :meth:`finish` the only valid operations on a surface
+        are getting and setting user data, flushing and finishing it.
+        Further drawing to the surface will not affect the surface
+        but will instead trigger a :class:`CairoError`
+        with a ``SURFACE_FINISHED`` status.
+
+        When the surface is garbage-collected, cairo will call :meth:`finish()`
+        if it hasn't been called already,
+        before freeing the resources associated with the surface.
+
+        """
+        cairo.cairo_surface_finish(self._pointer)
         self._check_status()
 
     def write_to_png(self, target):
