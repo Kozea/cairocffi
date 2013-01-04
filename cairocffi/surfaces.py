@@ -197,6 +197,24 @@ class Surface(object):
         """
         return cairo.cairo_surface_get_content(self._pointer)
 
+    def has_show_text_glyphs(self):
+        """Returns whether the surface supports sophisticated
+        :meth:`Context.show_text_glyphs` operations.
+        That is, whether it actually uses the text and cluster data
+        provided to a :meth:`Context.show_text_glyphs` call.
+
+        .. note::
+
+            Even if this function returns :obj:`False`,
+            :meth:`Context.show_text_glyphs` operation targeted at surface
+            will still succeed.
+            It just will act like a :meth:`Context.show_glyphs` operation.
+            Users can use this function to avoid computing UTF-8 text
+            and cluster mapping if the target surface does not use it.
+
+        """
+        return bool(cairo.cairo_surface_has_show_text_glyphs(self._pointer))
+
     def get_device_offset(self):
         offsets = ffi.new('double[2]')
         cairo.cairo_surface_get_device_offset(

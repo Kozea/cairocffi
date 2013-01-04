@@ -125,6 +125,8 @@ def test_surface():
     assert similar.get_format() == 'A8'
     assert similar.get_width() == 4
     assert similar.get_height() == 100
+    assert similar.has_show_text_glyphs() is False
+    assert PDFSurface(None, 1, 1).has_show_text_glyphs() is True
     surface.copy_page()
     surface.show_page()
     surface.mark_dirty()
