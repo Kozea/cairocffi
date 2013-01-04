@@ -3,7 +3,6 @@ import os
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',
               'sphinx.ext.coverage']
-source_suffix = '.rst'
 master_doc = 'index'
 project = 'cairocffi'
 copyright = '2013, Simon Sapin'
@@ -13,8 +12,6 @@ release = re.search(
          'cairocffi', '__init__.py')).read().strip()).group(1)
 version = '.'.join(release.split('.')[:2])
 exclude_patterns = ['_build']
-pygments_style = 'sphinx'
-html_theme = 'haiku'
 autodoc_member_order = 'bysource'
 autodoc_default_flags = ['members']
 intersphinx_mapping = {

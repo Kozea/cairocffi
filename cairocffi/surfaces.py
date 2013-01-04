@@ -76,7 +76,7 @@ class KeepAlive(object):
 class Surface(object):
     """The base class for all surface types.
 
-    Should not be instanciated directly, but see :ref:`cffi_api`.
+    Should not be instanciated directly, but see :doc:`cffi_api`.
     An instance may be returned for cairo surface type
     that are not (yet) defined in cairocffi.
 
@@ -189,6 +189,12 @@ class Surface(object):
         self._check_status()
 
     def get_content(self):
+        """
+        :returns: the :ref:`CONTENT` of this surface \
+            which indicates whether the surface contains color \
+            and/or alpha information.
+
+        """
         return cairo.cairo_surface_get_content(self._pointer)
 
     def get_device_offset(self):

@@ -1,5 +1,3 @@
-.. _cffi_api:
-
 CFFI API
 ========
 
