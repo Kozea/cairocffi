@@ -125,18 +125,6 @@ class Matrix(object):
         cairo.cairo_matrix_init_rotate(result._pointer, radians)
         return result
 
-    def __getattr__(self, name):
-        if name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
-            return getattr(self._pointer, name)
-        else:
-            raise AttributeError(name)
-
-    def __setattr__(self, name, value):
-        if name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
-            return setattr(self._pointer, name, value)
-        else:
-            return object.__setattr__(self, name, value)
-
     def as_tuple(self):
         """Return all of the matrix’s components.
 
@@ -298,15 +286,19 @@ class Matrix(object):
         cairo.cairo_matrix_transform_distance(self._pointer, xy + 0, xy + 1)
         return tuple(xy)
 
-    # For docs:
-    xx = 1.
-    yx = 0.
-    xy = 0.
-    yy = 1.
-    x0 = 0.
-    #: Individual (float) components of the matrix
-    #: are available as read-write attributes.
-    y0 = 0.
+    def _component_property(name):
+        return property(
+            lambda self: getattr(self._pointer, name),
+            lambda self, value: setattr(self._pointer, name, value),
+            doc='Read-write attribute access to a single float component.')
+
+    xx = _component_property('xx')
+    yx = _component_property('yx')
+    xy = _component_property('xy')
+    yy = _component_property('yy')
+    x0 = _component_property('x0')
+    y0 = _component_property('y0')
+    del _component_property
 
 
 from .surfaces import Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface
