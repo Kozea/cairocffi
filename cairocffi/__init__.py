@@ -85,7 +85,7 @@ class Matrix(object):
         if name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
             return getattr(self._pointer, name)
         else:
-            return object.__getattr__(self, name)
+            raise AttributeError(name)
 
     def __setattr__(self, name, value):
         if name in ('xx', 'yx', 'xy', 'yy', 'x0', 'y0'):
