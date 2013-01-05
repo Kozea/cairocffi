@@ -711,8 +711,10 @@ class PDFSurface(Surface):
 
     @staticmethod
     def version_to_string(version):
-        return ffi.string(
-            cairo.cairo_pdf_version_to_string(version)).decode('ascii')
+        c_string = cairo.cairo_pdf_version_to_string(version)
+        if c_string == ffi.NULL:
+            raise ValueError(version)
+        return ffi.string(c_string).decode('ascii')
 
 
 class PSSurface(Surface):
@@ -766,8 +768,10 @@ class PSSurface(Surface):
 
     @staticmethod
     def ps_level_to_string(level):
-        return ffi.string(
-            cairo.cairo_ps_level_to_string(level)).decode('ascii')
+        c_string = cairo.cairo_ps_level_to_string(level)
+        if c_string == ffi.NULL:
+            raise ValueError(level)
+        return ffi.string(c_string).decode('ascii')
 
 
 class SVGSurface(Surface):
@@ -796,8 +800,10 @@ class SVGSurface(Surface):
 
     @staticmethod
     def version_to_string(version):
-        return ffi.string(
-            cairo.cairo_svg_version_to_string(version)).decode('ascii')
+        c_string = cairo.cairo_svg_version_to_string(version)
+        if c_string == ffi.NULL:
+            raise ValueError(version)
+        return ffi.string(c_string).decode('ascii')
 
 
 SURFACE_TYPE_TO_CLASS = {
