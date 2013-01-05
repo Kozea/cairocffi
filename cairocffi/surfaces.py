@@ -124,10 +124,11 @@ class Surface(object):
         Use :meth:`create_similar_image` if you need an image surface
         which can be painted quickly to the target surface.
 
-        :param content: the content for the new surface
+        :param content: the :ref:`CONTENT` string for the new surface.
         :param width: width of the new surface (in device-space units)
-        :type width: int
         :param height: height of the new surface (in device-space units)
+        :type content: str
+        :type width: int
         :type height: int
         :returns: A new instance of :class:`Surface` or one of its subclasses.
 
@@ -146,10 +147,11 @@ class Surface(object):
 
         Use :meth:`create_similar` if you don't need an image surface.
 
-        :param format: the format for the new surface
+        :param format: the :ref:`FORMAT` string for the new surface
         :param width: width of the new surface, (in device-space units)
-        :type width: int
         :param height: height of the new surface (in device-space units)
+        :type format: str
+        :type width: int
         :type height: int
         :returns: A new :class:`ImageSurface` instance.
 
@@ -187,6 +189,10 @@ class Surface(object):
             Width of the sub-surface (in device-space units)
         :param height:
             Height of the sub-surface (in device-space units)
+        :type x: double
+        :type y: double
+        :type width: double
+        :type height: double
         :returns:
             A new :class:`Surface` object.
 
@@ -195,10 +201,9 @@ class Surface(object):
             self._pointer, x, y, width, height))
 
     def get_content(self):
-        """
-        :returns: the :ref:`CONTENT` of this surface \
-            which indicates whether the surface contains color \
-            and/or alpha information.
+        """Returns the :ref:`CONTENT` string of this surface,
+        which indicates whether the surface contains color
+        and/or alpha information.
 
         """
         return cairo.cairo_surface_get_content(self._pointer)
@@ -555,7 +560,7 @@ class ImageSurface(Surface):
     The contents of bits within a pixel,
     but not belonging to the given format are undefined).
 
-    :param format: :ref:`FORMAT` of pixels in the surface to create.
+    :param format: :ref:`FORMAT` string for the surface to create.
     :param width: Width of the surface, in pixels.
     :param height: Height of the surface, in pixels.
     :param data:
@@ -568,6 +573,7 @@ class ImageSurface(Surface):
         before allocating the data buffer.
         If omitted but :obj:`data` is given,
         :meth:`format_stride_for_width` is used.
+    :type format: str
     :type width: int
     :type height: int
     :type stride: int
@@ -608,8 +614,9 @@ class ImageSurface(Surface):
             data = bytearray(stride * height)
             surface = ImageSurface(format, width, height, data, stride)
 
-        :param format: A :ref:`FORMAT` value.
+        :param format: A :ref:`FORMAT` string.
         :param width: The desired width of the surface, in pixels.
+        :type format: str
         :type width: int
         :returns:
             The appropriate stride to use given the desired format and width,
@@ -643,7 +650,7 @@ class ImageSurface(Surface):
 
     def get_data(self):
         """Return the buffer pointing to the image’s pixel data,
-        encoded according to the surface’s :ref:`FORMAT`.
+        encoded according to the surface’s :ref:`FORMAT` string.
 
         A call to :meth:`flush` is required before accessing the pixel data
         to ensure that all pending drawing operations are finished.
@@ -657,7 +664,7 @@ class ImageSurface(Surface):
             size=self.get_stride() * self.get_height())
 
     def get_format(self):
-        """Return the :ref:`FORMAT` of the surface."""
+        """Return the :ref:`FORMAT` string of the surface."""
         return cairo.cairo_image_surface_get_format(self._pointer)
 
     def get_width(self):

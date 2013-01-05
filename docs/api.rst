@@ -139,8 +139,8 @@ or both.
 
 .. _FORMAT:
 
-Format
-------
+Pixel format
+------------
 
 Used to identify the memory format of image data.
 
@@ -184,7 +184,7 @@ Used to identify the memory format of image data.
 .. data:: FORMAT_RGB30
     :annotation: = 'RGB30'
 
-    Like :obj:`FORMAT_RGB24` but with 10bpc.
+    Like :obj:`RGB24 <FORMAT_RGB24>` but with 10bpc.
 
 
 .. _OPERATOR:
@@ -194,7 +194,7 @@ Operator
 
 Used to set the compositing operator for all cairo drawing operations.
 
-The default operator is :obj:`OPERATOR_OVER`.
+The default operator is :obj:`OVER <OPERATOR_OVER>`.
 
 The operators marked as **unbounded** modify their destination
 even outside of the mask layer
@@ -279,7 +279,7 @@ see `http://cairographics.org/operators/ <http://cairographics.org/operators/>`_
 .. data:: OPERATOR_SATURATE
     :annotation: = 'SATURATE'
 
-    Like :obj:`OPERATOR_OVER`,
+    Like :obj:`OVER <OPERATOR_OVER>`,
     but assuming source and destination are disjoint geometries.
 
 .. data:: OPERATOR_MULTIPLY
@@ -385,7 +385,7 @@ see `http://cairographics.org/operators/ <http://cairographics.org/operators/>`_
 
     Creates a color with the luminosity of the source
     and the hue and saturation of the target.
-    This produces an inverse effect to :obj:`OPERATOR_HSL_COLOR`.
+    This produces an inverse effect to :obj:`HSL_COLOR <OPERATOR_HSL_COLOR>`.
     (Since cairo 1.10)
 
 
@@ -441,12 +441,13 @@ These make no guarantee on how the backend will perform its rasterisation
 nor that they have any differing effect other than to enable
 some form of antialiasing.
 In the case of glyph rendering,
-:obj:`ANTIALIAS_FAST` and :obj:`ANTIALIAS_GOOD` will be mapped to
-:obj:`ANTIALIAS_GRAY`, with :obj:`ANTIALIAS_BEST` being equivalent to
-:obj:`ANTIALIAS_SUBPIXEL`.
+:obj:`FAST <ANTIALIAS_FAST>` and :obj:`GOOD <ANTIALIAS_GOOD>`
+will be mapped to :obj:`GRAY <ANTIALIAS_GRAY>`,
+with :obj:`BEST <ANTIALIAS_BEST>` being equivalent to
+:obj:`SUBPIXEL <ANTIALIAS_SUBPIXEL>`.
 
-The interpretation of :obj:`ANTIALIAS_DEFAULT` is left entirely up to
-the backend, typically this will be similar to :obj:`ANTIALIAS_GOOD`.
+The interpretation of :obj:`DEFAULT <ANTIALIAS_DEFAULT>` is left entirely up to
+the backend, typically this will be similar to :obj:`GOOD <ANTIALIAS_GOOD>`.
 
 
 .. _FILL_RULE:
@@ -464,7 +465,7 @@ or have a tricky intersection such as intersecting tangent to the path.
 (Note that filling is not actually implemented in this way.
 This is just a description of the rule that is applied.)
 
-The default fill rule is :obj:`FILL_RULE_WINDING`.
+The default fill rule is :obj:`WINDING <FILL_RULE_WINDING>`.
 
 New entries may be added in future versions.
 
@@ -493,7 +494,7 @@ Line cap
 
 Specifies how to render the endpoints of the path when stroking.
 
-The default line cap style is :obj:`LINE_CAP_BUTT`.
+The default line cap style is :obj:`BUTT <LINE_CAP_BUTT>`.
 
 .. data:: LINE_CAP_BUTT
     :annotation: = 'BUTT'
@@ -518,7 +519,7 @@ Line join
 
 Specifies how to render the junction of two lines when stroking.
 
-The default line join style is :obj:`LINE_JOIN_MITER`.
+The default line join style is :obj:`MITER <LINE_JOIN_MITER>`.
 
 
 .. data:: LINE_JOIN_MITER
@@ -586,7 +587,7 @@ Subpixel order
 
 The subpixel order specifies the order of color elements within each pixel
 on the display device when rendering with an antialiasing mode of
-:obj:`ANTIALIAS_SUBPIXEL`.
+:obj:`SUBPIXEL <ANTIALIAS_SUBPIXEL>`.
 
 
 .. data:: SUBPIXEL_ORDER_DEFAULT
@@ -762,8 +763,9 @@ for areas "outside" the pattern's natural area,
 
 Mesh patterns are not affected by the extend mode.
 
-The default extend mode is :obj:`EXTEND_NONE` for :class:`SurfacePattern`
-and :obj:`EXTEND_PAD` for :class:`Gradient` patterns.
+The default extend mode is
+:obj:`NONE <EXTEND_NONE>` for :class:`SurfacePattern`
+and :obj:`PAD <EXTEND_PAD>` for :class:`Gradient` patterns.
 
 New entries may be added in future versions.
 
@@ -804,13 +806,13 @@ to be used with a particular pattern.
     :annotation: = 'FAST'
 
     A high-performance filter,
-    with quality similar to :obj:`FILTER_NEAREST`.
+    with quality similar to :obj:`NEAREST <FILTER_NEAREST>`.
 
 .. data:: FILTER_GOOD
     :annotation: = 'GOOD'
 
     A reasonable-performance filter,
-    with quality similar to :obj:`FILTER_BILINEAR`.
+    with quality similar to :obj:`BILINEAR <FILTER_BILINEAR>`.
 
 .. data:: FILTER_BEST
     :annotation: = 'BEST'
