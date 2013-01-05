@@ -211,11 +211,11 @@ class Surface(object):
 
         .. note::
 
-            Even if this function returns :obj:`False`,
+            Even if this method returns :obj:`False`,
             :meth:`Context.show_text_glyphs` operation targeted at surface
             will still succeed.
             It just will act like a :meth:`Context.show_glyphs` operation.
-            Users can use this function to avoid computing UTF-8 text
+            Users can use this method to avoid computing UTF-8 text
             and cluster mapping if the target surface does not use it.
 
         """
@@ -266,7 +266,7 @@ class Surface(object):
         cairo will fallback by rendering operations to an image
         and then overlaying that image onto the output.
         For backends that are natively vector-oriented,
-        this function can be used to set the resolution
+        this method can be used to set the resolution
         used for these image fallbacks,
         (larger values will result in more detailed images,
         but also larger file sizes).
@@ -277,7 +277,7 @@ class Surface(object):
         For backends that are natively raster-oriented,
         image fallbacks are still possible,
         but they are always performed at the native device resolution.
-        So this function has no effect on those backends.
+        So this method has no effect on those backends.
 
         .. note::
 
@@ -360,7 +360,7 @@ class Surface(object):
         for details about which MIME types it can handle.
         Caution: the associated MIME data will be discarded
         if you draw on the surface afterwards.
-        Use this function with care.
+        Use this method with care.
 
         :param mime_type: The MIME type of the image data.
         :type mime_type: ASCII string
@@ -435,7 +435,7 @@ class Surface(object):
         so that cairo can retain cached contents
         for other parts of the surface.
 
-        Any cached clip set on the surface will be reset by this function,
+        Any cached clip set on the surface will be reset by this method,
         to make sure that future cairo calls have the clip set
         that they expect.
 
@@ -481,18 +481,18 @@ class Surface(object):
         """Do any pending drawing for the surface
         and also restore any temporary modifications
         cairo has made to the surface's state.
-        This function must be called before switching
+        This method must be called before switching
         from drawing on the surface with cairo
         to drawing on it directly with native APIs.
         If the surface doesn't support direct access,
-        then this function does nothing.
+        then this method does nothing.
 
         """
         cairo.cairo_surface_flush(self._pointer)
         self._check_status()
 
     def finish(self):
-        """This function finishes the surface
+        """This method finishes the surface
         and drops all references to external resources.
         For example, for the Xlib backend it means that
         cairo will no longer access the drawable, which can be freed.
@@ -537,8 +537,7 @@ class Surface(object):
 
 
 class ImageSurface(Surface):
-    """
-    Creates an image surface of the specified format and dimensions.
+    """Creates an image surface of the specified format and dimensions.
 
     If :obj:`data` is not :obj:`None`
     its initial contents will be used as the initial image contents;
@@ -599,7 +598,7 @@ class ImageSurface(Surface):
     @staticmethod
     def format_stride_for_width(format, width):
         """
-        This function provides a stride value (byte offset between rows)
+        This method provides a stride value (byte offset between rows)
         that will respect all alignment requirements
         of the accelerated image-rendering code within cairo.
         Typical usage will be of the form::
@@ -629,6 +628,7 @@ class ImageSurface(Surface):
             If you already have a byte string in memory,
             use :class:`io.BytesIO`.
         :returns: A new :class:`ImageSurface` instance.
+
         """
         if hasattr(source, 'read'):
             read_func = _make_read_func(source)
@@ -681,6 +681,28 @@ class ImageSurface(Surface):
 
 
 class PDFSurface(Surface):
+    """Creates a PDF surface of the specified size in PostScript points
+    to be written to :obj:`target`.
+
+    Note that the size of individual pages of the PDF output can vary.
+    See :meth`set_size`.
+
+    :obj:`target` can be :obj:`None` to specify no output.
+    This will generate a surface that may be queried and used as a source,
+    without generating a temporary file.
+
+    :param target:
+        A filename,
+        a binary mode file-like object with a :meth:`~file.write` method,
+        or :obj:`None`.
+    :param width_in_points:
+        Width of the surface, in points (1 point == 1/72.0 inch)
+    :param height_in_points:
+        Height of the surface, in points (1 point == 1/72.0 inch)
+    :type width_in_points: float
+    :type height_in_points: float
+
+    """
     def __init__(self, target, width_in_points, height_in_points):
         if hasattr(target, 'write') or target is None:
             write_func = _make_write_func(target)
@@ -693,16 +715,53 @@ class PDFSurface(Surface):
         Surface.__init__(self, pointer, target_keep_alive=write_func)
 
     def set_size(self, width_in_points, height_in_points):
+        """Changes the size of a PDF surface
+        for the current (and subsequent) pages.
+
+        This method should only be called
+        before any drawing operations have been performed on the current page.
+        The simplest way to do this is to call this method
+        immediately after creating the surface
+        or immediately after completing a page with either
+        :meth:`~Surface.show_page` or :meth:`~Surface.copy_page`.
+
+        :param width_in_points:
+            New width of the page, in points (1 point == 1/72.0 inch)
+        :param height_in_points:
+            New height of the page, in points (1 point == 1/72.0 inch)
+        :type width_in_points: float
+        :type height_in_points: float
+
+        """
         cairo.cairo_pdf_surface_set_size(
             self._pointer, width_in_points, height_in_points)
         self._check_status()
 
     def restrict_to_version(self, version):
+        """Restricts the generated PDF file to :obj:`version`.
+
+        See :meth:`get_versions` for a list of available version values
+        that can be used here.
+
+        This method should only be called
+        before any drawing operations have been performed on the given surface.
+        The simplest way to do this is to call this method
+        immediately after creating the surface.
+
+        :param version: A :ref:`PDF_VERSION` string.
+
+        """
         cairo.cairo_pdf_surface_restrict_to_version(self._pointer, version)
         self._check_status()
 
     @staticmethod
     def get_versions():
+        """Return the list of supported PDF versions.
+        See :meth:`restrict_to_version`.
+
+        :return: A list of :ref:`PDF_VERSION` strings.
+
+        """
         versions = ffi.new('cairo_pdf_version_t const **')
         num_versions = ffi.new('int *')
         cairo.cairo_pdf_get_versions(versions, num_versions)
@@ -711,6 +770,11 @@ class PDFSurface(Surface):
 
     @staticmethod
     def version_to_string(version):
+        """Return the string representation of the given :ref:`PDF_VERSION`.
+        See :meth:`get_versions` for a way to get
+        the list of valid version ids.
+
+        """
         c_string = cairo.cairo_pdf_version_to_string(version)
         if c_string == ffi.NULL:
             raise ValueError(version)
@@ -718,6 +782,28 @@ class PDFSurface(Surface):
 
 
 class PSSurface(Surface):
+    """Creates a PostScript surface of the specified size in PostScript points
+    to be written to :obj:`target`.
+
+    Note that the size of individual pages of the PostScript output can vary.
+    See :meth`set_size`.
+
+    :obj:`target` can be :obj:`None` to specify no output.
+    This will generate a surface that may be queried and used as a source,
+    without generating a temporary file.
+
+    :param target:
+        A filename,
+        a binary mode file-like object with a :meth:`~file.write` method,
+        or :obj:`None`.
+    :param width_in_points:
+        Width of the surface, in points (1 point == 1/72.0 inch)
+    :param height_in_points:
+        Height of the surface, in points (1 point == 1/72.0 inch)
+    :type width_in_points: float
+    :type height_in_points: float
+
+    """
     def __init__(self, target, width_in_points, height_in_points):
         if hasattr(target, 'write') or target is None:
             write_func = _make_write_func(target)
@@ -730,36 +816,182 @@ class PSSurface(Surface):
         Surface.__init__(self, pointer, target_keep_alive=write_func)
 
     def dsc_comment(self, comment):
+        """ Emit a comment into the PostScript output for the given surface.
+
+        The comment is expected to conform to
+        the PostScript Language Document Structuring Conventions (DSC).
+        Please see that manual for details on the available comments
+        and their meanings.
+        In particular, the ``%%IncludeFeature`` comment allows
+        a device-independent means of controlling printer device features.
+        So the PostScript Printer Description Files Specification
+        will also be a useful reference.
+
+        The comment string must begin with a percent character (%)
+        and the total length of the string
+        (including any initial percent characters)
+        must not exceed 255 bytes.
+        Violating either of these conditions will
+        place surface into an error state.
+        But beyond these two conditions,
+        this method will not enforce conformance of the comment
+        with any particular specification.
+
+        The comment string should not have a trailing newline.
+
+        The DSC specifies different sections
+        in which particular comments can appear.
+        This method provides for comments to be emitted
+        within three sections:
+        the header, the Setup section, and the PageSetup section.
+        Comments appearing in the first two sections
+        apply to the entire document
+        while comments in the BeginPageSetup section
+        apply only to a single page.
+
+        For comments to appear in the header section,
+        this method should be called after the surface is created,
+        but before a call to :meth:`dsc_begin_setup`.
+
+        For comments to appear in the Setup section,
+        this method should be called after a call to :meth:`dsc_begin_setup`
+        but before a call to :meth:`dsc_begin_page_setup`.
+
+        For comments to appear in the PageSetup section,
+        this method should be called after a call to
+        :meth:`dsc_begin_page_setup`.
+
+        Note that it is only necessary to call :meth:`dsc_begin_page_setup`
+        for the first page of any surface.
+        After a call to :meth:`~Surface.show_page`
+        or :meth:`~Surface.copy_page`
+        comments are unambiguously directed
+        to the PageSetup section of the current page.
+        But it doesn't hurt to call this method
+        at the beginning of every page
+        as that consistency may make the calling code simpler.
+
+        As a final note,
+        cairo automatically generates several comments on its own.
+        As such, applications must not manually generate
+        any of the following comments:
+
+        Header section: ``%!PS-Adobe-3.0``, ``%%Creator``, ``%%CreationDate``,
+        ``%%Pages``, ``%%BoundingBox``, ``%%DocumentData``,
+        ``%%LanguageLevel``, ``%%EndComments``.
+
+        Setup section: ``%%BeginSetup``, ``%%EndSetup``.
+
+        PageSetup section: ``%%BeginPageSetup``, ``%%PageBoundingBox``,
+        ``%%EndPageSetup``.
+
+        Other sections: ``%%BeginProlog``, ``%%EndProlog``, ``%%Page``,
+        ``%%Trailer``, ``%%EOF``.
+
+        """
         cairo.cairo_ps_surface_dsc_comment(
             self._pointer, _encode_string(comment))
         self._check_status()
 
     def dsc_begin_setup(self):
+        """Indicate that subsequent calls to :meth:`dsc_comment` should
+        direct comments to the Setup section of the PostScript output.
+
+        This method should be called at most once per surface,
+        and must be called before any call to :meth:`dsc_begin_page_setup`
+        and before any drawing is performed to the surface.
+
+        See :meth:`dsc_comment` for more details.
+
+        """
         cairo.cairo_ps_surface_dsc_begin_setup(self._pointer)
         self._check_status()
 
     def dsc_begin_page_setup(self):
+        """Indicate that subsequent calls to :meth:`dsc_comment` should
+        direct comments to the PageSetup section of the PostScript output.
+
+        This method is only needed for the first page of a surface.
+        It must be called after any call to :meth:`dsc_begin_setup`
+        and before any drawing is performed to the surface.
+
+        See :meth:`dsc_comment` for more details.
+
+        """
         cairo.cairo_ps_surface_dsc_begin_page_setup(self._pointer)
         self._check_status()
 
-    def get_eps(self):
-        return bool(cairo.cairo_ps_surface_get_eps(self._pointer))
-
     def set_eps(self, eps):
+        """
+        If :obj:`eps` is True,
+        the PostScript surface will output Encapsulated PostScript.
+
+        This method should only be called
+        before any drawing operations have been performed on the current page.
+        The simplest way to do this is to call this method
+        immediately after creating the surface.
+        An Encapsulated PostScript file should never contain
+        more than one page.
+
+        """
         cairo.cairo_ps_surface_set_eps(self._pointer, bool(eps))
         self._check_status()
 
+    def get_eps(self):
+        """Check whether the PostScript surface will output
+        Encapsulated PostScript.
+
+        """
+        return bool(cairo.cairo_ps_surface_get_eps(self._pointer))
+
     def set_size(self, width_in_points, height_in_points):
+        """Changes the size of a PostScript surface
+        for the current (and subsequent) pages.
+
+        This method should only be called
+        before any drawing operations have been performed on the current page.
+        The simplest way to do this is to call this method
+        immediately after creating the surface
+        or immediately after completing a page with either
+        :meth:`~Surface.show_page` or :meth:`~Surface.copy_page`.
+
+        :param width_in_points:
+            New width of the page, in points (1 point == 1/72.0 inch)
+        :param height_in_points:
+            New height of the page, in points (1 point == 1/72.0 inch)
+        :type width_in_points: float
+        :type height_in_points: float
+
+        """
         cairo.cairo_ps_surface_set_size(
             self._pointer, width_in_points, height_in_points)
         self._check_status()
 
     def restrict_to_level(self, level):
+        """Restricts the generated PostScript file to :obj:`level`.
+
+        See :meth:`get_levels` for a list of available level values
+        that can be used here.
+
+        This method should only be called
+        before any drawing operations have been performed on the given surface.
+        The simplest way to do this is to call this method
+        immediately after creating the surface.
+
+        :param version: A :ref:`PS_LEVEL` string.
+
+        """
         cairo.cairo_ps_surface_restrict_to_level(self._pointer, level)
         self._check_status()
 
     @staticmethod
     def get_levels():
+        """Return the list of supported PostScript levels.
+        See :meth:`restrict_to_level`.
+
+        :return: A list of :ref:`PS_LEVEL` strings.
+
+        """
         levels = ffi.new('cairo_ps_level_t const **')
         num_levels = ffi.new('int *')
         cairo.cairo_ps_get_levels(levels, num_levels)
@@ -768,6 +1000,11 @@ class PSSurface(Surface):
 
     @staticmethod
     def ps_level_to_string(level):
+        """Return the string representation of the given :ref:`PS_LEVEL`.
+        See :meth:`get_levels` for a way to get
+        the list of valid level ids.
+
+        """
         c_string = cairo.cairo_ps_level_to_string(level)
         if c_string == ffi.NULL:
             raise ValueError(level)
@@ -775,6 +1012,43 @@ class PSSurface(Surface):
 
 
 class SVGSurface(Surface):
+    """Creates a SVG surface of the specified size in points
+    to be written to :obj:`target`.
+
+    :obj:`target` can be :obj:`None` to specify no output.
+    This will generate a surface that may be queried and used as a source,
+    without generating a temporary file.
+
+    The SVG surface backend recognizes the following MIME types
+    for the data attached to a surface (see :meth:`~Surface.set_mime_data`)
+    when it is used as a source pattern for drawing on this surface:
+    ``image/png``,
+    ``image/jpeg`` and
+    ``text/x-uri``.
+    If any of them is specified, the SVG backend emits a href
+    with the content of MIME data instead of a surface snapshot
+    (PNG, Base64-encoded) in the corresponding image tag.
+
+    The unofficial MIME type ``text/x-uri`` is examined first.
+    If present, the URL is emitted as is:
+    assuring the correctness of URL is left to the client code.
+
+    If ``text/x-uri`` is not present,
+    but ``image/jpeg`` or ``image/png`` is specified,
+    the corresponding data is Base64-encoded and emitted.
+
+    :param target:
+        A filename,
+        a binary mode file-like object with a :meth:`~file.write` method,
+        or :obj:`None`.
+    :param width_in_points:
+        Width of the surface, in points (1 point == 1/72.0 inch)
+    :param height_in_points:
+        Height of the surface, in points (1 point == 1/72.0 inch)
+    :type width_in_points: float
+    :type height_in_points: float
+
+    """
     def __init__(self, target, width_in_points, height_in_points):
         if hasattr(target, 'write') or target is None:
             write_func = _make_write_func(target)
@@ -787,11 +1061,30 @@ class SVGSurface(Surface):
         Surface.__init__(self, pointer, target_keep_alive=write_func)
 
     def restrict_to_version(self, version):
+        """Restricts the generated SVG file to :obj:`version`.
+
+        See :meth:`get_versions` for a list of available version values
+        that can be used here.
+
+        This method should only be called
+        before any drawing operations have been performed on the given surface.
+        The simplest way to do this is to call this method
+        immediately after creating the surface.
+
+        :param version: A :ref:`SVG_VERSION` string.
+
+        """
         cairo.cairo_svg_surface_restrict_to_version(self._pointer, version)
         self._check_status()
 
     @staticmethod
     def get_versions():
+        """Return the list of supported SVG versions.
+        See :meth:`restrict_to_version`.
+
+        :return: A list of :ref:`SVG_VERSION` strings.
+
+        """
         versions = ffi.new('cairo_svg_version_t const **')
         num_versions = ffi.new('int *')
         cairo.cairo_svg_get_versions(versions, num_versions)
@@ -800,6 +1093,11 @@ class SVGSurface(Surface):
 
     @staticmethod
     def version_to_string(version):
+        """Return the string representation of the given :ref:`SVG_VERSION`.
+        See :meth:`get_versions` for a way to get
+        the list of valid version ids.
+
+        """
         c_string = cairo.cairo_svg_version_to_string(version)
         if c_string == ffi.NULL:
             raise ValueError(version)
