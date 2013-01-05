@@ -104,7 +104,7 @@ class Pattern(object):
         For example, if you want to make a pattern appear twice as large
         as it does by default the correct code to use is::
 
-            pattern.set_matrix(Matirx(xx=0.5, yy=0.5))
+            pattern.set_matrix(Matrix(xx=0.5, yy=0.5))
 
         Meanwhile, using values of 2 rather than 0.5 in the code above
         would cause the pattern to appear at half of its default size.

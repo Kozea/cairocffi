@@ -3,7 +3,7 @@
     cairocffi
     ~~~~~~~~~
 
-    cffi-based cairo bindings for Python. See README for details.
+    CFFI-based cairo bindings for Python. See README for details.
 
     :copyright: Copyright 2013 by Simon Sapin
     :license: BSD, see LICENSE for details.
@@ -26,7 +26,7 @@ cairo = ffi.dlopen('cairo')
 
 
 class CairoError(Exception):
-    """Cairo returned an error status."""
+    """Raised when cairo returns an error status."""
     def __init__(self, message, status):
         super(CairoError, self).__init__(message)
         self.status = status
@@ -52,12 +52,20 @@ def _check_status(status):
 
 
 def cairo_version():
-    """Return the cairo version number as a single integer."""
+    """Return the cairo version number as a single integer,
+    such as 11208 for ``1.12.8``.
+
+    Can be useful as a guard for method not available in older cairo versions::
+
+        if cairo_version() >= 11000:
+            surface.set_mime_data('image/jpeg', jpeg_bytes)
+
+    """
     return cairo.cairo_version()
 
 
 def cairo_version_string():
-    """Return the cairo version number as a string."""
+    """Return the cairo version number as a string, such as ``1.12.8``."""
     return ffi.string(cairo.cairo_version_string()).decode('ascii')
 
 
