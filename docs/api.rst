@@ -98,6 +98,8 @@ Enumerated values
 Some parameters or return values in the cairo API
 only have a fixed, finite set of valid values.
 These are represented as *enumerated types* in C, and as strings in CFFI.
+Passing the integer value of the underlying enum also works,
+but return values are always strings.
 Users are encouraged to just use literal strings in their source code,
 but constants are provided in the :mod:`cairocffi` module
 for compatibility with pycairo.
