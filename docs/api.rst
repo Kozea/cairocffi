@@ -43,6 +43,7 @@ Matrix
 ======
 
 .. autoclass:: Matrix
+    :undoc-members:
 
 
 Patterns

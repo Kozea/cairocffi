@@ -102,13 +102,11 @@ class Pattern(object):
         by the inverse of the pattern matrix.
 
         For example, if you want to make a pattern appear twice as large
-        as it does by default the correct code to use is:
+        as it does by default the correct code to use is::
 
-        matrix = Matirx()
-        matrix.scale(0.5)
-        pattern.set_matrix(matrix)
+            pattern.set_matrix(Matirx(xx=0.5, yy=0.5))
 
-        Meanwhile, using a value of 2 rather than 0.5 in the code above
+        Meanwhile, using values of 2 rather than 0.5 in the code above
         would cause the pattern to appear at half of its default size.
 
         Also, please note the discussion of the user-space locking semantics
