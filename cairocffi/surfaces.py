@@ -49,9 +49,18 @@ def _encode_filename(filename):
     return ffi.new('char[]', filename)
 
 
-def from_buffer(data):
-    return ffi.cast(
-        'char *', ctypes.addressof(ctypes.c_char.from_buffer(data)))
+def from_buffer(obj):
+    if hasattr(obj, 'buffer_info'):
+        # Looks like a array.array object.
+        address, length = obj.buffer_info()
+        return address, length * obj.itemsize
+    else:
+        # Other buffers.
+        # XXX Unfortunately ctypes.c_char.from_buffer
+        # does not have length information,
+        # and we’re not sure that len(obj) is measured in bytes.
+        # (It’s not for array.array, though that is taken care of.)
+        return ctypes.addressof(ctypes.c_char.from_buffer(obj)), len(obj)
 
 
 class KeepAlive(object):
@@ -534,14 +543,13 @@ class ImageSurface(Surface):
         else:
             if stride is None:
                 stride = self.format_stride_for_width(format, width)
-            if len(data) < stride * height:
+            address, length = from_buffer(data)
+            if length < stride * height:
                 raise ValueError('Got a %d bytes buffer, needs at least %d.'
-                                 % (len(data), stride * height))
-            self._data = data  # keep it alive
-            data = from_buffer(data)
+                                 % (length, stride * height))
             pointer = cairo.cairo_image_surface_create_for_data(
-                data, format, width, height, stride)
-        Surface.__init__(self, pointer)
+                ffi.cast('char*', address), format, width, height, stride)
+        Surface.__init__(self, pointer, target_keep_alive=data)
 
     @staticmethod
     def format_stride_for_width(format, width):

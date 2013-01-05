@@ -11,9 +11,11 @@
 """
 
 import io
+import gc
 import os
 import sys
 import math
+import array
 import base64
 import shutil
 import tempfile
@@ -72,23 +74,17 @@ def test_image_surface():
     assert surface.get_height() == 30
     assert surface.get_stride() == 20 * 4
 
-
-def test_image_surface_from_buffer():
-    if '__pypy__' in sys.modules:
-        # See https://bitbucket.org/cffi/cffi/issue/47
-        # and https://bugs.pypy.org/issue1354
-        pytest.xfail()
     with pytest.raises(ValueError):
         # buffer too small
-        data = bytearray(b'\x00' * 799)
+        data = array.array('B', b'\x00' * 799)
         ImageSurface.create_for_data(data, 'ARGB32', 10, 20)
-    data = bytearray(b'\x00' * 800)
+    data = array.array('B', b'\x00' * 800)
     surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20, stride=40)
     context = Context(surface)
     # The default source is opaque black:
     assert context.get_source().get_rgba() == (0, 0, 0, 1)
     context.paint_with_alpha(0.5)
-    assert data == pixel(b'\x80\x00\x00\x00') * 200
+    assert data.tostring() == pixel(b'\x80\x00\x00\x00') * 200
 
 
 def test_surface_create_similar_image():
@@ -165,6 +161,7 @@ def test_mime_data():
     surface = ImageSurface('A8', 1, 1)
     assert surface.supports_mime_type('image/jpeg') is False
     assert surface.get_mime_data('image/jpeg') is None
+    gc.collect()  # Clean up KeepAlive stuff from other tests
     assert len(cairocffi.surfaces.KeepAlive.instances) == 0
     surface.set_mime_data('image/jpeg', b'lol')
     assert len(cairocffi.surfaces.KeepAlive.instances) == 1
