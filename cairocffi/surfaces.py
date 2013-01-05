@@ -687,6 +687,18 @@ class PDFSurface(Surface):
     Note that the size of individual pages of the PDF output can vary.
     See :meth`set_size`.
 
+    The PDF surface backend recognizes the following MIME types
+    for the data attached to a surface (see :meth:`~Surface.set_mime_data`)
+    when it is used as a source pattern for drawing on this surface:
+    ``image/jpeg`` and
+    ``image/jp2``.
+    If any of them is specified, the PDF backend emits an image
+    with the content of MIME data
+    (with the ``/DCTDecode`` or ``/JPXDecode`` filter, respectively)
+    instead of a surface snapshot
+    (with the ``/FlateDecode`` filter),
+    which typically produces PDF with a smaller file size.
+
     :obj:`target` can be :obj:`None` to specify no output.
     This will generate a surface that may be queried and used as a source,
     without generating a temporary file.
@@ -791,6 +803,14 @@ class PSSurface(Surface):
     :obj:`target` can be :obj:`None` to specify no output.
     This will generate a surface that may be queried and used as a source,
     without generating a temporary file.
+
+    The PostScript surface backend recognizes the ``image/jpeg`` MIME type
+    for the data attached to a surface (see :meth:`~Surface.set_mime_data`)
+    when it is used as a source pattern for drawing on this surface.
+    If it is specified, the PostScript backend emits an image
+    with the content of MIME data (with the ``/DCTDecode`` filter)
+    instead of a surface snapshot (with the ``/FlateDecode`` filter),
+    which typically produces PostScript with a smaller file size.
 
     :param target:
         A filename,
