@@ -931,7 +931,9 @@ def test_glyphs():
     context = Context(surface)
     font = context.get_scaled_font()
     text = u('Étt')
-    glyphs, clusters, is_backwards = font.text_to_glyphs(5, 15, text)
+    glyphs, clusters, is_backwards = font.text_to_glyphs(
+        5, 15, text, with_clusters=True)
+    assert font.text_to_glyphs(5, 15, text) == glyphs
     (idx1, x1, y1), (idx2, x2, y2), (idx3, x3, y3) = glyphs
     assert idx1 != idx2 == idx3
     assert y1 == y2 == y3 == 15

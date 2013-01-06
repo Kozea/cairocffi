@@ -167,30 +167,39 @@ class ScaledFont(object):
             extents.width, extents.height,
             extents.x_advance, extents.y_advance)
 
-    def text_to_glyphs(self, x, y, text):
+    def text_to_glyphs(self, x, y, text, with_clusters=False):
         glyphs = ffi.new('cairo_glyph_t **', ffi.NULL)
-        clusters = ffi.new('cairo_text_cluster_t **', ffi.NULL)
         num_glyphs = ffi.new('int *')
-        num_clusters = ffi.new('int *')
-        cluster_flags = ffi.new('cairo_text_cluster_flags_t *')
+        if with_clusters:
+            clusters = ffi.new('cairo_text_cluster_t **', ffi.NULL)
+            num_clusters = ffi.new('int *')
+            cluster_flags = ffi.new('cairo_text_cluster_flags_t *')
+        else:
+            clusters = ffi.NULL
+            num_clusters = ffi.NULL
+            cluster_flags = ffi.NULL
         # TODO: Pass len_utf8 explicitly to support NULL bytes?
         status = cairo.cairo_scaled_font_text_to_glyphs(
             self._pointer, x, y, _encode_string(text), -1,
             glyphs, num_glyphs, clusters, num_clusters, cluster_flags)
         glyphs = ffi.gc(glyphs[0], cairo.cairo_glyph_free)
-        clusters = ffi.gc(clusters[0], cairo.cairo_text_cluster_free)
+        if with_clusters:
+            clusters = ffi.gc(clusters[0], cairo.cairo_text_cluster_free)
         _check_status(status)
         glyphs = [
             (glyph.index, glyph.x, glyph.y)
             for i in xrange(num_glyphs[0])
             for glyph in [glyphs[i]]]
-        clusters = [
-            (cluster.num_bytes, cluster.num_glyphs)
-            for i in xrange(num_clusters[0])
-            for cluster in [clusters[i]]]
-        # Intentionally trigger a KeyError on unknown flags
-        is_backwards = {'BACKWARDS': True, '#0': False}[cluster_flags[0]]
-        return glyphs, clusters, is_backwards
+        if with_clusters:
+            clusters = [
+                (cluster.num_bytes, cluster.num_glyphs)
+                for i in xrange(num_clusters[0])
+                for cluster in [clusters[i]]]
+            # Intentionally trigger a KeyError on unknown flags
+            is_backwards = {'BACKWARDS': True, '#0': False}[cluster_flags[0]]
+            return glyphs, clusters, is_backwards
+        else:
+            return glyphs
 
 
 class FontOptions(object):
