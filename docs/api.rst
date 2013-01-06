@@ -87,10 +87,8 @@ Cairo itself provides a "toy" text API that only does simple shaping:
 one glyph per character,
 positioned by moving the cursor by the X and Y *advance* of each glyph.
 In order to proper shaping with ligatures and kerning,
-you must to use another library like Pango_
+you must :ref:`use Pango <using_pango>` or a similar library,
 or directly access the appropriate underlying font system.
-
-.. _Pango: http://www.pango.org/
 
 Font faces
 ----------

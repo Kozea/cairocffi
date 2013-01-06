@@ -94,9 +94,26 @@ Wrappers
 
     The underlying :c:type:`cairo_t *` cdata pointer.
 
-    This is what you would typically pass to other C libraries
-    that work together with cairo::
 
-        pangocairo = ffi.dlopen('pangocairo-1.0')
-        layout = pangocairo.pango_cairo_create_layout(context._pointer)
-        # ...
+.. _using_pango:
+
+Example: using Pango with CFFI
+------------------------------
+
+The program below shows a fairly standard usage of CFFI
+to access Pango’ C API.
+The :attr:`Context._pointer` pointer needs to be cast
+in order to be recognized by the new :obj:`~pango_example.ffi` object.
+The C definitions are copied from `Pango’s`_ and `GLib’s`_ documentation.
+
+.. _Pango’s: http://developer.gnome.org/pango/stable/
+.. _GLib’s: http://developer.gnome.org/glib/stable/
+
+
+Using CFFI for accessing Pango
+(rather than the traditional bindings in PyGTK or PyGObject with introspection)
+is not only easiest for using together with cairocffi,
+but also means that all of Pango’s API is within reach,
+whereas bindings often only expose the high level API.
+
+.. literalinclude:: ../utils/pango_example.py
