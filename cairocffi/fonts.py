@@ -367,6 +367,27 @@ class ScaledFont(object):
 
 
 class FontOptions(object):
+    """An opaque object holding all options that are used when rendering fonts.
+
+    Individual features of a :class:`FontOptions`
+    can be set or accessed using method
+    named :meth:`set_FEATURE_NAME` and :meth:`get_FEATURE_NAME`,
+    like :meth:`set_antialias` and :meth:`get_antialias`.
+
+    New features may be added to :class:`FontOptions` in the future.
+    For this reason, ``==``, :meth:`copy`, :meth:`merge`, and :func:`hash`
+    should be used to check for equality copy,, merge,
+    or compute a hash value of :class:`FontOptions` objects.
+
+    :param values:
+        Call the corresponding :meth:`set_FEATURE_NAME` methods
+        after creating a new :class:`FontOptions`::
+
+            options = FontOptions()
+            options.set_antialias('BEST')
+            assert FontOptions(antialias='BEST') == options
+
+    """
     def __init__(self, **values):
         self._init_pointer(cairo.cairo_font_options_create())
         for name, value in values.items():
@@ -380,12 +401,20 @@ class FontOptions(object):
         _check_status(cairo.cairo_font_options_status(self._pointer))
 
     def copy(self):
+        """Return a new :class:`FontOptions` with the same values."""
         cls = type(self)
         other = object.__new__(cls)
         cls._init_pointer(other, cairo.cairo_font_options_copy(self._pointer))
         return other
 
     def merge(self, other):
+        """Merges non-default options from :obj:`other`,
+        replacing existing values.
+        This operation can be thought of as somewhat similar
+        to compositing other onto options
+        with the operation of :obj:`OVER <OPERATOR_OVER>`.
+
+        """
         cairo.cairo_font_options_merge(self._pointer, other._pointer)
         _check_status(cairo.cairo_font_options_status(self._pointer))
 
@@ -402,30 +431,55 @@ class FontOptions(object):
     hash = __hash__
 
     def set_antialias(self, antialias):
+        """Changes the :ref:`ANTIALIAS` for the font options object.
+        This specifies the type of antialiasing to do when rendering text.
+
+        """
         cairo.cairo_font_options_set_antialias(self._pointer, antialias)
         self._check_status()
 
     def get_antialias(self):
+        """Return the :ref:`ANTIALIAS` for the font options object."""
         return cairo.cairo_font_options_get_antialias(self._pointer)
 
     def set_subpixel_order(self, subpixel_order):
+        """Changes the :ref:`SUBPIXEL_ORDER` for the font options object.
+         The subpixel order specifies the order of color elements
+         within each pixel on the display device
+         when rendering with an antialiasing mode of
+         :obj:`SUBPIXEL <ANTIALIAS_SUBPIXEL>`.
+
+        """
         cairo.cairo_font_options_set_subpixel_order(
             self._pointer, subpixel_order)
         self._check_status()
 
     def get_subpixel_order(self):
+        """Return the :ref:`SUBPIXEL_ORDER` for the font options object."""
         return cairo.cairo_font_options_get_subpixel_order(self._pointer)
 
     def set_hint_style(self, hint_style):
+        """Changes the :ref:`HINT_STYLE` for the font options object.
+        This controls whether to fit font outlines to the pixel grid,
+        and if so, whether to optimize for fidelity or contrast.
+
+        """
         cairo.cairo_font_options_set_hint_style(self._pointer, hint_style)
         self._check_status()
 
     def get_hint_style(self):
+        """Return the :ref:`HINT_STYLE` for the font options object."""
         return cairo.cairo_font_options_get_hint_style(self._pointer)
 
     def set_hint_metrics(self, hint_metrics):
+        """Changes the :ref:`HINT_METRICS` for the font options object.
+        This controls whether metrics are quantized
+        to integer values in device units.
+
+        """
         cairo.cairo_font_options_set_hint_metrics(self._pointer, hint_metrics)
         self._check_status()
 
     def get_hint_metrics(self):
+        """Return the :ref:`HINT_METRICS` for the font options object."""
         return cairo.cairo_font_options_get_hint_metrics(self._pointer)

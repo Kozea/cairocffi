@@ -407,8 +407,8 @@ see `http://cairographics.org/operators/ <http://cairographics.org/operators/>`_
 
 .. _ANTIALIAS:
 
-Antialias
----------
+Antialiasing mode
+-----------------
 
 Specifies the type of antialiasing to do when rendering text or shapes.
 
@@ -677,8 +677,8 @@ New entries may be added in future versions.
 
 .. _HINT_METRICS:
 
-Hint metrics
-------------
+Metrics hinting mode
+--------------------
 
 Specifies whether to hint font metrics;
 hinting font metrics means quantizing them
