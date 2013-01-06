@@ -25,6 +25,15 @@ PATH_POINTS_PER_TYPE = {
 
 
 def _encode_path(path_items):
+    """Take an iterable of ``(path_type, points)`` tuples
+    and return a ``(path, data)`` tuple of cdata object.
+
+    :obj:`path` points to a cairo_path_t struct that can be used
+    as long as the two cdata objects live.
+
+    See :meth:`Context.copy_path` for the data structure.
+
+    """
     points_per_type = PATH_POINTS_PER_TYPE
     path_items = list(path_items)
     length = 0
@@ -52,6 +61,11 @@ def _encode_path(path_items):
 
 
 def _iter_path(pointer):
+    """Take a cairo_path_t * pointer and yield ``(path_type, points)`` tuples.
+
+    See :meth:`Context.copy_path` for the data structure.
+
+    """
     _check_status(pointer.status)
     data = pointer.data
     num_data = pointer.num_data

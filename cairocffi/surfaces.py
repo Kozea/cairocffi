@@ -22,6 +22,7 @@ SURFACE_TARGET_KEY = ffi.new('cairo_user_data_key_t *')
 
 
 def _make_read_func(file_obj):
+    """Return a CFFI callback that reads from a file-like object."""
     @ffi.callback("cairo_read_func_t", error='READ_ERROR')
     def read_func(closure, data, length):
         string = file_obj.read(length)
@@ -33,6 +34,7 @@ def _make_read_func(file_obj):
 
 
 def _make_write_func(file_obj):
+    """Return a CFFI callback that writes to a file-like object."""
     if file_obj is None:
         return ffi.NULL
 
@@ -44,12 +46,14 @@ def _make_write_func(file_obj):
 
 
 def _encode_filename(filename):
+    """Return a byte string, encoding Unicode with the filesystem encoding."""
     if not isinstance(filename, bytes):
         filename = filename.encode(sys.getfilesystemencoding())
     return ffi.new('char[]', filename)
 
 
 def from_buffer(obj):
+    """Return ``(pointer_address, length_in_bytes)`` for a buffer object."""
     if hasattr(obj, 'buffer_info'):
         # Looks like a array.array object.
         address, length = obj.buffer_info()
@@ -69,6 +73,9 @@ class KeepAlive(object):
     :attr:`closure` is a tuple of cairo_destroy_func_t and void* cdata objects,
     as expected by cairo_surface_set_mime_data().
 
+    Either :meth:`save` must be called before the callback,
+    or none of them must be called.
+
     """
     instances = set()
 
@@ -80,6 +87,7 @@ class KeepAlive(object):
         self.closure = (callback, callback)
 
     def save(self):
+        """Start keeping a reference to the passed objects."""
         self.instances.add(self)
 
 

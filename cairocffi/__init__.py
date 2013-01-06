@@ -44,6 +44,7 @@ STATUS_TO_EXCEPTION = dict(
 
 
 def _check_status(status):
+    """Take a cairo status code and raise an exception if/as appropriate."""
     if status != 'SUCCESS':
         exception = STATUS_TO_EXCEPTION.get(status, CairoError)
         message = 'cairo returned %s: %s' % (

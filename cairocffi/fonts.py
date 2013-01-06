@@ -15,6 +15,7 @@ from .compat import xrange
 
 
 def _encode_string(string):
+    """Return a byte string, encoding Unicode with UTF-8."""
     if not isinstance(string, bytes):
         string = string.encode('utf8')
     return ffi.new('char[]', string)
