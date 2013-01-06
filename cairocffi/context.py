@@ -120,7 +120,9 @@ class Context(object):
         cairo.cairo_translate(self._pointer, tx, ty)
         self._check_status()
 
-    def scale(self, sx, sy):
+    def scale(self, sx, sy=None):
+        if sy is None:
+            sy = sx
         cairo.cairo_scale(self._pointer, sx, sy)
         self._check_status()
 
