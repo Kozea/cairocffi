@@ -21,6 +21,13 @@ def _encode_string(string):
 
 
 class FontFace(object):
+    """The base class for all font face types.
+
+    Should not be instantiated directly, but see :doc:`cffi_api`.
+    An instance may be returned for cairo font face types
+    that are not (yet) defined in cairocffi.
+
+    """
     def __init__(self, pointer):
         self._pointer = ffi.gc(pointer, cairo.cairo_font_face_destroy)
         self._check_status()
@@ -51,18 +58,36 @@ class FontFace(object):
 
 
 class ToyFontFace(FontFace):
+    """Creates a font face from a triplet of family, slant, and weight.
+    These font faces are used in implementation of cairo’s "toy" font API.
+
+    If family is the zero-length string ``""``,
+    the platform-specific default family is assumed.
+    The default family then can be queried using :meth:`get_family`.
+
+    The :meth:`Context.select_font_face` method uses this to create font faces.
+    See that method for limitations and other details of toy font faces.
+
+    :param family: a font family name, as an Unicode or UTF-8 string.
+    :param slant: The :ref:`FONT_SLANT` string for the font face.
+    :param weight: The :ref:`FONT_WEIGHT` string for the font face.
+
+    """
     def __init__(self, family='', slant='NORMAL', weight='NORMAL'):
         FontFace.__init__(self, cairo.cairo_toy_font_face_create(
             _encode_string(family), slant, weight))
 
     def get_family(self):
+        """Return this font face’s family name."""
         return ffi.string(cairo.cairo_toy_font_face_get_family(
             self._pointer)).decode('utf8', 'replace')
 
     def get_slant(self):
+        """Return this font face’s :ref:`FONT_SLANT` string."""
         return cairo.cairo_toy_font_face_get_slant(self._pointer)
 
     def get_weight(self):
+        """Return this font face’s :ref:`FONT_WEIGHT` string."""
         return cairo.cairo_toy_font_face_get_weight(self._pointer)
 
 
@@ -72,6 +97,30 @@ FONT_TYPE_TO_CLASS = {
 
 
 class ScaledFont(object):
+    """Creates a :class:`ScaledFont` object from a font face and matrices
+    that describe the size of the font
+    and the environment in which it will be used.
+
+    :param font_face: A :class:`FontFace` object.
+    :type font_matrix: Matrix
+    :param font_matrix:
+        Font space to user space transformation matrix for the font.
+        In the simplest case of a N point font,
+        this matrix is just a scale by N,
+        but it can also be used to shear the font
+        or stretch it unequally along the two axes.
+        If omitted, a scale by 10 matrix is assumed (ie. a 10 point font size).
+        See :class:`Context.set_font_matrix`.
+    :type ctm: Matrix
+    :param ctm:
+        User to device transformation matrix with which the font will be used.
+        If omitted, an identity matrix is assumed.
+    :param options:
+        The :class:`FontOptions` object to use
+        when getting metrics for the font and rendering with it.
+        If omitted, the default options are assumed.
+
+    """
     def __init__(self, font_face, font_matrix=None, ctm=None, options=None):
         if font_matrix is None:
             font_matrix = Matrix()
@@ -110,28 +159,64 @@ class ScaledFont(object):
         return self
 
     def get_font_face(self):
+        """Return the font face that this scaled font uses.
+
+        :returns:
+            A new instance of :class:`FontFace` (or one of its sub-classes).
+            Might wrap be the same font face passed to :class:`ScaledFont`,
+            but this does not hold true for all possible cases.
+
+        """
         return FontFace._from_pointer(
             cairo.cairo_scaled_font_get_font_face(self._pointer), incref=True)
 
     def get_font_options(self):
+        """Copies the scaled font’s options.
+
+        :returns: A new :class:`FontOptions` object.
+
+        """
         font_options = FontOptions()
         cairo.cairo_scaled_font_get_font_options(
             self._pointer, font_options._pointer)
         return font_options
 
     def get_font_matrix(self):
+        """Copies the scaled font’s font matrix.
+
+        :returns: A new :class:`Matrix` object.
+
+        """
         matrix = Matrix()
         cairo.cairo_scaled_font_get_font_matrix(self._pointer, matrix._pointer)
         self._check_status()
         return matrix
 
     def get_ctm(self):
+        """Copies the scaled font’s font current transform matrix.
+
+        Note that the translation offsets ``(x0, y0)`` of the CTM
+        are ignored by :class:`ScaledFont`.
+        So, the matrix this method returns always has 0 as ``x0`` and ``y0``.
+
+        :returns: A new :class:`Matrix` object.
+
+        """
         matrix = Matrix()
         cairo.cairo_scaled_font_get_ctm(self._pointer, matrix._pointer)
         self._check_status()
         return matrix
 
     def get_scale_matrix(self):
+        """Copies the scaled font’s scaled matrix.
+
+        The scale matrix is product of the font matrix
+        and the ctm associated with the scaled font,
+        and hence is the matrix mapping from font space to device space.
+
+        :returns: A new :class:`Matrix` object.
+
+        """
         matrix = Matrix()
         cairo.cairo_scaled_font_get_scale_matrix(
             self._pointer, matrix._pointer)
@@ -139,6 +224,14 @@ class ScaledFont(object):
         return matrix
 
     def extents(self):
+        """Return the scaled font’s extents.
+        See :meth:`Context.font_extents`.
+
+        :returns:
+            A ``(ascent, descent, height, max_x_advance, max_y_advance)``
+            tuple of floats.
+
+        """
         extents = ffi.new('cairo_font_extents_t *')
         cairo.cairo_scaled_font_extents(self._pointer, extents)
         self._check_status()
@@ -147,6 +240,15 @@ class ScaledFont(object):
             extents.max_x_advance, extents.max_y_advance)
 
     def text_extents(self, text):
+        """Returns the extents for a string of text.
+        See :meth:`Context.text_extents`.
+
+        :param text: The text to measure, as an Unicode or UTF-8 string.
+        :returns:
+            A ``(x_bearing, y_bearing, width, height, x_advance, y_advance)``
+            tuple of floats.
+
+        """
         extents = ffi.new('cairo_text_extents_t *')
         cairo.cairo_scaled_font_text_extents(
             self._pointer, _encode_string(text), extents)
@@ -157,6 +259,19 @@ class ScaledFont(object):
             extents.x_advance, extents.y_advance)
 
     def glyph_extents(self, glyphs):
+        """Returns the extents for a list of glyphs.
+
+        See :meth:`glyph_extents`.
+
+        :param glyphs:
+            A list of glyphs, as returne by :meth:`text_to_glyphs`.
+            Each glyph is a ``(glyph_id, x, y)`` tuple
+            of an integer and two floats.
+        :returns:
+            A ``(x_bearing, y_bearing, width, height, x_advance, y_advance)``
+            tuple of floats.
+
+        """
         glyphs = ffi.new('cairo_glyph_t[]', glyphs)
         extents = ffi.new('cairo_text_extents_t *')
         cairo.cairo_scaled_font_glyph_extents(
@@ -168,6 +283,39 @@ class ScaledFont(object):
             extents.x_advance, extents.y_advance)
 
     def text_to_glyphs(self, x, y, text, with_clusters=False):
+        """Converts a string of text to a list of glyphs,
+        optionally with cluster mapping,
+        that can be used to render later using this scaled font.
+
+        See :meth:`glyph_extents`,
+        :meth:`Context.show_glyphs` and :meth:`Context.show_text_glyphs`.
+
+        :type x: float
+        :type y: float
+        :type with_clusters: bool
+        :param x: X position to place first glyph.
+        :param y: Y position to place first glyph.
+        :param text: The text to convert, as an Unicode or UTF-8 string.
+        :param with_clusters: Whether to compute the cluster mapping.
+        :returns:
+            A ``(glyphs, clusters, is_backwards)`` tuple
+            if :obj:`with_clusters` is true, otherwise just :obj:`glyphs`.
+
+            :obj:`glyphs`
+                A list of glyphs.
+                Each glyph is a ``(glyph_id, x, y)`` tuple
+                of an integer and two floats.
+            :obj:`cluster`
+                A list of clusters.
+                A text cluster is a minimal mapping of some glyphs
+                corresponding to some UTF-8 text,
+                represented as a ``(num_bytes, num_glyphs)`` tuple of integers.
+            :obj:`is_backwards`
+                If true,
+                the :obj:`clusters` list map to glyphs in :obj:`glyphs` list
+                from end to start.
+
+        """
         glyphs = ffi.new('cairo_glyph_t **', ffi.NULL)
         num_glyphs = ffi.new('int *')
         if with_clusters:

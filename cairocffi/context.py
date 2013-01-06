@@ -485,6 +485,55 @@ class Context(object):
         self._check_status()
 
     def font_extents(self):
+        """Return the extents of the currently selected font.
+
+        Values are given in the current user-space coordinate system.
+
+        Because font metrics are in user-space coordinates, they are mostly,
+        but not entirely, independent of the current transformation matrix.
+        If you call :meth:`context.scale(2) <scale>`,
+        text will be drawn twice as big,
+        but the reported text extents will not be doubled.
+        They will change slightly due to hinting
+        (so you can't assume that metrics are independent
+        of the transformation matrix),
+        but otherwise will remain unchanged.
+
+        :returns:
+            A ``(ascent, descent, height, max_x_advance, max_y_advance)``
+            tuple of floats.
+
+            :obj:`ascent`
+                The distance that the font extends above the baseline.
+                Note that this is not always exactly equal to
+                the maximum of the extents of all the glyphs in the font,
+                but rather is picked to express the font designer's intent
+                as to how the font should align with elements above it.
+            :obj:`descent`
+                The distance that the font extends below the baseline.
+                This value is positive for typical fonts
+                that include portions below the baseline.
+                Note that this is not always exactly equal
+                to the maximum of the extents of all the glyphs in the font,
+                but rather is picked to express the font designer's intent
+                as to how the font should align with elements below it.
+            :obj:`height`
+                The recommended vertical distance between baselines
+                when setting consecutive lines of text with the font.
+                This is greater than ``ascent + descent``
+                by a quantity known as the line spacing or external leading.
+                When space is at a premium, most fonts can be set
+                with only a distance of ``ascent + descent`` between lines.
+            :obj:`max_x_advance`
+                The maximum distance in the X direction
+                that the origin is advanced for any glyph in the font.
+            :obj:`max_y_advance`
+                The maximum distance in the Y direction
+                that the origin is advanced for any glyph in the font.
+                This will be zero for normal fonts used for horizontal writing.
+                (The scripts of East Asia are sometimes written vertically.)
+
+        """
         extents = ffi.new('cairo_font_extents_t *')
         cairo.cairo_font_extents(self._pointer, extents)
         self._check_status()
@@ -495,6 +544,67 @@ class Context(object):
             extents.max_x_advance, extents.max_y_advance)
 
     def text_extents(self, text):
+        """Returns the extents for a string of text.
+
+        The extents describe a user-space rectangle
+        that encloses the "inked" portion of the text,
+        (as it would be drawn by :meth:`show_text`).
+        Additionally, the :obj:`x_advance` and :obj:`y_advance` values
+        indicate the amount by which the current point would be advanced
+        by :meth:`show_text`.
+
+        Note that whitespace characters do not directly contribute
+        to the size of the rectangle (:obj:`width` and :obj:`height`).
+        They do contribute indirectly by changing the position
+        of non-whitespace characters.
+        In particular, trailing whitespace characters are likely
+        to not affect the size of the rectangle,
+        though they will affect the x_advance and y_advance values.
+
+        Because text extents are in user-space coordinates,
+        they are mostly, but not entirely,
+        independent of the current transformation matrix.
+        If you call :meth:`context.scale(2) <scale>`,
+        text will be drawn twice as big,
+        but the reported text extents will not be doubled.
+        They will change slightly due to hinting
+        (so you can't assume that metrics are independent
+        of the transformation matrix),
+        but otherwise will remain unchanged.
+
+        :param text: The text to measure, as an Unicode or UTF-8 string.
+        :returns:
+            A ``(x_bearing, y_bearing, width, height, x_advance, y_advance)``
+            tuple of floats.
+
+            :obj:`x_bearing`
+                The horizontal distance
+                from the origin to the leftmost part of the glyphs as drawn.
+                Positive if the glyphs lie entirely to the right of the origin.
+
+            :obj:`y_bearing`
+                The vertical distance
+                from the origin to the topmost part of the glyphs as drawn.
+                Positive only if the glyphs lie completely below the origin;
+                will usually be negative.
+
+            :obj:`width`
+                Width of the glyphs as drawn.
+
+            :obj:`height`
+                Height of the glyphs as drawn.
+
+            :obj:`x_advance`
+                Distance to advance in the X direction
+                after drawing these glyphs.
+
+            :obj:`y_advance`
+                Distance to advance in the Y direction
+                after drawing these glyphs.
+                Will typically be zero except for vertical text layout
+                as found in East-Asian languages.
+
+        """
         extents = ffi.new('cairo_text_extents_t *')
         cairo.cairo_text_extents(self._pointer, _encode_string(text), extents)
         self._check_status()
@@ -506,6 +616,26 @@ class Context(object):
             extents.x_advance, extents.y_advance)
 
     def glyph_extents(self, glyphs):
+        """Returns the extents for a list of glyphs.
+
+        The extents describe a user-space rectangle
+        that encloses the "inked" portion of the glyphs,
+        (as it would be drawn by :meth:`show_glyphs`).
+        Additionally, the :obj:`x_advance` and :obj:`y_advance` values
+        indicate the amount by which the current point would be advanced
+        by :meth:`show_glyphs`.
+
+        See :meth:`text_extents` for details.
+
+        :param glyphs:
+            A list of glyphs, as returned by :meth:`ScaledFont.text_to_glyphs`.
+            Each glyph is a ``(glyph_id, x, y)`` tuple
+            of an integer and two floats.
+        :returns:
+            A ``(x_bearing, y_bearing, width, height, x_advance, y_advance)``
+            tuple of floats.
+
+        """
         glyphs = ffi.new('cairo_glyph_t[]', glyphs)
         extents = ffi.new('cairo_text_extents_t *')
         cairo.cairo_glyph_extents(
