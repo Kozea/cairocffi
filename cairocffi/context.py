@@ -503,35 +503,35 @@ class Context(object):
             A ``(ascent, descent, height, max_x_advance, max_y_advance)``
             tuple of floats.
 
-            :obj:`ascent`
-                The distance that the font extends above the baseline.
-                Note that this is not always exactly equal to
-                the maximum of the extents of all the glyphs in the font,
-                but rather is picked to express the font designer's intent
-                as to how the font should align with elements above it.
-            :obj:`descent`
-                The distance that the font extends below the baseline.
-                This value is positive for typical fonts
-                that include portions below the baseline.
-                Note that this is not always exactly equal
-                to the maximum of the extents of all the glyphs in the font,
-                but rather is picked to express the font designer's intent
-                as to how the font should align with elements below it.
-            :obj:`height`
-                The recommended vertical distance between baselines
-                when setting consecutive lines of text with the font.
-                This is greater than ``ascent + descent``
-                by a quantity known as the line spacing or external leading.
-                When space is at a premium, most fonts can be set
-                with only a distance of ``ascent + descent`` between lines.
-            :obj:`max_x_advance`
-                The maximum distance in the X direction
-                that the origin is advanced for any glyph in the font.
-            :obj:`max_y_advance`
-                The maximum distance in the Y direction
-                that the origin is advanced for any glyph in the font.
-                This will be zero for normal fonts used for horizontal writing.
-                (The scripts of East Asia are sometimes written vertically.)
+        :obj:`ascent`
+            The distance that the font extends above the baseline.
+            Note that this is not always exactly equal to
+            the maximum of the extents of all the glyphs in the font,
+            but rather is picked to express the font designer's intent
+            as to how the font should align with elements above it.
+        :obj:`descent`
+            The distance that the font extends below the baseline.
+            This value is positive for typical fonts
+            that include portions below the baseline.
+            Note that this is not always exactly equal
+            to the maximum of the extents of all the glyphs in the font,
+            but rather is picked to express the font designer's intent
+            as to how the font should align with elements below it.
+        :obj:`height`
+            The recommended vertical distance between baselines
+            when setting consecutive lines of text with the font.
+            This is greater than ``ascent + descent``
+            by a quantity known as the line spacing or external leading.
+            When space is at a premium, most fonts can be set
+            with only a distance of ``ascent + descent`` between lines.
+        :obj:`max_x_advance`
+            The maximum distance in the X direction
+            that the origin is advanced for any glyph in the font.
+        :obj:`max_y_advance`
+            The maximum distance in the Y direction
+            that the origin is advanced for any glyph in the font.
+            This will be zero for normal fonts used for horizontal writing.
+            (The scripts of East Asia are sometimes written vertically.)
 
         """
         extents = ffi.new('cairo_font_extents_t *')
@@ -577,32 +577,32 @@ class Context(object):
             A ``(x_bearing, y_bearing, width, height, x_advance, y_advance)``
             tuple of floats.
 
-            :obj:`x_bearing`
-                The horizontal distance
-                from the origin to the leftmost part of the glyphs as drawn.
-                Positive if the glyphs lie entirely to the right of the origin.
+        :obj:`x_bearing`
+            The horizontal distance
+            from the origin to the leftmost part of the glyphs as drawn.
+            Positive if the glyphs lie entirely to the right of the origin.
 
-            :obj:`y_bearing`
-                The vertical distance
-                from the origin to the topmost part of the glyphs as drawn.
-                Positive only if the glyphs lie completely below the origin;
-                will usually be negative.
+        :obj:`y_bearing`
+            The vertical distance
+            from the origin to the topmost part of the glyphs as drawn.
+            Positive only if the glyphs lie completely below the origin;
+            will usually be negative.
 
-            :obj:`width`
-                Width of the glyphs as drawn.
+        :obj:`width`
+            Width of the glyphs as drawn.
 
-            :obj:`height`
-                Height of the glyphs as drawn.
+        :obj:`height`
+            Height of the glyphs as drawn.
 
-            :obj:`x_advance`
-                Distance to advance in the X direction
-                after drawing these glyphs.
+        :obj:`x_advance`
+            Distance to advance in the X direction
+            after drawing these glyphs.
 
-            :obj:`y_advance`
-                Distance to advance in the Y direction
-                after drawing these glyphs.
-                Will typically be zero except for vertical text layout
-                as found in East-Asian languages.
+        :obj:`y_advance`
+            Distance to advance in the Y direction
+            after drawing these glyphs.
+            Will typically be zero except for vertical text layout
+            as found in East-Asian languages.
 
         """
         extents = ffi.new('cairo_text_extents_t *')
@@ -625,15 +625,13 @@ class Context(object):
         indicate the amount by which the current point would be advanced
         by :meth:`show_glyphs`.
 
-        See :meth:`text_extents` for details.
-
         :param glyphs:
-            A list of glyphs, as returned by :meth:`ScaledFont.text_to_glyphs`.
-            Each glyph is a ``(glyph_id, x, y)`` tuple
-            of an integer and two floats.
+            A list of glyphs.
+            See :meth:`show_text_glyphs` for the data structure.
         :returns:
             A ``(x_bearing, y_bearing, width, height, x_advance, y_advance)``
             tuple of floats.
+            See :meth:`text_extents` for details.
 
         """
         glyphs = ffi.new('cairo_glyph_t[]', glyphs)
@@ -646,6 +644,127 @@ class Context(object):
             extents.width, extents.height,
             extents.x_advance, extents.y_advance)
 
+    def show_text(self, text):
+        """A drawing operator that generates the shape from a string text,
+        rendered according to the current
+        font :meth:`face <set_font_face>`,
+        font :meth:`size <set_font_size>`
+        (font :meth:`matrix <set_font_matrix>`),
+        and font :meth:`options <set_font_options>`.
+
+        This function first computes a set of glyphs for the string of text.
+        The first glyph is placed so that its origin is at the current point.
+        The origin of each subsequent glyph
+        is offset from that of the previous glyph
+        by the advance values of the previous glyph.
+
+        After this call the current point is moved
+        to the origin of where the next glyph would be placed
+        in this same progression.
+        That is, the current point will be at
+        the origin of the final glyph offset by its advance values.
+        This allows for easy display of a single logical string
+        with multiple calls to :meth:`show_text`.
+
+        :param text: The text to show, as an Unicode or UTF-8 string.
+
+        .. note::
+
+            This method is part of
+            what the cairo designers call the "toy" text API.
+            It is convenient for short demos and simple programs,
+            but it is not expected to be adequate
+            for serious text-using applications.
+            See :ref:`fonts` for details
+            and :meth:`show_glyphs` for the "real" text display API in cairo.
+
+        """
+        cairo.cairo_show_text(self._pointer, _encode_string(text))
+        self._check_status()
+
+    def show_glyphs(self, glyphs):
+        """A drawing operator that generates the shape from a list of glyphs,
+        rendered according to the current
+        font :meth:`face <set_font_face>`,
+        font :meth:`size <set_font_size>`
+        (font :meth:`matrix <set_font_matrix>`),
+        and font :meth:`options <set_font_options>`.
+
+        :param glyphs:
+            The glyphs to show.
+            See :meth:`show_text_glyphs` for the data structure.
+
+        """
+        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
+        cairo.cairo_show_glyphs(self._pointer, glyphs, len(glyphs))
+        self._check_status()
+
+    def show_text_glyphs(self, text, glyphs, clusters, clusters_backwards):
+        """This operation has rendering effects similar to :meth:`show_glyphs`
+        but, if the target surface supports it
+        (see :meth:`Surface.has_show_text_glyphs`),
+        uses the provided text and cluster mapping
+        to embed the text for the glyphs shown in the output.
+        If the target does not support the extended attributes,
+        this function acts like the basic :meth:`show_glyphs`
+        as if it had been passed :obj:`glyphs`.
+
+        The mapping between :obj:`text` and :obj:`glyphs`
+        is provided by an list of clusters.
+        Each cluster covers a number of UTF-8 text bytes and glyphs,
+        and neighboring clusters cover neighboring areas
+        of :obj:`text` and :obj:`glyphs`.
+        The clusters should collectively cover :obj:`text` and :obj:`glyphs`
+        in entirety.
+
+        :param text:
+            The text to show, as an Unicode or UTF-8 string.
+            Because of how :obj:`clusters` work,
+            using UTF-8 bytes might be more convenient.
+        :param glyphs:
+            A list of glyphs.
+            Each glyph is a ``(glyph_id, x, y)`` tuple.
+            :obj:`glyph_id` is an opaque integer.
+            Its exact interpretation depends on the font technology being used.
+            :obj:`x` and :obj:`y` are the float offsets
+            in the X and Y direction
+            between the origin used for drawing or measuring the string
+            and the origin of this glyph.
+            Note that the offsets are not cumulative.
+            When drawing or measuring text,
+            each glyph is individually positioned
+            with respect to the overall origin.
+        :param clusters:
+            A list of clusters.
+            A text cluster is a minimal mapping of some glyphs
+            corresponding to some UTF-8 text,
+            represented as a ``(num_bytes, num_glyphs)`` tuple of integers,
+            the number of UTF-8 bytes and glyphs covered by the cluster.
+            For a cluster to be valid,
+            both :obj:`num_bytes` and :obj:`num_glyphs` should be non-negative,
+            and at least one should be non-zero.
+            Note that clusters with zero glyphs
+            are not as well supported as normal clusters.
+            For example, PDF rendering applications
+            typically ignore those clusters when PDF text is being selected.
+        :type clusters_backwards: bool
+        :param clusters_backwards:
+            The first cluster always covers bytes
+            from the beginning of :obj:`text`.
+            If :obj:`clusters_backwards` is false,
+            the first cluster also covers the beginning of :obj:`glyphs`,
+            otherwise it covers the end of the :obj:`glyphs` list
+            and following clusters move backward.
+
+        """
+        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
+        clusters = ffi.new('cairo_text_cluster_t[]', clusters)
+        flags = 'BACKWARDS' if clusters_backwards else 0
+        cairo.cairo_show_text_glyphs(
+            self._pointer, _encode_string(text), -1,
+            glyphs, len(glyphs), clusters, len(clusters), flags)
+        self._check_status()
+
     def text_path(self, text):
         cairo.cairo_text_path(self._pointer, _encode_string(text))
         self._check_status()
@@ -653,24 +772,6 @@ class Context(object):
     def glyph_path(self, glyphs):
         glyphs = ffi.new('cairo_glyph_t[]', glyphs)
         cairo.cairo_glyph_path(self._pointer, glyphs, len(glyphs))
-        self._check_status()
-
-    def show_text(self, text):
-        cairo.cairo_show_text(self._pointer, _encode_string(text))
-        self._check_status()
-
-    def show_glyphs(self, glyphs):
-        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
-        cairo.cairo_show_glyphs(self._pointer, glyphs, len(glyphs))
-        self._check_status()
-
-    def show_text_glyphs(self, text, glyphs, clusters, is_backwards):
-        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
-        clusters = ffi.new('cairo_text_cluster_t[]', clusters)
-        flags = 'BACKWARDS' if is_backwards else 0
-        cairo.cairo_show_text_glyphs(
-            self._pointer, _encode_string(text), -1,
-            glyphs, len(glyphs), clusters, len(clusters), flags)
         self._check_status()
 
     def show_page(self):

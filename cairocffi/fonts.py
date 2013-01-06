@@ -241,12 +241,19 @@ class ScaledFont(object):
 
     def text_extents(self, text):
         """Returns the extents for a string of text.
-        See :meth:`Context.text_extents`.
+
+        The extents describe a user-space rectangle
+        that encloses the "inked" portion of the text,
+        (as it would be drawn by :meth:`show_text`).
+        Additionally, the :obj:`x_advance` and :obj:`y_advance` values
+        indicate the amount by which the current point would be advanced
+        by :meth:`show_text`.
 
         :param text: The text to measure, as an Unicode or UTF-8 string.
         :returns:
             A ``(x_bearing, y_bearing, width, height, x_advance, y_advance)``
             tuple of floats.
+            See :meth:`Context.text_extents` for details.
 
         """
         extents = ffi.new('cairo_text_extents_t *')
@@ -261,15 +268,21 @@ class ScaledFont(object):
     def glyph_extents(self, glyphs):
         """Returns the extents for a list of glyphs.
 
-        See :meth:`glyph_extents`.
+        The extents describe a user-space rectangle
+        that encloses the "inked" portion of the glyphs,
+        (as it would be drawn by :meth:`show_glyphs`).
+        Additionally, the :obj:`x_advance` and :obj:`y_advance` values
+        indicate the amount by which the current point would be advanced
+        by :meth:`show_glyphs`.
 
         :param glyphs:
-            A list of glyphs, as returne by :meth:`text_to_glyphs`.
+            A list of glyphs, as returned by :meth:`text_to_glyphs`.
             Each glyph is a ``(glyph_id, x, y)`` tuple
             of an integer and two floats.
         :returns:
             A ``(x_bearing, y_bearing, width, height, x_advance, y_advance)``
             tuple of floats.
+            See :meth:`Context.text_extents` for details.
 
         """
         glyphs = ffi.new('cairo_glyph_t[]', glyphs)
@@ -282,13 +295,16 @@ class ScaledFont(object):
             extents.width, extents.height,
             extents.x_advance, extents.y_advance)
 
-    def text_to_glyphs(self, x, y, text, with_clusters=False):
+    def text_to_glyphs(self, x, y, text, with_clusters):
         """Converts a string of text to a list of glyphs,
         optionally with cluster mapping,
         that can be used to render later using this scaled font.
 
-        See :meth:`glyph_extents`,
-        :meth:`Context.show_glyphs` and :meth:`Context.show_text_glyphs`.
+        The output values can be readily passed to
+        :meth:`Context.show_text_glyphs`, :meth:`Context.show_glyphs`
+        or related methods,
+        assuming that the exact same :class:`ScaledFont`
+        is used for the operation.
 
         :type x: float
         :type y: float
@@ -298,22 +314,20 @@ class ScaledFont(object):
         :param text: The text to convert, as an Unicode or UTF-8 string.
         :param with_clusters: Whether to compute the cluster mapping.
         :returns:
-            A ``(glyphs, clusters, is_backwards)`` tuple
+            A ``(glyphs, clusters, clusters_backwards)`` tuple
             if :obj:`with_clusters` is true, otherwise just :obj:`glyphs`.
+            See :meth:`Context.show_text_glyphs` for the data structure.
 
-            :obj:`glyphs`
-                A list of glyphs.
-                Each glyph is a ``(glyph_id, x, y)`` tuple
-                of an integer and two floats.
-            :obj:`cluster`
-                A list of clusters.
-                A text cluster is a minimal mapping of some glyphs
-                corresponding to some UTF-8 text,
-                represented as a ``(num_bytes, num_glyphs)`` tuple of integers.
-            :obj:`is_backwards`
-                If true,
-                the :obj:`clusters` list map to glyphs in :obj:`glyphs` list
-                from end to start.
+        .. note::
+
+            This method is part of
+            what the cairo designers call the "toy" text API.
+            It is convenient for short demos and simple programs,
+            but it is not expected to be adequate
+            for serious text-using applications.
+            See :ref:`fonts` for details
+            and :meth:`Context.show_glyphs`
+            for the "real" text display API in cairo.
 
         """
         glyphs = ffi.new('cairo_glyph_t **', ffi.NULL)
@@ -344,8 +358,9 @@ class ScaledFont(object):
                 for i in xrange(num_clusters[0])
                 for cluster in [clusters[i]]]
             # Intentionally trigger a KeyError on unknown flags
-            is_backwards = {'BACKWARDS': True, '#0': False}[cluster_flags[0]]
-            return glyphs, clusters, is_backwards
+            clusters_backwards = {
+                'BACKWARDS': True, '#0': False}[cluster_flags[0]]
+            return glyphs, clusters, clusters_backwards
         else:
             return glyphs
 

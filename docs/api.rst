@@ -71,8 +71,26 @@ RadialGradient
 .. autoclass:: RadialGradient
 
 
-Fonts
-=====
+.. _fonts:
+
+Fonts & text
+============
+
+A font is (in simple terms) a collection of shapes used to draw text.
+A *glyph* is one of these shapes.
+There can be multiple glyphs for the same character
+(alternates to be used in different contexts, for example),
+or a glyph can be a ligature of multiple characters.
+Converting text to positioned glyphs is *shaping*.
+
+Cairo itself provides a "toy" text API that only does simple shaping:
+one glyph per character,
+positioned by moving the cursor by the X and Y *advance* of each glyph.
+In order to proper shaping with ligatures and kerning,
+you must to use another library like Pango_
+or directly access the appropriate underlying font system.
+
+.. _Pango: http://www.pango.org/
 
 Font faces
 ----------
