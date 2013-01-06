@@ -803,7 +803,7 @@ def test_context_mask():
 
 def test_context_font():
     surface = ImageSurface('ARGB32', 10, 10)
-    context = Context(surface)
+    context = Context._from_pointer(Context(surface)._pointer, incref=True)
     assert context.get_font_matrix().as_tuple() == (10, 0, 0, 10, 0, 0)
     context.set_font_matrix(Matrix(2, 0,  0, 3,  12, 4))
     assert context.get_font_matrix().as_tuple() == (2, 0,  0, 3,  12, 4)
@@ -983,6 +983,6 @@ def test_glyphs():
 
 
 def test_from_null_pointer():
-    for class_ in [Surface, Pattern, FontFace, ScaledFont]:
+    for class_ in [Surface, Context, Pattern, FontFace, ScaledFont]:
         with pytest.raises(ValueError):
             class_._from_pointer(cairocffi.ffi.NULL, 'unused')

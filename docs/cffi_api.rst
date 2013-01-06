@@ -52,6 +52,7 @@ Wrappers
 .. automethod:: Pattern._from_pointer
 .. automethod:: FontFace._from_pointer
 .. automethod:: ScaledFont._from_pointer
+.. automethod:: Context._from_pointer
 
 .. attribute:: Surface._pointer
 

@@ -70,12 +70,33 @@ def _iter_path(pointer):
 
 class Context(object):
     def __init__(self, surface):
-        self._pointer = ffi.gc(
-            cairo.cairo_create(surface._pointer), cairo.cairo_destroy)
+        self._init_pointer(cairo.cairo_create(surface._pointer))
+
+    def _init_pointer(self, pointer):
+        self._pointer = ffi.gc(pointer, cairo.cairo_destroy)
         self._check_status()
 
     def _check_status(self):
         _check_status(cairo.cairo_status(self._pointer))
+
+    @classmethod
+    def _from_pointer(cls, pointer, incref):
+        """Wrap an existing :c:type:`cairo_t *` cdata pointer.
+
+        :type incref: bool
+        :param incref:
+            Whether increase the :ref:`reference count <refcounting>` now.
+        :return:
+            A new :class:`Context` instance.
+
+        """
+        if pointer == ffi.NULL:
+            raise ValueError('Null pointer')
+        if incref:
+            cairo.cairo_reference(pointer)
+        self = object.__new__(cls)
+        cls._init_pointer(self, pointer)
+        return self
 
     def get_target(self):
         return Surface._from_pointer(
