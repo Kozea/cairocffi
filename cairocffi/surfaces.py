@@ -104,7 +104,21 @@ class Surface(object):
         _check_status(cairo.cairo_surface_status(self._pointer))
 
     @staticmethod
-    def _from_pointer(pointer):
+    def _from_pointer(pointer, incref):
+        """Wrap an existing :c:type:`cairo_surface_t *` cdata pointer.
+
+        :type incref: bool
+        :param incref:
+            Whether increase the :ref:`reference count <refcounting>` now.
+        :return:
+            A new instance of :class:`Surface` or one of its sub-classes,
+            depending on the surface’s type.
+
+        """
+        if pointer == ffi.NULL:
+            raise ValueError('Null pointer')
+        if incref:
+            cairo.cairo_surface_reference(pointer)
         self = object.__new__(SURFACE_TYPE_TO_CLASS.get(
             cairo.cairo_surface_get_type(pointer), Surface))
         Surface.__init__(self, pointer)  # Skip the subclass’s __init__
@@ -133,8 +147,10 @@ class Surface(object):
         :returns: A new instance of :class:`Surface` or one of its subclasses.
 
         """
-        return Surface._from_pointer(cairo.cairo_surface_create_similar(
-            self._pointer, content, width, height))
+        return Surface._from_pointer(
+            cairo.cairo_surface_create_similar(
+                self._pointer, content, width, height),
+            incref=False)
 
     def create_similar_image(self, content, width, height):
         """
@@ -156,8 +172,10 @@ class Surface(object):
         :returns: A new :class:`ImageSurface` instance.
 
         """
-        return Surface._from_pointer(cairo.cairo_surface_create_similar_image(
-            self._pointer, content, width, height))
+        return Surface._from_pointer(
+            cairo.cairo_surface_create_similar_image(
+                self._pointer, content, width, height),
+            incref=False)
 
     def create_for_rectangle(self, x, y, width, height):
         """
@@ -197,8 +215,10 @@ class Surface(object):
             A new :class:`Surface` object.
 
         """
-        return Surface._from_pointer(cairo.cairo_surface_create_for_rectangle(
-            self._pointer, x, y, width, height))
+        return Surface._from_pointer(
+            cairo.cairo_surface_create_for_rectangle(
+                self._pointer, x, y, width, height),
+            incref=False)
 
     def get_content(self):
         """Returns the :ref:`CONTENT` string of this surface,

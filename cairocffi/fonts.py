@@ -28,11 +28,25 @@ class FontFace(object):
     def _check_status(self):
         _check_status(cairo.cairo_font_face_status(self._pointer))
 
-    @classmethod
-    def _from_pointer(cls, pointer):
+    @staticmethod
+    def _from_pointer(pointer, incref):
+        """Wrap an existing :c:type:`cairo_font_face_t *` cdata pointer.
+
+        :type incref: bool
+        :param incref:
+            Whether increase the :ref:`reference count <refcounting>` now.
+        :return:
+            A new instance of :class:`FontFace` or one of its sub-classes,
+            depending on the face’s type.
+
+        """
+        if pointer == ffi.NULL:
+            raise ValueError('Null pointer')
+        if incref:
+            cairo.cairo_font_face_reference(pointer)
         self = object.__new__(FONT_TYPE_TO_CLASS.get(
-            cairo.cairo_font_face_get_type(pointer), cls))
-        cls.__init__(self, pointer)  # Skip the subclass’s __init__
+            cairo.cairo_font_face_get_type(pointer), FontFace))
+        FontFace.__init__(self, pointer)  # Skip the subclass’s __init__
         return self
 
 
@@ -77,15 +91,27 @@ class ScaledFont(object):
     def _check_status(self):
         _check_status(cairo.cairo_scaled_font_status(self._pointer))
 
-    @classmethod
-    def _from_pointer(cls, pointer):
-        self = object.__new__(cls)
-        cls._init_pointer(self, pointer)
+    @staticmethod
+    def _from_pointer(pointer, incref):
+        """Wrap an existing :c:type:`cairo_scaled_font_t *` cdata pointer.
+
+        :type incref: bool
+        :param incref:
+            Whether increase the :ref:`reference count <refcounting>` now.
+        :return: A new :class:`ScaledFont` instance.
+
+        """
+        if pointer == ffi.NULL:
+            raise ValueError('Null pointer')
+        if incref:
+            cairo.cairo_scaled_font_reference(pointer)
+        self = object.__new__(ScaledFont)
+        ScaledFont._init_pointer(self, pointer)
         return self
 
     def get_font_face(self):
-        return FontFace._from_pointer(cairo.cairo_font_face_reference(
-            cairo.cairo_scaled_font_get_font_face(self._pointer)))
+        return FontFace._from_pointer(
+            cairo.cairo_scaled_font_get_font_face(self._pointer), incref=True)
 
     def get_font_options(self):
         font_options = FontOptions()
@@ -168,19 +194,23 @@ class ScaledFont(object):
 
 
 class FontOptions(object):
-    def __init__(self, _pointer=None, **values):
-        if _pointer is None:
-            _pointer = cairo.cairo_font_options_create()
-        self._pointer = ffi.gc(_pointer, cairo.cairo_font_options_destroy)
-        self._check_status()
+    def __init__(self, **values):
+        self._init_pointer(cairo.cairo_font_options_create())
         for name, value in values.items():
             getattr(self, 'set_' + name)(value)
+
+    def _init_pointer(self, pointer):
+        self._pointer = ffi.gc(pointer, cairo.cairo_font_options_destroy)
+        self._check_status()
 
     def _check_status(self):
         _check_status(cairo.cairo_font_options_status(self._pointer))
 
     def copy(self):
-        return type(self)(cairo.cairo_font_options_copy(self._pointer))
+        cls = type(self)
+        other = object.__new__(cls)
+        cls._init_pointer(other, cairo.cairo_font_options_copy(self._pointer))
+        return other
 
     def merge(self, other):
         cairo.cairo_font_options_merge(self._pointer, other._pointer)

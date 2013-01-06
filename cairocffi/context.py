@@ -78,8 +78,8 @@ class Context(object):
         _check_status(cairo.cairo_status(self._pointer))
 
     def get_target(self):
-        return Surface._from_pointer(cairo.cairo_surface_reference(
-            cairo.cairo_get_target(self._pointer)))
+        return Surface._from_pointer(
+            cairo.cairo_get_target(self._pointer), incref=True)
 
     def save(self):
         cairo.cairo_save(self._pointer)
@@ -105,15 +105,16 @@ class Context(object):
         self._check_status()
 
     def pop_group(self):
-        return Pattern._from_pointer(cairo.cairo_pop_group(self._pointer))
+        return Pattern._from_pointer(
+            cairo.cairo_pop_group(self._pointer), incref=False)
 
     def pop_group_to_source(self):
         cairo.cairo_pop_group_to_source(self._pointer)
         self._check_status()
 
     def get_group_target(self):
-        return Surface._from_pointer(cairo.cairo_surface_reference(
-            cairo.cairo_get_group_target(self._pointer)))
+        return Surface._from_pointer(
+            cairo.cairo_get_group_target(self._pointer), incref=True)
 
     def translate(self, tx, ty):
         cairo.cairo_translate(self._pointer, tx, ty)
@@ -410,8 +411,8 @@ class Context(object):
         self._check_status()
 
     def get_source(self):
-        return Pattern._from_pointer(cairo.cairo_pattern_reference(
-            cairo.cairo_get_source(self._pointer)))
+        return Pattern._from_pointer(
+            cairo.cairo_get_source(self._pointer), incref=True)
 
     def user_to_device(self, x, y):
         xy = ffi.new('double[2]', [x, y])
@@ -443,16 +444,16 @@ class Context(object):
         self._check_status()
 
     def get_font_face(self):
-        return FontFace._from_pointer(cairo.cairo_font_face_reference(
-            cairo.cairo_get_font_face(self._pointer)))
+        return FontFace._from_pointer(
+            cairo.cairo_get_font_face(self._pointer), incref=True)
 
     def set_font_face(self, font_face):
         cairo.cairo_set_font_face(self._pointer, font_face._pointer)
         self._check_status()
 
     def get_scaled_font(self):
-        return ScaledFont._from_pointer(cairo.cairo_scaled_font_reference(
-            cairo.cairo_get_scaled_font(self._pointer)))
+        return ScaledFont._from_pointer(
+            cairo.cairo_get_scaled_font(self._pointer), incref=True)
 
     def set_scaled_font(self, scaled_font):
         cairo.cairo_set_scaled_font(self._pointer, scaled_font._pointer)

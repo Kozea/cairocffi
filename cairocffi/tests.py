@@ -87,6 +87,17 @@ def test_image_surface():
     assert data.tostring() == pixel(b'\x80\x00\x00\x00') * 200
 
 
+def test_image_bytearray_buffer():
+    if '__pypy__' in sys.modules:
+        pytest.xfail()
+    # Also test buffers through ctypes.c_char.from_buffer,
+    # not available on PyPy
+    data = bytearray(800)
+    surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20, stride=40)
+    Context(surface).paint_with_alpha(0.5)
+    assert data == pixel(b'\x80\x00\x00\x00') * 200
+
+
 def test_surface_create_similar_image():
     if cairo_version() < 11200:
         pytest.xfail()
@@ -222,6 +233,10 @@ def test_pdf_versions():
     assert set(PDFSurface.get_versions()) >= set([
         'PDF_VERSION_1_4', 'PDF_VERSION_1_5'])
     assert PDFSurface.version_to_string('PDF_VERSION_1_4') == 'PDF 1.4'
+    with pytest.raises(ValueError):
+        PDFSurface.version_to_string('PDF_VERSION_42')
+    with pytest.raises(ValueError):
+        PDFSurface.version_to_string(42)
 
     file_obj = io.BytesIO()
     PDFSurface(file_obj, 1, 1).finish()
@@ -270,6 +285,10 @@ def test_svg_surface():
     assert set(SVGSurface.get_versions()) >= set([
         'SVG_VERSION_1_1', 'SVG_VERSION_1_2'])
     assert SVGSurface.version_to_string('SVG_VERSION_1_1') == 'SVG 1.1'
+    with pytest.raises(ValueError):
+        SVGSurface.version_to_string('SVG_VERSION_42')
+    with pytest.raises(ValueError):
+        SVGSurface.version_to_string(42)
 
     with temp_directory() as tempdir:
         filename = os.path.join(tempdir, 'foo.svg')
@@ -293,6 +312,10 @@ def test_ps_surface():
     assert set(PSSurface.get_levels()) >= set([
         'PS_LEVEL_2', 'PS_LEVEL_3'])
     assert PSSurface.ps_level_to_string('PS_LEVEL_3') == 'PS Level 3'
+    with pytest.raises(ValueError):
+        PSSurface.ps_level_to_string('PS_LEVEL_42')
+    with pytest.raises(ValueError):
+        PSSurface.ps_level_to_string(42)
 
     with temp_directory() as tempdir:
         filename = os.path.join(tempdir, 'foo.ps')
@@ -953,3 +976,9 @@ def test_glyphs():
     context.show_text(text)
     text_pixels = surface.get_data()[:]
     assert glyph_pixels == text_pixels
+
+
+def test_from_null_pointer():
+    for class_ in [Surface, Pattern, FontFace, ScaledFont]:
+        with pytest.raises(ValueError):
+            class_._from_pointer(cairocffi.ffi.NULL, 'unused')

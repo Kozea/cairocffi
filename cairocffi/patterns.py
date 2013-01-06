@@ -30,11 +30,25 @@ class Pattern(object):
     def _check_status(self):
         _check_status(cairo.cairo_pattern_status(self._pointer))
 
-    @classmethod
-    def _from_pointer(cls, pointer):
+    @staticmethod
+    def _from_pointer(pointer, incref):
+        """Wrap an existing :c:type:`cairo_pattern_t *` cdata pointer.
+
+        :type incref: bool
+        :param incref:
+            Whether increase the :ref:`reference count <refcounting>` now.
+        :return:
+            A new instance of :class:`Pattern` or one of its sub-classes,
+            depending on the pattern’s type.
+
+        """
+        if pointer == ffi.NULL:
+            raise ValueError('Null pointer')
+        if incref:
+            cairo.cairo_pattern_reference(pointer)
         self = object.__new__(PATTERN_TYPE_TO_CLASS.get(
-            cairo.cairo_pattern_get_type(pointer), cls))
-        cls.__init__(self, pointer)  # Skip the subclass’s __init__
+            cairo.cairo_pattern_get_type(pointer), Pattern))
+        Pattern.__init__(self, pointer)  # Skip the subclass’s __init__
         return self
 
     def set_extend(self, extend):
@@ -184,8 +198,7 @@ class SurfacePattern(Pattern):
         surface_p = ffi.new('cairo_surface_t **')
         _check_status(cairo.cairo_pattern_get_surface(
             self._pointer, surface_p))
-        return Surface._from_pointer(
-            cairo.cairo_surface_reference(surface_p[0]))
+        return Surface._from_pointer(surface_p[0], incref=True)
 
 
 class Gradient(Pattern):
