@@ -3,29 +3,20 @@ CFFI API
 
 .. currentmodule:: cairocffi
 
-If the cairocffi API is not sufficient,
-you can access cairo’s lower level C API through CFFI_.
-See the `cairo manual`_ for details.
-If however some functionnality could be added to cairocffi itself,
-please consider making a `pull request
-<https://github.com/SimonSapin/cairocffi>`_!
+cairocffi’s :doc:`API <api>` is made of a number of
+:ref:`wrapper <wrappers>` classes
+that provide a more Pythonic interface for various cairo objects.
+Functions that take a pointer as their first argument become methods,
+error statuses become exceptions,
+and :ref:`reference counting <refcounting>` is hidden away.
 
+In order to use other C libraries that use integrate with cairo,
+or if cairocffi’s API is not sufficient
+(Consider making a `pull request`_!)
+you can access cairo’s lower level C pointers and API through CFFI_.
+
+.. _pull request: https://github.com/SimonSapin/cairocffi
 .. _CFFI: https://cffi.readthedocs.org/
-.. _cairo manual: http://cairographics.org/manual/
-
-
-.. _refcounting:
-
-Reference counting in cairo
----------------------------
-
-Most cairo objects are reference-counted,
-and freed when the count reaches zero.
-cairocffi’s Python wrapper will automatically decrease the reference count
-when they are garbage-collected.
-Therefore, care must be taken when creating a wrapper
-as to the reference count should be increased (for existing cairo objects)
-or not (for cairo objects that were just created with a refcount of 1.)
 
 
 Module-level objects
@@ -44,6 +35,27 @@ Module-level objects
 
         if cairo_c.cairo_surface_get_type(surface._pointer) == 'XLIB':
             ...
+
+    See the `cairo manual`_ for details.
+
+    .. _cairo manual: http://cairographics.org/manual/
+
+
+.. _refcounting:
+
+Reference counting in cairo
+---------------------------
+
+Most cairo objects are reference-counted,
+and freed when the count reaches zero.
+cairocffi’s Python wrapper will automatically decrease the reference count
+when they are garbage-collected.
+Therefore, care must be taken when creating a wrapper
+as to the reference count should be increased (for existing cairo objects)
+or not (for cairo objects that were just created with a refcount of 1.)
+
+
+.. _wrappers:
 
 Wrappers
 --------
