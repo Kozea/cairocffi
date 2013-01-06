@@ -80,3 +80,10 @@ Wrappers
 .. attribute:: Context._pointer
 
     The underlying :c:type:`cairo_t *` cdata pointer.
+
+    This is what you would typically pass to other C libraries
+    that work together with cairo::
+
+        pangocairo = ffi.dlopen('pangocairo-1.0')
+        layout = pangocairo.pango_cairo_create_layout(context._pointer)
+        # ...

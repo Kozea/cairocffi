@@ -128,7 +128,7 @@ class Matrix(object):
     def as_tuple(self):
         """Return all of the matrix’s components.
 
-        :returns: a ``(xx, yx, xy, yy, x0, y0)`` tuple of floats.
+        :returns: A ``(xx, yx, xy, yy, x0, y0)`` tuple of floats.
 
         """
         return (self.xx, self.yx, self.xy, self.yy, self.x0, self.y0)
@@ -183,7 +183,7 @@ class Matrix(object):
         first scale the coordinates by :obj:`sx` and :obj:`sy`,
         then apply the original transformation to the coordinates.
 
-        If :obj:`sy` is omited, it is the same as :obj:`sx` so that scaling
+        If :obj:`sy` is omitted, it is the same as :obj:`sx` so that scaling
         preserves aspect ratios.
 
         .. note::
@@ -250,10 +250,11 @@ class Matrix(object):
     def transform_point(self, x, y):
         """Transforms the point ``(x, y)`` by this matrix.
 
-        :param dx: X position.
-        :param dy: Y position.
-        :type dx: float
-        :type dy: float
+        :param x: X position.
+        :param y: Y position.
+        :type x: float
+        :type y: float
+        :returns: A ``(new_x, new_y)`` tuple of floats.
 
         """
         xy = ffi.new('double[2]', [x, y])
@@ -280,6 +281,7 @@ class Matrix(object):
         :param dy: Y component of a distance vector.
         :type dx: float
         :type dy: float
+        :returns: A ``(new_dx, new_dy)`` tuple of floats.
 
         """
         xy = ffi.new('double[2]', [dx, dy])

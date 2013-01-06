@@ -87,7 +87,7 @@ class Surface(object):
     """The base class for all surface types.
 
     Should not be instantiated directly, but see :doc:`cffi_api`.
-    An instance may be returned for cairo surface type
+    An instance may be returned for cairo surface types
     that are not (yet) defined in cairocffi.
 
     """

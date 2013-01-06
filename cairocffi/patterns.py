@@ -19,7 +19,7 @@ class Pattern(object):
     """The base class for all pattern types.
 
     Should not be instantiated directly, but see :doc:`cffi_api`.
-    An instance may be returned for cairo pattern type
+    An instance may be returned for cairo pattern types
     that are not (yet) defined in cairocffi.
 
     """
