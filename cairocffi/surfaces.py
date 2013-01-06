@@ -98,6 +98,26 @@ class Surface(object):
     An instance may be returned for cairo surface types
     that are not (yet) defined in cairocffi.
 
+    A :class:`Surface` represents an image,
+    either as the destination of a drawing operation
+    or as source when drawing onto another surface.
+    To draw to a :class:`Surface`,
+    create a cairo :class:`Context` with the surface as the target.
+
+    There are different sub-classes of :class:`Surface`
+    for different drawing backends;
+    for example, :class:`ImageSurface` is a bitmap image in memory.
+
+    The initial contents of a surface after creation
+    depend upon the manner of its creation.
+    If cairo creates the surface and backing storage for the user,
+    it will be initially cleared;
+    for example, :class:`ImageSurface` and :meth:`create_similar`.
+    Alternatively, if the user passes in a reference
+    to some backing storage and asks cairo to wrap that in a :class:`Surface`,
+    then the contents are not modified;
+    for example, :class:`ImageSurface` with a :obj:`data` argument.
+
     """
     def __init__(self, pointer, target_keep_alive=None):
         self._pointer = ffi.gc(pointer, cairo.cairo_surface_destroy)

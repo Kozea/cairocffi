@@ -22,6 +22,15 @@ class Pattern(object):
     An instance may be returned for cairo pattern types
     that are not (yet) defined in cairocffi.
 
+    A :class:`Pattern` represents a source when drawing onto a surface.
+    There are different sub-classes of :class:`Pattern`,
+    for different types of sources;
+    for example, :class:`SolidPattern` is a pattern for a solid color.
+
+    Other than instantiating the various :class:`Pattern` sub-classes,
+    some of the pattern types can be implicitly created
+    using various :class:`Context`; for example :meth:`Context.set_source_rgb`.
+
     """
     def __init__(self, pointer):
         self._pointer = ffi.gc(pointer, cairo.cairo_pattern_destroy)
