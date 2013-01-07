@@ -439,7 +439,7 @@ class FontOptions(object):
         self._check_status()
 
     def get_antialias(self):
-        """Return the :ref:`ANTIALIAS` for the font options object."""
+        """Return the :ref:`ANTIALIAS` string for the font options object."""
         return cairo.cairo_font_options_get_antialias(self._pointer)
 
     def set_subpixel_order(self, subpixel_order):
@@ -455,7 +455,10 @@ class FontOptions(object):
         self._check_status()
 
     def get_subpixel_order(self):
-        """Return the :ref:`SUBPIXEL_ORDER` for the font options object."""
+        """Return the :ref:`SUBPIXEL_ORDER` string
+        for the font options object.
+
+        """
         return cairo.cairo_font_options_get_subpixel_order(self._pointer)
 
     def set_hint_style(self, hint_style):
@@ -468,7 +471,7 @@ class FontOptions(object):
         self._check_status()
 
     def get_hint_style(self):
-        """Return the :ref:`HINT_STYLE` for the font options object."""
+        """Return the :ref:`HINT_STYLE` string for the font options object."""
         return cairo.cairo_font_options_get_hint_style(self._pointer)
 
     def set_hint_metrics(self, hint_metrics):
@@ -481,5 +484,8 @@ class FontOptions(object):
         self._check_status()
 
     def get_hint_metrics(self):
-        """Return the :ref:`HINT_METRICS` for the font options object."""
+        """Return the :ref:`HINT_METRICS` string
+        for the font options object.
+
+        """
         return cairo.cairo_font_options_get_hint_metrics(self._pointer)

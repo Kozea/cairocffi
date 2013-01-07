@@ -135,7 +135,7 @@ class Pattern(object):
         Also, please note the discussion of the user-space locking semantics
         of :meth:`Context.set_source`.
 
-        :param: A :class:`Matrix` to be copied into the pattern.
+        :param matrix: A :class:`Matrix` to be copied into the pattern.
 
         """
         cairo.cairo_pattern_set_matrix(self._pointer, matrix._pointer)
@@ -155,7 +155,7 @@ class Pattern(object):
 
 class SolidPattern(Pattern):
     """Creates a new pattern corresponding to a solid color.
-    The color components are in the range 0 to 1.
+    The color and alpha components are in the range 0 to 1.
     If the values passed in are outside that range, they will be clamped.
 
     :param red: Red component of the color.
@@ -197,7 +197,7 @@ class SurfacePattern(Pattern):
             self, cairo.cairo_pattern_create_for_surface(surface._pointer))
 
     def get_surface(self):
-        """Return the :class:`SurfacePattern`’s surface.
+        """Return this :class:`SurfacePattern`’s surface.
 
         :returns:
             An instance of :class:`Surface` or one of its sub-classes,

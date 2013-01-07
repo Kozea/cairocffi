@@ -235,10 +235,10 @@ class Surface(object):
             Width of the sub-surface (in device-space units)
         :param height:
             Height of the sub-surface (in device-space units)
-        :type x: double
-        :type y: double
-        :type width: double
-        :type height: double
+        :type x: float
+        :type y: float
+        :type width: float
+        :type height: float
         :returns:
             A new :class:`Surface` object.
 
@@ -740,7 +740,7 @@ class PDFSurface(Surface):
     to be written to :obj:`target`.
 
     Note that the size of individual pages of the PDF output can vary.
-    See :meth`set_size`.
+    See :meth:`set_size`.
 
     The PDF surface backend recognizes the following MIME types
     for the data attached to a surface (see :meth:`~Surface.set_mime_data`)
@@ -853,7 +853,7 @@ class PSSurface(Surface):
     to be written to :obj:`target`.
 
     Note that the size of individual pages of the PostScript output can vary.
-    See :meth`set_size`.
+    See :meth:`set_size`.
 
     :obj:`target` can be :obj:`None` to specify no output.
     This will generate a surface that may be queried and used as a source,

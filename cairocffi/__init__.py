@@ -112,7 +112,7 @@ class Matrix(object):
         """Return a new :class:`Matrix` for a transformation
         that rotates by :obj:`radians`.
 
-        :type: radians: float
+        :type radians: float
         :param radians:
             Angle of rotation, in radians.
             The direction of rotation is defined such that
