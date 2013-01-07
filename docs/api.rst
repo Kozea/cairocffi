@@ -2,6 +2,10 @@ Python API reference
 ####################
 
 .. module:: cairocffi
+
+Meta
+====
+
 .. autofunction:: install_as_pycairo
 .. autofunction:: cairo_version
 .. autofunction:: cairo_version_string

@@ -97,8 +97,8 @@ Wrappers
 
 .. _using_pango:
 
-Example: using Pango with CFFI
-------------------------------
+Example: using Pango through CFFI with cairocffi
+------------------------------------------------
 
 The program below shows a fairly standard usage of CFFI
 to access Pango’ C API.

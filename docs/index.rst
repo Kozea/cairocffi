@@ -6,5 +6,6 @@ Documentation
 
 .. toctree::
 
-   api
-   cffi_api
+    overview
+    api
+    cffi_api

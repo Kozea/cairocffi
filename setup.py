@@ -20,7 +20,7 @@ setup(
     description='cffi-based cairo bindings for Python',
     long_description=LONG_DESCRIPTION,
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 2',

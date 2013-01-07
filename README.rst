@@ -12,7 +12,8 @@ including image buffers, PNG, PostScript, PDF, and SVG file output.
 
 * `Latest documentation <http://packages.python.org/cairocffi/>`_
 * `Source code and issue tracker <https://github.com/SimonSapin/cairocffi>`_
+  on GitHub.
 * Install with ``pip install cairocffi``
-* Runs on Python 2.6+ and 3.x (including PyPy)
-* API compatible with Pycairo
-* Works with any version of cairo
+* Python 2.6, 2.7 and 3.x. Tested with CPython and Pypy.
+* API compatible with Pycairo.
+* Works with any version of cairo.
