@@ -83,8 +83,20 @@ def _iter_path(pointer):
 
 
 class Context(object):
-    def __init__(self, surface):
-        self._init_pointer(cairo.cairo_create(surface._pointer))
+    """A :class:`Context` contains the current state of the rendering device,
+    including coordinates of yet to be drawn shapes.
+
+    Cairo contexts are central to cairo
+    and all drawing with cairo is always done to a :class:`Context` object.
+
+    :param target: The target :class:`Surface` object.
+
+    Cairo contexts can be used as Python :ref:`context managers <with>`.
+    See :meth:`save`.
+
+    """
+    def __init__(self, target):
+        self._init_pointer(cairo.cairo_create(target._pointer))
 
     def _init_pointer(self, pointer):
         self._pointer = ffi.gc(pointer, cairo.cairo_destroy)
@@ -113,14 +125,53 @@ class Context(object):
         return self
 
     def get_target(self):
+        """Return this context’s target surface.
+
+        :returns:
+            An instance of :class:`Surface` or one of its sub-classes,
+            a new Python object referencing the existing cairo surface.
+
+        """
         return Surface._from_pointer(
             cairo.cairo_get_target(self._pointer), incref=True)
 
+    ##
+    ##  Save / restore
+    ##
+
     def save(self):
+        """Makes a copy of the current state of this context
+        and saves it on an internal stack of saved states.
+        When :meth:`restore` is called,
+        the context will be restored to the saved state.
+        Multiple calls to :meth:`save` and :meth:`restore` can be nested;
+        each call to :meth:`restore` restores the state
+        from the matching paired :meth:`save`.
+
+        Instead of using :meth:`save` and :meth:`restore` directly,
+        it is recommended to use a :ref:`with statement <with>`::
+
+            with context:
+                do_something(context)
+
+        … which is equivalent to::
+
+            context.save()
+            try:
+                do_something(context)
+            finally:
+                context.restore()
+
+        """
         cairo.cairo_save(self._pointer)
         self._check_status()
 
     def restore(self):
+        """Restores the context to the state saved
+        by a preceding call to :meth:`save`
+        and removes that state from the stack of saved states.
+
+        """
         cairo.cairo_restore(self._pointer)
         self._check_status()
 
@@ -131,25 +182,489 @@ class Context(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.restore()
 
+    ##
+    ##  Groups
+    ##
+
     def push_group(self):
+        """Temporarily redirects drawing to an intermediate surface
+        known as a group.
+        The redirection lasts until the group is completed
+        by a call to :meth:`pop_group` or :meth:`pop_group_to_source`.
+        These calls provide the result of any drawing
+        to the group as a pattern,
+        (either as an explicit object, or set as the source pattern).
+
+        This group functionality can be convenient
+        for performing intermediate compositing.
+        One common use of a group is to render objects
+        as opaque within the group,  (so that they occlude each other),
+        and then blend the result with translucence onto the destination.
+
+        Groups can be nested arbitrarily deep
+        by making balanced calls to :meth:`push_group` / :meth:`pop_group`.
+        Each call pushes / pops the new target group onto / from a stack.
+
+        The :meth:`group` method calls :meth:`save`
+        so that any changes to the graphics state
+        will not be visible outside the group,
+        (the pop_group methods call :meth:`restore`).
+
+        By default the intermediate group will have
+        a content type of :obj:`COLOR_ALPHA <CONTENT_COLOR_ALPHA>`.
+        Other content types can be chosen for the group
+        by using :meth:`push_group_with_content` instead.
+
+        As an example,
+        here is how one might fill and stroke a path with translucence,
+        but without any portion of the fill being visible under the stroke::
+
+            context.push_group()
+            context.set_source(fill_pattern)
+            context.fill_preserve()
+            context.set_source(stroke_pattern)
+            context.stroke()
+            context.pop_group_to_source()
+            context.paint_with_alpha(alpha)
+
+        """
         cairo.cairo_push_group(self._pointer)
         self._check_status()
 
     def push_group_with_content(self, content):
+        """Temporarily redirects drawing to an intermediate surface
+        known as a group.
+        The redirection lasts until the group is completed
+        by a call to :meth:`pop_group` or :meth:`pop_group_to_source`.
+        These calls provide the result of any drawing
+        to the group as a pattern,
+        (either as an explicit object, or set as the source pattern).
+
+        The group will have a content type of :obj:`content`.
+        The ability to control this content  type
+        is the only distinction between this method and :meth:`push_group`
+        which you should see for a more detailed description
+        of group rendering.
+
+        :param content: A :ref:`CONTENT` string.
+
+        """
         cairo.cairo_push_group_with_content(self._pointer, content)
         self._check_status()
 
     def pop_group(self):
+        """Terminates the redirection begun by a call to :meth:`push_group`
+        or :meth:`push_group_with_content`
+        and returns a new pattern containing the results
+        of all drawing operations performed to the group.
+
+        The :meth:`pop_group` method calls :meth:`restore`,
+        (balancing a call to :meth:`save` by the push_group method),
+        so that any changes to the graphics state
+        will not be visible outside the group.
+
+        :returns:
+            A newly created :class:`SurfacePattern`
+            containing the results of all drawing operations
+            performed to the group.
+
+        """
         return Pattern._from_pointer(
             cairo.cairo_pop_group(self._pointer), incref=False)
 
     def pop_group_to_source(self):
+        """Terminates the redirection begun by a call to :meth:`push_group`
+        or :meth:`push_group_with_content`
+        and installs the resulting pattern
+        as the source pattern in the given cairo context.
+
+        The behavior of this method is equivalent to::
+
+            context.set_source(context.pop_group())
+
+        """
         cairo.cairo_pop_group_to_source(self._pointer)
         self._check_status()
 
     def get_group_target(self):
+        """Returns the current destination surface for the context.
+        This is either the original target surface
+        as passed to :class:`Context`
+        or the target surface for the current group as started
+        by the most recent call to :meth:`push_group`
+        or :meth:`push_group_with_content`.
+
+        """
         return Surface._from_pointer(
             cairo.cairo_get_group_target(self._pointer), incref=True)
+
+    ##
+    ##  Sources
+    ##
+
+    def set_source_rgba(self, red, green, blue, alpha=1):
+        """Sets the source pattern within this context to a solid color.
+        This color will then be used for any subsequent drawing operation
+        until a new source pattern is set.
+
+        The color and alpha components are
+        floating point numbers  in the range 0 to 1.
+        If the values passed in are outside that range, they will be clamped.
+
+        The default source pattern is opaque black,
+        (that is, it is equivalent to ``context.set_source_rgba(0, 0, 0)``).
+
+        :param red: Red component of the color.
+        :param green: Green component of the color.
+        :param blue: Blue component of the color.
+        :param alpha:
+            Alpha component of the color.
+            1 (the default) is opaque, 0 fully transparent.
+        :type red: float
+        :type green: float
+        :type blue: float
+        :type alpha: float
+
+        """
+        cairo.cairo_set_source_rgba(self._pointer, red, green, blue, alpha)
+        self._check_status()
+
+    def set_source_rgb(self, red, green, blue):
+        """Same as :meth:`set_source_rgba` with alpha always 1.
+        Exists for compatibility with pycairo.
+
+        """
+        cairo.cairo_set_source_rgb(self._pointer, red, green, blue)
+        self._check_status()
+
+    def set_source_surface(self, surface, x=0, y=0):
+        """This is a convenience method for creating a pattern from surface
+        and setting it as the source in this context with :meth:`set_source`.
+
+        The :obj:`x` and :obj:`y` parameters give the user-space coordinate
+        at which the surface origin should appear.
+        (The surface origin is its upper-left corner
+        before any transformation has been applied.)
+        The :obj:`x` and :obj:`y` parameters are negated
+        and then set as translation values in the pattern matrix.
+
+        Other than the initial translation pattern matrix, as described above,
+        all other pattern attributes, (such as its extend mode),
+        are set to the default values as in :class:`SurfacePattern`.
+        The resulting pattern can be queried with :meth:`get_source`
+        so that these attributes can be modified if desired,
+        (eg. to create a repeating pattern with :meth:`Pattern.set_extend`).
+
+        :param surface:
+            A :class:`Surface` to be used to set the source pattern.
+        :param x: User-space X coordinate for surface origin.
+        :param y: User-space Y coordinate for surface origin.
+        :type x: float
+        :type y: float
+
+        """
+        cairo.cairo_set_source_surface(self._pointer, surface._pointer, x, y)
+        self._check_status()
+
+    def set_source(self, source):
+        """Sets the source pattern within this context to :obj:`source`.
+        This pattern will then be used for any subsequent drawing operation
+        until a new source pattern is set.
+
+        .. note::
+
+            The pattern's transformation matrix will be locked
+            to the user space in effect at the time of :meth:`set_source`.
+            This means that further modifications
+            of the current transformation matrix
+            will not affect the source pattern.
+            See :meth:`Pattern.set_matrix`.
+
+        The default source pattern is opaque black,
+        (that is, it is equivalent to ``context.set_source_rgba(0, 0, 0)``).
+
+        :param source:
+            A :class:`Pattern` to be used
+            as the source for subsequent drawing operations.
+
+        """
+        cairo.cairo_set_source(self._pointer, source._pointer)
+        self._check_status()
+
+    def get_source(self):
+        """Return this context’s source.
+
+        :returns:
+            An instance of :class:`Pattern` or one of its sub-classes,
+            a new Python object referencing the existing cairo pattern.
+
+        """
+        return Pattern._from_pointer(
+            cairo.cairo_get_source(self._pointer), incref=True)
+
+    ##
+    ##  Context parameters
+    ##
+
+    def set_antialias(self, antialias):
+        """Set the :ref:`ANTIALIAS` of the rasterizer used for drawing shapes.
+        This value is a hint,
+        and a particular backend may or may not support a particular value.
+        At the current time,
+        no backend supports :obj:`SUBPIXEL <ANTIALIAS_SUBPIXEL>`
+        when drawing shapes.
+
+        Note that this option does not affect text rendering,
+        instead see :meth:`FontOptions.set_antialias`.
+
+        :param antialias: An :ref:`ANTIALIAS` string.
+
+        """
+        cairo.cairo_set_antialias(self._pointer, antialias)
+        self._check_status()
+
+    def get_antialias(self):
+        """Return the :ref:`ANTIALIAS` string."""
+        return cairo.cairo_get_antialias(self._pointer)
+
+    def set_dash(self, dashes, offset=0):
+        """Sets the dash pattern to be used by :meth:`stroke`.
+        A dash pattern is specified by dashes, a list of positive values.
+        Each value provides the length of alternate "on" and "off"
+        portions of the stroke.
+        :obj:`offset` specifies an offset into the pattern
+        at which the stroke begins.
+
+        Each "on" segment will have caps applied
+        as if the segment were a separate sub-path.
+        In particular, it is valid to use an "on" length of 0
+        with :obj:`LINE_CAP_ROUND` or :obj:`LINE_CAP_SQUARE`
+        in order to distributed dots or squares along a path.
+
+        Note: The length values are in user-space units
+        as evaluated at the time of stroking.
+        This is not necessarily the same as the user space
+        at the time of :meth:`set_dash`.
+
+        If :obj:`dashes` is empty dashing is disabled.
+        If it is of length 1 a symmetric pattern is assumed
+        with alternating on and off portions of the size specified
+        by the single value.
+
+        :param dashes:
+            A list of floats specifying alternate lengths
+            of on and off stroke portions.
+        :type offset: float
+        :param offset:
+            An offset into the dash pattern at which the stroke should start.
+        :raises:
+            :exc:`CairoError`
+            if any value in dashes is negative,
+            or if all values are 0.
+            The context  will be put into an error state.
+
+        """
+        cairo.cairo_set_dash(
+            self._pointer, ffi.new('double[]', dashes), len(dashes), offset)
+        self._check_status()
+
+    def get_dash(self):
+        """Return the current dash pattern.
+
+        :returns:
+            A ``(dashes, offset)`` tuple of a list and a float.
+            :obj:`dashes` is a list of floats,
+            empty if no dashing is in effect.
+
+        """
+        dashes = ffi.new('double[]', cairo.cairo_get_dash_count(self._pointer))
+        offset = ffi.new('double *')
+        cairo.cairo_get_dash(self._pointer, dashes, offset)
+        self._check_status()
+        return list(dashes), offset[0]
+
+    def get_dash_count(self):
+        """Same as ``len(context.get_dash()[0])``."""
+        # Not really useful with get_dash() returning a list,
+        # but retained for compatibility with pycairo.
+        return cairo.cairo_get_dash_count(self._pointer)
+
+    def set_fill_rule(self, fill_rule):
+        """Set the current :ref:`FILL_RULE` within the cairo context.
+        The fill rule is used to determine which regions are inside
+        or outside a complex (potentially self-intersecting) path.
+        The current fill rule affects both :meth:`fill` and :meth:`clip`.
+
+        The default fill rule is :obj:`WINDING <FILL_RULE_WINDING>`.
+
+        :param fill_rule: A :ref:`FILL_RULE` string.
+
+        """
+        cairo.cairo_set_fill_rule(self._pointer, fill_rule)
+        self._check_status()
+
+    def get_fill_rule(self):
+        """Return the current :ref:`FILL_RULE` string."""
+        return cairo.cairo_get_fill_rule(self._pointer)
+
+    def set_line_cap(self, line_cap):
+        """Set the current :ref:`LINE_CAP` within the cairo context.
+        As with the other stroke parameters,
+        the current line cap style is examined by
+        :meth:`stroke`, :meth:`stroke_extents`, and :meth:`stroke_to_path`,
+        but does not have any effect during path construction.
+
+        The default line cap is :obj:`BUTT <LINE_CAP_BUTT>`.
+
+        :param line_cap: A :ref:`LINE_CAP` string.
+
+        """
+        cairo.cairo_set_line_cap(self._pointer, line_cap)
+        self._check_status()
+
+    def get_line_cap(self):
+        """Return the current :ref:`LINE_CAP` string."""
+        return cairo.cairo_get_line_cap(self._pointer)
+
+    def set_line_join(self, line_join):
+        """Set the current :ref:`LINE_JOIN` within the cairo context.
+        As with the other stroke parameters,
+        the current line cap style is examined by
+        :meth:`stroke`, :meth:`stroke_extents`, and :meth:`stroke_to_path`,
+        but does not have any effect during path construction.
+
+        The default line cap is :obj:`MITER <LINE_JOIN_MITER>`.
+
+        :param line_join: A :ref:`LINE_JOIN` string.
+
+        """
+        cairo.cairo_set_line_join(self._pointer, line_join)
+        self._check_status()
+
+    def get_line_join(self):
+        """Return the current :ref:`LINE_JOIN` string."""
+        return cairo.cairo_get_line_join(self._pointer)
+
+    def set_line_width(self, width):
+        """Sets the current line width within the cairo context.
+        The line width value specifies the diameter of a pen
+        that is circular in user space,
+        (though device-space pen may be an ellipse in general
+        due to scaling / shear / rotation of the CTM).
+
+        .. note::
+            When the description above refers to user space and CTM
+            it refers to the user space and CTM in effect
+            at the time of the stroking operation,
+            not the user space and CTM in effect
+            at the time of the call to :meth:`set_line_width`.
+            The simplest usage makes both of these spaces identical.
+            That is, if there is no change to the CTM
+            between a call to :meth:`set_line_width`
+            and the stroking operation,
+            then one can just pass user-space values to :meth:`set_line_width`
+            and ignore this note.
+
+        As with the other stroke parameters,
+        the current line cap style is examined by
+        :meth:`stroke`, :meth:`stroke_extents`, and :meth:`stroke_to_path`,
+        but does not have any effect during path construction.
+
+        The default line width value is 2.0.
+
+        :type width: float
+        :param width: The new line width.
+
+        """
+        cairo.cairo_set_line_width(self._pointer, width)
+        self._check_status()
+
+    def get_line_width(self):
+        """Return the current line width as a float."""
+        return cairo.cairo_get_line_width(self._pointer)
+
+    def set_miter_limit(self, limit):
+        """Sets the current miter limit within the cairo context.
+
+        If the current line join style is set to :obj:`MITER <LINE_JOIN_MITER>`
+        (see :meth:`set_line_join`),
+        the miter limit is used to determine
+        whether the lines should be joined with a bevel instead of a miter.
+        Cairo divides the length of the miter by the line width.
+        If the result is greater than the miter limit,
+        the style is converted to a bevel.
+
+        As with the other stroke parameters,
+        the current line cap style is examined by
+        :meth:`stroke`, :meth:`stroke_extents`, and :meth:`stroke_to_path`,
+        but does not have any effect during path construction.
+
+        The default miter limit value is 10.0,
+        which will convert joins with interior angles less than 11 degrees
+        to bevels instead of miters.
+        For reference,
+        a miter limit of 2.0 makes the miter cutoff at 60 degrees,
+        and a miter limit of 1.414 makes the cutoff at 90 degrees.
+
+        A miter limit for a desired angle can be computed as:
+        ``miter_limit = 1. / sin(angle / 2.)``
+
+        :param limit: The miter limit to set.
+        :type limit: float
+
+        """
+        cairo.cairo_set_miter_limit(self._pointer, limit)
+        self._check_status()
+
+    def get_miter_limit(self):
+        """Return the current miter limit as a float."""
+        return cairo.cairo_get_miter_limit(self._pointer)
+
+    def set_operator(self, operator):
+        """Set the current :ref:`OPERATOR`
+        to be used for all drawing operations.
+
+        The default operator is :obj:`OVER <OPERATOR_OVER>`.
+
+        :param operator: A :ref:`OPERATOR` string.
+
+        """
+        cairo.cairo_set_operator(self._pointer, operator)
+        self._check_status()
+
+    def get_operator(self):
+        """Return the current :ref:`OPERATOR` string."""
+        return cairo.cairo_get_operator(self._pointer)
+
+    def set_tolerance(self, tolerance):
+        """Sets the tolerance used when converting paths into trapezoids.
+        Curved segments of the path will be subdivided
+        until the maximum deviation between the original path
+        and the polygonal approximation is less than tolerance.
+        The default value is 0.1.
+        A larger value will give better performance,
+        a smaller value, better appearance.
+        (Reducing the value from the default value of 0.1
+        is unlikely to improve appearance significantly.)
+        The accuracy of paths within Cairo is limited
+        by the precision of its internal arithmetic,
+        and the prescribed tolerance is restricted
+        to the smallest representable internal value.
+
+        :type tolerance: float
+        :param tolerance : The tolerance, in device units (typically pixels)
+
+        """
+        cairo.cairo_set_tolerance(self._pointer, tolerance)
+        self._check_status()
+
+    def get_tolerance(self):
+        """Return the current tolerance as a float."""
+        return cairo.cairo_get_tolerance(self._pointer)
+
+    ##
+    ##  CTM: Current transformation matrix
+    ##
 
     def translate(self, tx, ty):
         cairo.cairo_translate(self._pointer, tx, ty)
@@ -182,6 +697,34 @@ class Context(object):
     def identity_matrix(self):
         cairo.cairo_identity_matrix(self._pointer)
         self._check_status()
+
+    def user_to_device(self, x, y):
+        xy = ffi.new('double[2]', [x, y])
+        cairo.cairo_user_to_device(self._pointer, xy + 0, xy + 1)
+        self._check_status()
+        return tuple(xy)
+
+    def user_to_device_distance(self, x, y):
+        xy = ffi.new('double[2]', [x, y])
+        cairo.cairo_user_to_device_distance(self._pointer, xy + 0, xy + 1)
+        self._check_status()
+        return tuple(xy)
+
+    def device_to_user(self, x, y):
+        xy = ffi.new('double[2]', [x, y])
+        cairo.cairo_device_to_user(self._pointer, xy + 0, xy + 1)
+        self._check_status()
+        return tuple(xy)
+
+    def device_to_user_distance(self, x, y):
+        xy = ffi.new('double[2]', [x, y])
+        cairo.cairo_device_to_user_distance(self._pointer, xy + 0, xy + 1)
+        self._check_status()
+        return tuple(xy)
+
+    ##
+    ##  Path
+    ##
 
     def arc(self, xc, yc, radius, angle1, angle2):
         cairo.cairo_arc(self._pointer, xc, yc, radius, angle1, angle2)
@@ -272,78 +815,9 @@ class Context(object):
     def has_current_point(self):
         return bool(cairo.cairo_has_current_point(self._pointer))
 
-    def set_dash(self, dashes, offset=0):
-        cairo.cairo_set_dash(
-            self._pointer, ffi.new('double[]', dashes), len(dashes), offset)
-        self._check_status()
-
-    def set_antialias(self, antialias):
-        cairo.cairo_set_antialias(self._pointer, antialias)
-        self._check_status()
-
-    def get_antialias(self):
-        return cairo.cairo_get_antialias(self._pointer)
-
-    def get_dash(self):
-        dashes = ffi.new('double[]', cairo.cairo_get_dash_count(self._pointer))
-        offset = ffi.new('double *')
-        cairo.cairo_get_dash(self._pointer, dashes, offset)
-        self._check_status()
-        return list(dashes), offset[0]
-
-    def get_dash_count(self):
-        # Not really useful with get_dash() returning a list,
-        # but retained for compatibility with pycairo.
-        return cairo.cairo_get_dash_count(self._pointer)
-
-    def set_fill_rule(self, fill_rule):
-        cairo.cairo_set_fill_rule(self._pointer, fill_rule)
-        self._check_status()
-
-    def get_fill_rule(self):
-        return cairo.cairo_get_fill_rule(self._pointer)
-
-    def set_line_cap(self, line_cap):
-        cairo.cairo_set_line_cap(self._pointer, line_cap)
-        self._check_status()
-
-    def get_line_cap(self):
-        return cairo.cairo_get_line_cap(self._pointer)
-
-    def set_line_join(self, line_join):
-        cairo.cairo_set_line_join(self._pointer, line_join)
-        self._check_status()
-
-    def get_line_join(self):
-        return cairo.cairo_get_line_join(self._pointer)
-
-    def set_line_width(self, width):
-        cairo.cairo_set_line_width(self._pointer, width)
-        self._check_status()
-
-    def get_line_width(self):
-        return cairo.cairo_get_line_width(self._pointer)
-
-    def set_miter_limit(self, miter_limit):
-        cairo.cairo_set_miter_limit(self._pointer, miter_limit)
-        self._check_status()
-
-    def get_miter_limit(self):
-        return cairo.cairo_get_miter_limit(self._pointer)
-
-    def set_operator(self, operator):
-        cairo.cairo_set_operator(self._pointer, operator)
-        self._check_status()
-
-    def get_operator(self):
-        return cairo.cairo_get_operator(self._pointer)
-
-    def set_tolerance(self, tolerance):
-        cairo.cairo_set_tolerance(self._pointer, tolerance)
-        self._check_status()
-
-    def get_tolerance(self):
-        return cairo.cairo_get_tolerance(self._pointer)
+    ##
+    ##  Drawing operators
+    ##
 
     def paint(self):
         cairo.cairo_paint(self._pointer)
@@ -431,49 +905,9 @@ class Context(object):
             self._pointer, surface._pointer, surface_x, surface_y)
         self._check_status()
 
-    def set_source_rgb(self, r, g, b):
-        cairo.cairo_set_source_rgb(self._pointer, r, g, b)
-        self._check_status()
-
-    def set_source_rgba(self, r, g, b, a=1):
-        cairo.cairo_set_source_rgba(self._pointer, r, g, b, a)
-        self._check_status()
-
-    def set_source_surface(self, surface, x=0, y=0):
-        cairo.cairo_set_source_surface(self._pointer, surface._pointer, x, y)
-        self._check_status()
-
-    def set_source(self, source):
-        cairo.cairo_set_source(self._pointer, source._pointer)
-        self._check_status()
-
-    def get_source(self):
-        return Pattern._from_pointer(
-            cairo.cairo_get_source(self._pointer), incref=True)
-
-    def user_to_device(self, x, y):
-        xy = ffi.new('double[2]', [x, y])
-        cairo.cairo_user_to_device(self._pointer, xy + 0, xy + 1)
-        self._check_status()
-        return tuple(xy)
-
-    def user_to_device_distance(self, x, y):
-        xy = ffi.new('double[2]', [x, y])
-        cairo.cairo_user_to_device_distance(self._pointer, xy + 0, xy + 1)
-        self._check_status()
-        return tuple(xy)
-
-    def device_to_user(self, x, y):
-        xy = ffi.new('double[2]', [x, y])
-        cairo.cairo_device_to_user(self._pointer, xy + 0, xy + 1)
-        self._check_status()
-        return tuple(xy)
-
-    def device_to_user_distance(self, x, y):
-        xy = ffi.new('double[2]', [x, y])
-        cairo.cairo_device_to_user_distance(self._pointer, xy + 0, xy + 1)
-        self._check_status()
-        return tuple(xy)
+    ##
+    ##  Fonts
+    ##
 
     def select_font_face(self, family='', slant='NORMAL', weight='NORMAL'):
         cairo.cairo_select_font_face(
@@ -577,6 +1011,10 @@ class Context(object):
         return (
             extents.ascent, extents.descent, extents.height,
             extents.max_x_advance, extents.max_y_advance)
+
+    ##
+    ##  Text
+    ##
 
     def text_extents(self, text):
         """Returns the extents for a string of text.
@@ -687,7 +1125,7 @@ class Context(object):
         (font :meth:`matrix <set_font_matrix>`),
         and font :meth:`options <set_font_options>`.
 
-        This function first computes a set of glyphs for the string of text.
+        This method first computes a set of glyphs for the string of text.
         The first glyph is placed so that its origin is at the current point.
         The origin of each subsequent glyph
         is offset from that of the previous glyph
@@ -741,7 +1179,7 @@ class Context(object):
         uses the provided text and cluster mapping
         to embed the text for the glyphs shown in the output.
         If the target does not support the extended attributes,
-        this function acts like the basic :meth:`show_glyphs`
+        this method acts like the basic :meth:`show_glyphs`
         as if it had been passed :obj:`glyphs`.
 
         The mapping between :obj:`text` and :obj:`glyphs`
@@ -808,6 +1246,10 @@ class Context(object):
         glyphs = ffi.new('cairo_glyph_t[]', glyphs)
         cairo.cairo_glyph_path(self._pointer, glyphs, len(glyphs))
         self._check_status()
+
+    ##
+    ##  Pages
+    ##
 
     def show_page(self):
         cairo.cairo_show_page(self._pointer)

@@ -205,8 +205,8 @@ Used to identify the memory format of image data.
 
 .. _OPERATOR:
 
-Operator
---------
+Compositiong operator
+---------------------
 
 Used to set the compositing operator for all cairo drawing operations.
 
@@ -505,8 +505,8 @@ New entries may be added in future versions.
 
 .. _LINE_CAP:
 
-Line cap
---------
+Line cap style
+--------------
 
 Specifies how to render the endpoints of the path when stroking.
 
@@ -530,8 +530,8 @@ The default line cap style is :obj:`BUTT <LINE_CAP_BUTT>`.
 
 .. _LINE_JOIN:
 
-Line join
----------
+Line join style
+---------------
 
 Specifies how to render the junction of two lines when stroking.
 
