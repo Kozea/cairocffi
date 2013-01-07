@@ -55,6 +55,7 @@ def _check_status(status):
 def cairo_version():
     """Return the cairo version number as a single integer,
     such as 11208 for ``1.12.8``.
+    Major, minor and micro versions are "worth" 10000, 100 and 1 respectively.
 
     Can be useful as a guard for method not available in older cairo versions::
 

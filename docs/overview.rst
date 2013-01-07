@@ -39,6 +39,26 @@ where to find shared libraries.
 .. _Pycairo: http://cairographics.org/pycairo/
 
 
+cairo versions
+--------------
+
+The same cairocffi version can be used with a variety of cairo version.
+For example, the :meth:`Surface.set_mime_data` method is based on
+the :c:func:`cairo_surface_set_mime_data` C function,
+which is only available since cairo 1.10.
+You will get a runtime exception if you try to use it with an older cairo.
+You can however still use the rest of the API.
+There is no need for cairocffi’s versions to be tied to cairo’s versions.
+
+Use :func:`cairo_version` to test the version number::
+
+    if cairo.cairo_version() > 11000:
+        surface.set_mime_data('image/jpeg', jpeg_bytes)
+
+cairocffi is tested with both cairo 1.8.2 and the latest
+(1.12.8 as of this writing.)
+
+
 Compatibility with Pycairo
 --------------------------
 
