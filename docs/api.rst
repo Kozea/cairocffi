@@ -211,7 +211,8 @@ Used to identify the memory format of image data.
 .. data:: FORMAT_RGB30
     :annotation: = 'RGB30'
 
-    Like :obj:`RGB24 <FORMAT_RGB24>` but with 10bpc.
+    Like :obj:`RGB24 <FORMAT_RGB24>`,
+    but with the upper 2 bits unused and 10 bits per components.
 
 
 .. _OPERATOR:
