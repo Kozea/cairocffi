@@ -830,7 +830,7 @@ def test_context_font():
     ascent, descent, height, max_x_advance, max_y_advance = (
         context.font_extents())
     # That’s about all we can assume for a default font.
-    assert height > ascent + descent
+    #assert height > ascent + descent  # Not even this is true on all fonts
     assert max_x_advance > 0
     assert max_y_advance == 0
     _, _, _, _, x_advance, y_advance = context.text_extents('i' * 10)
@@ -870,7 +870,7 @@ def test_scaled_font():
     font = ScaledFont(ToyFontFace())
     font_extents = font.extents()
     ascent, descent, height, max_x_advance, max_y_advance = font_extents
-    assert height > ascent + descent
+#    assert height > ascent + descent  # Not even this is true on all fonts
     assert max_x_advance > 0
     assert max_y_advance == 0
     _, _, _, _, x_advance, y_advance = font.text_extents('i' * 10)
@@ -882,7 +882,7 @@ def test_scaled_font():
     assert x_advance_mono > x_advance
     assert y_advance == 0
     # Not much we can test:
-    # Che toy font face was "materialized" into a specific backend.
+    # The toy font face was "materialized" into a specific backend.
     assert isinstance(font.get_font_face(), FontFace)
 
     font = ScaledFont(
