@@ -25,13 +25,12 @@ PATH_POINTS_PER_TYPE = {
 
 
 def _encode_path(path_items):
-    """Take an iterable of ``(path_type, points)`` tuples
+    """Take an iterable of ``(path_operation, coordinates)`` tuples
+    in the same format as from :meth:`Context.copy_path`
     and return a ``(path, data)`` tuple of cdata object.
 
-    :obj:`path` points to a cairo_path_t struct that can be used
-    as long as the two cdata objects live.
-
-    See :meth:`Context.copy_path` for the data structure.
+    The first cdata object is a ``cairo_path_t *`` pointer
+    that can be used as long as both objects live.
 
     """
     points_per_type = PATH_POINTS_PER_TYPE
@@ -61,7 +60,8 @@ def _encode_path(path_items):
 
 
 def _iter_path(pointer):
-    """Take a cairo_path_t * pointer and yield ``(path_type, points)`` tuples.
+    """Take a cairo_path_t * pointer
+    and yield ``(path_operation, coordinates)`` tuples.
 
     See :meth:`Context.copy_path` for the data structure.
 
@@ -652,7 +652,7 @@ class Context(object):
         to the smallest representable internal value.
 
         :type tolerance: float
-        :param tolerance : The tolerance, in device units (typically pixels)
+        :param tolerance: The tolerance, in device units (typically pixels)
 
         """
         cairo.cairo_set_tolerance(self._pointer, tolerance)
@@ -1196,7 +1196,8 @@ class Context(object):
             It is convenient for short demos and simple programs,
             but it is not expected to be adequate
             for serious text-using applications.
-            See :meth:`glyph_path` for the "real" text path API in cairo.
+            See :ref:`fonts` for details,
+            and :meth:`glyph_path` for the "real" text path API in cairo.
 
         """
         cairo.cairo_text_path(self._pointer, _encode_string(text))
@@ -1241,18 +1242,60 @@ class Context(object):
         self._check_status()
 
     def copy_path(self):
+        """Return a copy of the current path.
+
+        :returns:
+            A list of ``(path_operation, coordinates)`` tuples
+            of a :ref:`PATH_OPERATION` string
+            and a tuple of floats coordinates
+            whose content depends on the operation type:
+
+            * :obj:`MOVE_TO <PATH_MOVE_TO>`: 1 point ``(x, y)``
+            * :obj:`LINE_TO <PATH_LINE_TO>`: 1 point ``(x, y)``
+            * :obj:`CURVE_TO <PATH_CURVE_TO>`: 3 points
+              ``(x1, y1, x2, y2, x3, y3)``
+            * :obj:`CLOSE_PATH <PATH_CLOSE_PATH>` 0 points ``()`` (empty tuple)
+
+        """
         path = cairo.cairo_copy_path(self._pointer)
         result = list(_iter_path(path))
         cairo.cairo_path_destroy(path)
         return result
 
     def copy_path_flat(self):
+        """Return a flattened copy of the current path
+
+        This method is like :meth:`copy_path`
+        except that any curves in the path will be approximated
+        with piecewise-linear approximations,
+        (accurate to within the current tolerance value,
+        see :meth:`set_tolerance`).
+        That is,
+        the result is guaranteed to not have any elements
+        of type :obj:`CURVE_TO <PATH_CURVE_TO>`
+        which will instead be replaced by
+        a series of :obj:`LINE_TO <PATH_LINE_TO>` elements.
+
+        :returns:
+            A list of ``(path_operation, coordinates)`` tuples.
+            See :meth:`copy_path` for the data structure.
+
+        """
         path = cairo.cairo_copy_path_flat(self._pointer)
         result = list(_iter_path(path))
         cairo.cairo_path_destroy(path)
         return result
 
     def append_path(self, path):
+        """Append :obj:`path` onto the current path.
+        The path may be either the return value from one of :meth:`copy_path`
+        or :meth:`copy_path_flat` or it may be constructed manually.
+
+        :param path:
+            An iterable of tuples
+            in the same format as returned by :meth:`copy_path`.
+
+        """
         # Both objects need to stay alive
         # until after cairo.cairo_append_path() is finished, but not after.
         path, _ = _encode_path(path)
@@ -1260,6 +1303,37 @@ class Context(object):
         self._check_status()
 
     def path_extents(self):
+        """Computes a bounding box in user-space coordinates
+        covering the points on the current path.
+        If the current path is empty,
+        returns an empty rectangle ``(0, 0, 0, 0)``.
+        Stroke parameters, fill rule, surface dimensions and clipping
+        are not taken into account.
+
+        Contrast with :meth:`fill_extents` and :meth:`stroke_extents`
+        which return the extents of only the area that would be "inked"
+        by the corresponding drawing operations.
+
+        The result of :meth:`path_extents`
+        is defined as equivalent to the limit of :meth:`stroke_extents`
+        with :obj:`LINE_CAP_ROUND` as the line width approaches 0,
+        (but never reaching the empty-rectangle
+        returned by :meth:`stroke_extents` for a line width of 0).
+
+        Specifically, this means that zero-area sub-paths
+        such as :meth:`move_to`; :meth:`line_to()` segments,
+        (even degenerate cases
+        where the coordinates to both calls are identical),
+        will be considered as contributing to the extents.
+        However, a lone :meth:`move_to` will not contribute
+        to the results of :meth:`path_extents`.
+
+        :return:
+            A ``(x1, y1, x2, y2)`` tuple of floats:
+            the left, top, right and bottom of the resulting extents,
+            respectively.
+
+        """
         extents = ffi.new('double[4]')
         cairo.cairo_path_extents(
             self._pointer, extents + 0, extents + 1, extents + 2, extents + 3)
@@ -1271,22 +1345,107 @@ class Context(object):
     ##
 
     def paint(self):
+        """A drawing operator that paints the current source everywhere
+        within the current clip region.
+
+        """
         cairo.cairo_paint(self._pointer)
         self._check_status()
 
     def paint_with_alpha(self, alpha):
+        """A drawing operator that paints the current source everywhere
+        within the current clip region
+        using a mask of constant alpha value alpha.
+        The effect is similar to :meth:`paint`,
+        but the drawing is faded out using the :obj:`alpha` value.
+
+        :type alpha: float
+        :param alpha: Alpha value, between 0 (transparent) and 1 (opaque).
+
+        """
         cairo.cairo_paint_with_alpha(self._pointer, alpha)
         self._check_status()
 
+    def mask(self, pattern):
+        """A drawing operator that paints the current source
+        using the alpha channel of :obj:`pattern` as a mask.
+        (Opaque areas of :obj:`pattern` are painted with the source,
+        transparent areas are not painted.)
+
+        :param pattern: A :class:`Pattern` object.
+
+        """
+        cairo.cairo_mask(self._pointer, pattern._pointer)
+        self._check_status()
+
+    def mask_surface(self, surface, surface_x=0, surface_y=0):
+        """A drawing operator that paints the current source
+        using the alpha channel of :obj:`surface` as a mask.
+        (Opaque areas of :obj:`surface` are painted with the source,
+        transparent areas are not painted.)
+
+        :param pattern: A :class:`Surface` object.
+        :param surface_x: X coordinate at which to place the origin of surface.
+        :param surface_y: Y coordinate at which to place the origin of surface.
+        :type surface_x: float
+        :type surface_y: float
+
+        """
+        cairo.cairo_mask_surface(
+            self._pointer, surface._pointer, surface_x, surface_y)
+        self._check_status()
+
     def fill(self):
+        """A drawing operator that fills the current path
+        according to the current fill rule,
+        (each sub-path is implicitly closed before being filled).
+        After :meth:`fill`,
+        the current path will be cleared from the cairo context.
+
+        See :meth:`set_fill_rule` and :meth:`fill_preserve`.
+
+        """
         cairo.cairo_fill(self._pointer)
         self._check_status()
 
     def fill_preserve(self):
+        """A drawing operator that fills the current path
+        according to the current fill rule,
+        (each sub-path is implicitly closed before being filled).
+        Unlike :meth:`fill`,
+        :meth:`fill_preserve` preserves the path within the cairo context.
+
+        See :meth:`set_fill_rule` and :meth:`fill`.
+
+        """
         cairo.cairo_fill_preserve(self._pointer)
         self._check_status()
 
     def fill_extents(self):
+        """Computes a bounding box in user-space coordinates
+        covering the area that would be affected, (the "inked" area),
+        by a :meth:`fill` operation given the current path and fill parameters.
+        If the current path is empty,
+        returns an empty rectangle ``(0, 0, 0, 0)``.
+        Surface dimensions and clipping are not taken into account.
+
+        Contrast with :meth:`path_extents` which is similar,
+        but returns non-zero extents for some paths with no inked area,
+        (such as a simple line segment).
+
+        Note that :meth:`fill_extents` must necessarily do more work
+        to compute the precise inked areas in light of the fill rule,
+        so :meth:`path_extents` may be more desirable for sake of performance
+        if the non-inked path extents are desired.
+
+        See :meth:`fill`, :meth:`set_fill_rule` and :meth:`fill_preserve`.
+
+        :return:
+            A ``(x1, y1, x2, y2)`` tuple of floats:
+            the left, top, right and bottom of the resulting extents,
+            respectively.
+
+        """
         extents = ffi.new('double[4]')
         cairo.cairo_fill_extents(
             self._pointer, extents + 0, extents + 1, extents + 2, extents + 3)
@@ -1294,17 +1453,103 @@ class Context(object):
         return tuple(extents)
 
     def in_fill(self, x, y):
+        """Tests whether the given point is inside the area
+        that would be affected by a :meth:`fill` operation
+        given the current path and filling parameters.
+        Surface dimensions and clipping are not taken into account.
+
+        See :meth:`fill`, :meth:`set_fill_rule` and :meth:`fill_preserve`.
+
+        :param x: X coordinate of the point to test
+        :param y: Y coordinate of the point to test
+        :type x: float
+        :type y: float
+        :returns: A boolean.
+
+        """
         return bool(cairo.cairo_in_fill(self._pointer, x, y))
 
     def stroke(self):
+        """A drawing operator that strokes the current path
+        according to the current line width, line join, line cap,
+        and dash settings.
+        After :meth:`stroke`,
+        the current path will be cleared from the cairo context.
+        See :meth:`set_line_width`, :meth:`set_line_join`,
+        :meth:`set_line_cap`, :meth:`set_dash`, and :meth:`stroke_preserve`.
+
+        Note: Degenerate segments and sub-paths are treated specially
+        and provide a useful result.
+        These can result in two different situations:
+
+        1. Zero-length "on" segments set in :meth:`set_dash`.
+           If the cap style is :obj:`ROUND <LINE_CAP_ROUND>`
+           or :obj:`SQUARE <LINE_CAP_SQUARE>`
+           then these segments will be drawn
+           as circular dots or squares respectively.
+           In the case of :obj:`SQUARE <LINE_CAP_SQUARE>`,
+           the orientation of the squares is determined
+           by the direction of the underlying path.
+        2. A sub-path created by :meth:`move_to` followed
+           by either a :meth:`close_path`
+           or one or more calls to :meth:`line_to`
+           to the same coordinate as the :meth:`move_to`.
+           If the cap style is :obj:`ROUND <LINE_CAP_ROUND>`
+           then these sub-paths will be drawn as circular dots.
+           Note that in the case of :obj:`SQUARE <LINE_CAP_SQUARE>`
+           a degenerate sub-path will not be drawn at all,
+           (since the correct orientation is indeterminate).
+
+        In no case will a cap style of :obj:`BUTT <LINE_CAP_BUTT>`
+        cause anything to be drawn
+        in the case of either degenerate segments or sub-paths.
+
+        """
         cairo.cairo_stroke(self._pointer)
         self._check_status()
 
     def stroke_preserve(self):
+        """A drawing operator that strokes the current path
+        according to the current line width, line join, line cap,
+        and dash settings.
+        Unlike :meth:`stroke`,
+        :meth:`stroke_preserve` preserves the path within the cairo context.
+        See :meth:`set_line_width`, :meth:`set_line_join`,
+        :meth:`set_line_cap`, :meth:`set_dash`, and :meth:`stroke`.
+
+        """
         cairo.cairo_stroke_preserve(self._pointer)
         self._check_status()
 
     def stroke_extents(self):
+        """Computes a bounding box in user-space coordinates
+        covering the area that would be affected, (the "inked" area),
+        by a :meth:`stroke` operation given the current path
+        and stroke parameters.
+        If the current path is empty,
+        returns an empty rectangle ``(0, 0, 0, 0)``.
+        Surface dimensions and clipping are not taken into account.
+
+        Note that if the line width is set to exactly zero,
+        then :meth:`stroke_extents` will return an empty rectangle.
+        Contrast with :meth:`path_extents`
+        which can be used to compute the non-empty bounds
+        as the line width approaches zero.
+
+        Note that :meth:`stroke_extents` must necessarily do more work
+        to compute the precise inked areas in light of the stroke parameters,
+        so :meth:`path_extents` may be more desirable for sake of performance
+        if the non-inked path extents are desired.
+
+        See :meth:`stroke`, :meth:`set_line_width`, :meth:`set_line_join`,
+        :meth:`set_line_cap`, :meth:`set_dash`, and :meth:`stroke_preserve`.
+
+        :return:
+            A ``(x1, y1, x2, y2)`` tuple of floats:
+            the left, top, right and bottom of the resulting extents,
+            respectively.
+
+        """
         extents = ffi.new('double[4]')
         cairo.cairo_stroke_extents(
             self._pointer, extents + 0, extents + 1, extents + 2, extents + 3)
@@ -1312,17 +1557,84 @@ class Context(object):
         return tuple(extents)
 
     def in_stroke(self, x, y):
+        """Tests whether the given point is inside the area
+        that would be affected by a :meth:`stroke` operation
+        given the current path and stroking parameters.
+        Surface dimensions and clipping are not taken into account.
+
+        See :meth:`stroke`, :meth:`set_line_width`, :meth:`set_line_join`,
+        :meth:`set_line_cap`, :meth:`set_dash`, and :meth:`stroke_preserve`.
+
+        :param x: X coordinate of the point to test
+        :param y: Y coordinate of the point to test
+        :type x: float
+        :type y: float
+        :returns: A boolean.
+
+        """
         return bool(cairo.cairo_in_stroke(self._pointer, x, y))
 
     def clip(self):
+        """Establishes a new clip region
+        by intersecting the current clip region
+        with the current path as it would be filled by :meth:`fill`
+        and according to the current fill rule (see :meth:`set_fill_rule`).
+
+        After :meth:`clip`,
+        the current path will be cleared from the cairo context.
+
+        The current clip region affects all drawing operations
+        by effectively masking out any changes to the surface
+        that are outside the current clip region.
+
+        Calling :meth:`clip` can only make the clip region smaller,
+        never larger.
+        But the current clip is part of the graphics state,
+        so a temporary restriction of the clip region can be achieved
+        by calling :meth:`clip` within a :meth:`save` / :meth:`restore` pair.
+        The only other means of increasing the size of the clip region
+        is :meth:`reset_clip`.
+
+        """
         cairo.cairo_clip(self._pointer)
         self._check_status()
 
     def clip_preserve(self):
+        """Establishes a new clip region
+        by intersecting the current clip region
+        with the current path as it would be filled by :meth:`fill`
+        and according to the current fill rule (see :meth:`set_fill_rule`).
+
+        Unlike :meth:`clip`,
+        :meth:`clip_preserve` preserves the path within the cairo context.
+
+        The current clip region affects all drawing operations
+        by effectively masking out any changes to the surface
+        that are outside the current clip region.
+
+        Calling :meth:`clip_preserve` can only make the clip region smaller,
+        never larger.
+        But the current clip is part of the graphics state,
+        so a temporary restriction of the clip region can be achieved
+        by calling :meth:`clip_preserve`
+        within a :meth:`save` / :meth:`restore` pair.
+        The only other means of increasing the size of the clip region
+        is :meth:`reset_clip`.
+
+        """
         cairo.cairo_clip_preserve(self._pointer)
         self._check_status()
 
     def clip_extents(self):
+        """Computes a bounding box in user coordinates
+        covering the area inside the current clip.
+
+        :return:
+            A ``(x1, y1, x2, y2)`` tuple of floats:
+            the left, top, right and bottom of the resulting extents,
+            respectively.
+
+        """
         extents = ffi.new('double[4]')
         cairo.cairo_clip_extents(
             self._pointer, extents + 0, extents + 1, extents + 2, extents + 3)
@@ -1330,6 +1642,18 @@ class Context(object):
         return tuple(extents)
 
     def copy_clip_rectangle_list(self):
+        """Return the current clip region as a list of rectangles
+        in user coordinates.
+
+        :return:
+            A list of rectangles,
+            as ``(x, y, width, height)`` tuples of floats.
+        :raises:
+            :exc:`CairoError`
+            if  the clip region cannot be represented as a list
+            of user-space rectangles.
+
+        """
         rectangle_list = cairo.cairo_copy_clip_rectangle_list(self._pointer)
         _check_status(rectangle_list.status)
         rectangles = rectangle_list.rectangles
@@ -1341,19 +1665,38 @@ class Context(object):
         return result
 
     def in_clip(self, x, y):
+        """Tests whether the given point is inside the area
+        that would be visible through the current clip,
+        i.e. the area that would be filled by a :meth:`paint` operation.
+
+        See :meth:`clip`, and :meth:`clip_preserve`.
+
+        :param x: X coordinate of the point to test
+        :param y: Y coordinate of the point to test
+        :type x: float
+        :type y: float
+        :returns: A boolean.
+
+        """
         return bool(cairo.cairo_in_clip(self._pointer, x, y))
 
     def reset_clip(self):
+        """Reset the current clip region to its original, unrestricted state.
+        That is, set the clip region to an infinitely large shape
+        containing the target surface.
+        Equivalently, if infinity is too hard to grasp,
+        one can imagine the clip region being reset
+        to the exact bounds of the target surface.
+
+        Note that code meant to be reusable
+        should not call :meth:`reset_clip`
+        as it will cause results unexpected by higher-level code
+        which calls :meth:`clip`.
+        Consider using :meth:`cairo` and :meth:`restore` around :meth:`clip`
+        as a more robust means of temporarily restricting the clip region.
+
+        """
         cairo.cairo_reset_clip(self._pointer)
-        self._check_status()
-
-    def mask(self, pattern):
-        cairo.cairo_mask(self._pointer, pattern._pointer)
-        self._check_status()
-
-    def mask_surface(self, surface, surface_x=0, surface_y=0):
-        cairo.cairo_mask_surface(
-            self._pointer, surface._pointer, surface_x, surface_y)
         self._check_status()
 
     ##
@@ -1361,48 +1704,170 @@ class Context(object):
     ##
 
     def select_font_face(self, family='', slant='NORMAL', weight='NORMAL'):
+        """Selects a family and style of font from a simplified description
+        as a family name, slant and weight.
+
+        .. note::
+
+            The :meth:`select_font_face` method is part of
+            what the cairo designers call the "toy" text API.
+            It is convenient for short demos and simple programs,
+            but it is not expected to be adequate
+            for serious text-using applications.
+            See :ref:`fonts` for details.
+
+        Cairo provides no operation to list available family names
+        on the system (this is a "toy", remember),
+        but the standard CSS2 generic family names,
+        (``"serif"``, ``"sans-serif"``, ``"cursive"``, ``"fantasy"``,
+        ``"monospace"``),
+        are likely to work as expected.
+
+        If family starts with the string ``"cairo:"``,
+        or if no native font backends are compiled in,
+        cairo will use an internal font family.
+        The internal font family recognizes many modifiers
+        in the family string,
+        most notably, it recognizes the string ``"monospace"``.
+        That is, the family name ``"cairo:monospace"``
+        will use the monospace version of the internal font family.
+
+        If text is drawn without a call to :meth:`select_font_face`,
+        (nor :meth:`set_font_face` nor :meth:`set_scaled_font`),
+        the default family is platform-specific,
+        but is essentially ``"sans-serif"``.
+        Default slant is :obj:`NORMAL <FONT_SLANT_NORMAL>`,
+        and default weight is :obj:`NORMAL <FONT_WEIGHT_NORMAL>`.
+
+        This method is equivalent to a call to :class:`ToyFontFace`
+        followed by :meth:`set_font_face`.
+
+        """
         cairo.cairo_select_font_face(
             self._pointer, _encode_string(family), slant, weight)
         self._check_status()
 
+    def set_font_face(self, font_face):
+        """Replaces the current font face with :obj:`font_face`.
+
+        :param font_face:
+            A :class:`FontFace` object,
+            or :obj:`None` to restore the default font.
+
+        """
+        font_face = font_face._pointer if font_face is not None else ffi.NULL
+        cairo.cairo_set_font_face(self._pointer, font_face)
+        self._check_status()
+
     def get_font_face(self):
+        """Return the current font face.
+
+        :param font_face:
+            A new :class:`FontFace` object
+            wrapping an existing cairo object.
+
+        """
         return FontFace._from_pointer(
             cairo.cairo_get_font_face(self._pointer), incref=True)
 
-    def set_font_face(self, font_face):
-        cairo.cairo_set_font_face(self._pointer, font_face._pointer)
+    def set_font_size(self, size):
+        """Sets the current font matrix to a scale by a factor of :obj:`size`,
+        replacing any font matrix previously set with :meth:`set_font_size`
+        or :meth:`set_font_matrix`.
+        This results in a font size of size user space units.
+        (More precisely, this matrix will result in the font's
+        em-square being a size by size square in user space.)
+
+        If text is drawn without a call to :meth:`set_font_size`,
+        (nor :meth:`set_font_matrix` nor :meth:`set_scaled_font`),
+        the default font size is 10.0.
+
+        :param size: The new font size, in user space units
+        :type size: float
+
+        """
+        cairo.cairo_set_font_size(self._pointer, size)
         self._check_status()
 
-    def get_scaled_font(self):
-        return ScaledFont._from_pointer(
-            cairo.cairo_get_scaled_font(self._pointer), incref=True)
+    def set_font_matrix(self, matrix):
+        """Sets the current font matrix to :obj:`matrix`.
+        The font matrix gives a transformation
+        from the design space of the font
+        (in this space, the em-square is 1 unit by 1 unit)
+        to user space.
+        Normally, a simple scale is used (see :meth:`set_font_size`),
+        but a more complex font matrix can be used
+        to shear the font or stretch it unequally along the two axes
 
-    def set_scaled_font(self, scaled_font):
-        cairo.cairo_set_scaled_font(self._pointer, scaled_font._pointer)
-        self._check_status()
+        :param matrix:
+            A :class:`Matrix`
+            describing a transform to be applied to the current font.
 
-    def get_font_options(self):
-        font_options = FontOptions()
-        cairo.cairo_get_font_options(self._pointer, font_options._pointer)
-        return font_options
-
-    def set_font_options(self, font_options):
-        cairo.cairo_set_font_options(self._pointer, font_options._pointer)
+        """
+        cairo.cairo_set_font_matrix(self._pointer, matrix._pointer)
         self._check_status()
 
     def get_font_matrix(self):
+        """Copies the current font matrix. See :meth:`set_font_matrix`.
+
+        :returns: A new :class:`Matrix`.
+
+        """
         matrix = Matrix()
         cairo.cairo_get_font_matrix(self._pointer, matrix._pointer)
         self._check_status()
         return matrix
 
-    def set_font_matrix(self, matrix):
-        cairo.cairo_set_font_matrix(self._pointer, matrix._pointer)
+    def set_font_options(self, font_options):
+        """Sets a set of custom font rendering options.
+        Rendering options are derived by merging these options
+        with the options derived from underlying surface;
+        if the value in options has a default value
+        (like :obj:`ANTIALIAS_DEFAULT`),
+        then the value from the surface is used.
+
+        :param font_options: A :class:`FontOptions` object.
+
+        """
+        cairo.cairo_set_font_options(self._pointer, font_options._pointer)
         self._check_status()
 
-    def set_font_size(self, size):
-        cairo.cairo_set_font_size(self._pointer, size)
+    def get_font_options(self):
+        """Retrieves font rendering options set via :meth:`set_font_options`.
+        Note that the returned options do not include any options
+        derived from the underlying surface;
+        they are literally the options passed to :meth:`set_font_options`.
+
+        :return: A new :class:`FontOptions` object.
+
+        """
+        font_options = FontOptions()
+        cairo.cairo_get_font_options(self._pointer, font_options._pointer)
+        return font_options
+
+    def set_scaled_font(self, scaled_font):
+        """Replaces the current font face, font matrix, and font options
+        with those of :obj:`scaled_font`.
+        Except for some translation, the current CTM of the context
+        should be the same as that of the :obj:`scaled_font`,
+        which can be accessed using :meth:`ScaledFont.get_ctm`.
+
+        :param scaled_font: A :class:`ScaledFont` object.
+
+        """
+        cairo.cairo_set_scaled_font(self._pointer, scaled_font._pointer)
         self._check_status()
+
+    def get_scaled_font(self):
+        """Return the current scaled font.
+
+        :return:
+            A new :class:`ScaledFont` object,
+            wrapping an existing cairo object.
+
+        """
+        return ScaledFont._from_pointer(
+            cairo.cairo_get_scaled_font(self._pointer), incref=True)
 
     def font_extents(self):
         """Return the extents of the currently selected font.

@@ -860,6 +860,11 @@ def test_context_font():
         0, 1,  4, 0,  12, 4)))
     assert context.get_font_matrix().as_tuple() == (0, 1,  4, 0,  12, 4)
 
+    # Reset the default
+    context.set_font_face(None)
+    # TODO: test this somehow.
+
+
 
 def test_scaled_font():
     font = ScaledFont(ToyFontFace())

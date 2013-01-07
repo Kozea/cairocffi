@@ -84,14 +84,25 @@ or a glyph can be a ligature of multiple characters.
 Converting text to positioned glyphs is *shaping*.
 
 Cairo itself provides a "toy" text API that only does simple shaping:
+no ligature or kerning;
 one glyph per character,
 positioned by moving the cursor by the X and Y *advance* of each glyph.
-In order to proper shaping with ligatures and kerning,
-you must :ref:`use Pango <using_pango>` or a similar library,
-or directly access the appropriate underlying font system.
+
+It is expected that most applications will need to
+:ref:`use Pango <using_pango>` or a similar library in conjunction with cairo
+for more comprehensive font handling and text layout.
+
 
 Font faces
 ----------
+
+.. note::
+
+    At the moment cairocffi only supports cairo’s "toy" font selection API.
+    :class:`FontFace` objects of other types could be obtained
+    eg. from :meth:`Context.get_font_face`,
+    but they can not be instantiated directly.
+
 .. autoclass:: FontFace()
 
 ToyFontFace
