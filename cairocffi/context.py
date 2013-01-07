@@ -667,57 +667,170 @@ class Context(object):
     ##
 
     def translate(self, tx, ty):
+        """Modifies the current transformation matrix (CTM)
+        by translating the user-space origin by ``(tx, ty)``.
+        This offset is interpreted as a user-space coordinate
+        according to the CTM in place before the new call to :meth:`translate`.
+        In other words, the translation of the user-space origin takes place
+        after any existing transformation.
+
+        :param tx: Amount to translate in the X direction
+        :param ty: Amount to translate in the Y direction
+        :type tx: float
+        :type ty: float
+
+        """
         cairo.cairo_translate(self._pointer, tx, ty)
         self._check_status()
 
     def scale(self, sx, sy=None):
+        """Modifies the current transformation matrix (CTM)
+        by scaling the X and Y user-space axes
+        by :obj:`sx` and :obj:`sy` respectively.
+        The scaling of the axes takes place after
+        any existing transformation of user space.
+
+        If :obj:`sy` is omitted, it is the same as :obj:`sx`
+        so that scaling preserves aspect ratios.
+
+        :param sx: Scale factor in the X direction.
+        :param sy: Scale factor in the Y direction.
+        :type sx: float
+        :type sy: float
+
+        """
         if sy is None:
             sy = sx
         cairo.cairo_scale(self._pointer, sx, sy)
         self._check_status()
 
     def rotate(self, radians):
+        """Modifies the current transformation matrix (CTM)
+        by rotating the user-space axes by angle :obj:`radians`.
+        The rotation of the axes takes places
+        after any existing transformation of user space.
+
+        :type radians: float
+        :param radians:
+            Angle of rotation, in radians.
+            The direction of rotation is defined such that positive angles
+            rotate in the direction from the positive X axis
+            toward the positive Y axis.
+            With the default axis orientation of cairo,
+            positive angles rotate in a clockwise direction.
+
+        """
         cairo.cairo_rotate(self._pointer, radians)
         self._check_status()
 
     def transform(self, matrix):
+        """Modifies the current transformation matrix (CTM)
+        by applying :obj:`matrix` as an additional transformation.
+        The new transformation of user space takes place
+        after any existing transformation.
+
+        :param matrix:
+            A transformation :class:`Matrix`
+            to be applied to the user-space axes.
+
+        """
         cairo.cairo_transform(self._pointer, matrix._pointer)
         self._check_status()
 
+    def set_matrix(self, matrix):
+        """Modifies the current transformation matrix (CTM)
+        by setting it equal to :obj:`matrix`.
+
+        :param matrix:
+            A transformation :class:`Matrix` from user space to device space.
+
+        """
+        cairo.cairo_set_matrix(self._pointer, matrix._pointer)
+        self._check_status()
+
     def get_matrix(self):
+        """Return a copy of the current transformation matrix (CTM)."""
         matrix = Matrix()
         cairo.cairo_get_matrix(self._pointer, matrix._pointer)
         self._check_status()
         return matrix
 
-    def set_matrix(self, matrix):
-        cairo.cairo_set_matrix(self._pointer, matrix._pointer)
-        self._check_status()
-
     def identity_matrix(self):
+        """Resets the current transformation matrix (CTM)
+        by setting it equal to the identity matrix.
+        That is, the user-space and device-space axes will be aligned
+        and one user-space unit will transform to one device-space unit.
+
+        """
         cairo.cairo_identity_matrix(self._pointer)
         self._check_status()
 
     def user_to_device(self, x, y):
+        """Transform a coordinate from user space to device space
+        by multiplying the given point
+        by the current transformation matrix (CTM).
+
+        :param x: X position.
+        :param y: Y position.
+        :type x: float
+        :type y: float
+        :returns: A ``(device_x, device_y)`` tuple of floats.
+
+        """
         xy = ffi.new('double[2]', [x, y])
         cairo.cairo_user_to_device(self._pointer, xy + 0, xy + 1)
         self._check_status()
         return tuple(xy)
 
-    def user_to_device_distance(self, x, y):
-        xy = ffi.new('double[2]', [x, y])
+    def user_to_device_distance(self, dx, dy):
+        """Transform a distance vector from user space to device space.
+        This method is similar to :meth:`Context.user_to_device`
+        except that the translation components of the CTM
+        will be ignored when transforming ``(dx, dy)``.
+
+        :param x: X component of a distance vector.
+        :param y: Y component of a distance vector.
+        :type x: float
+        :type y: float
+        :returns: A ``(device_dx, device_dy)`` tuple of floats.
+
+        """
+        xy = ffi.new('double[2]', [dx, dy])
         cairo.cairo_user_to_device_distance(self._pointer, xy + 0, xy + 1)
         self._check_status()
         return tuple(xy)
 
     def device_to_user(self, x, y):
+        """Transform a coordinate from device space to user space
+        by multiplying the given point
+        by the inverse of the current transformation matrix (CTM).
+
+        :param x: X position.
+        :param y: Y position.
+        :type x: float
+        :type y: float
+        :returns: A ``(user_x, user_y)`` tuple of floats.
+
+        """
         xy = ffi.new('double[2]', [x, y])
         cairo.cairo_device_to_user(self._pointer, xy + 0, xy + 1)
         self._check_status()
         return tuple(xy)
 
-    def device_to_user_distance(self, x, y):
-        xy = ffi.new('double[2]', [x, y])
+    def device_to_user_distance(self, dx, dy):
+        """Transform a distance vector from device space to user space.
+        This method is similar to :meth:`Context.device_to_user`
+        except that the translation components of the inverse CTM
+        will be ignored when transforming ``(dx, dy)``.
+
+        :param x: X component of a distance vector.
+        :param y: Y component of a distance vector.
+        :type x: float
+        :type y: float
+        :returns: A ``(user_dx, user_dy)`` tuple of floats.
+
+        """
+        xy = ffi.new('double[2]', [dx, dy])
         cairo.cairo_device_to_user_distance(self._pointer, xy + 0, xy + 1)
         self._check_status()
         return tuple(xy)
@@ -726,43 +839,404 @@ class Context(object):
     ##  Path
     ##
 
-    def arc(self, xc, yc, radius, angle1, angle2):
-        cairo.cairo_arc(self._pointer, xc, yc, radius, angle1, angle2)
+    def has_current_point(self):
+        """Returns whether a current point is defined on the current path.
+        See :meth:`get_current_point`.
+
+        """
+        return bool(cairo.cairo_has_current_point(self._pointer))
+
+    def get_current_point(self):
+        """Return the current point of the current path,
+        which is conceptually the final point reached by the path so far.
+
+        The current point is returned in the user-space coordinate system.
+        If there is no defined current point
+        or if the context is in an error status,
+        ``(0, 0)`` is returned.
+        It is possible to check this in advance with :meth:`has_current_point`.
+
+        Most path construction methods alter the current point.
+        See the following for details on how they affect the current point:
+        :meth:`new_path`,
+        :meth:`new_sub_path`,
+        :meth:`append_path`,
+        :meth:`close_path`,
+        :meth:`move_to`,
+        :meth:`line_to`,
+        :meth:`curve_to`,
+        :meth:`rel_move_to`,
+        :meth:`rel_line_to`,
+        :meth:`rel_curve_to`,
+        :meth:`arc`,
+        :meth:`arc_negative`,
+        :meth:`rectangle`,
+        :meth:`text_path`,
+        :meth:`glyph_path`,
+        :meth:`stroke_to_path`.
+
+        Some methods use and alter the current point
+        but do not otherwise change current path:
+        :meth:`show_text`,
+        :meth:`show_glyphs`,
+        :meth:`show_text_glyphs`.
+
+        Some methods unset the current path and as a result, current point:
+        :meth:`fill`,
+        :meth:`stroke`.
+
+        :returns:
+            A ``(x, y)`` tuple of floats, the coordinates of the current point.
+
+        """
+        # I’d prefer returning None if self.has_current_point() is False
+        # But keep (0, 0) for compat with pycairo.
+        xy = ffi.new('double[2]')
+        cairo.cairo_get_current_point(self._pointer, xy + 0, xy + 1)
+        self._check_status()
+        return tuple(xy)
+
+    def new_path(self):
+        """ Clears the current path.
+        After this call there will be no path and no current point.
+
+        """
+        cairo.cairo_new_path(self._pointer)
         self._check_status()
 
-    def arc_negative(self, xc, yc, radius, angle1, angle2):
-        cairo.cairo_arc_negative(self._pointer, xc, yc, radius, angle1, angle2)
-        self._check_status()
+    def new_sub_path(self):
+        """Begin a new sub-path.
+        Note that the existing path is not affected.
+        After this call there will be no current point.
 
-    def rectangle(self, x, y, width, height):
-        cairo.cairo_rectangle(self._pointer, x, y, width, height)
+        In many cases, this call is not needed
+        since new sub-paths are frequently started with :meth:`move_to`.
+
+        A call to :meth:`new_sub_path` is particularly useful
+        when beginning a new sub-path with one of the :meth:`arc` calls.
+        This makes things easier as it is no longer necessary
+        to manually compute the arc's initial coordinates
+        for a call to :meth:`move_to`.
+
+        """
+        cairo.cairo_new_sub_path(self._pointer)
         self._check_status()
 
     def move_to(self, x, y):
+        """Begin a new sub-path.
+        After this call the current point will be ``(x, y)``.
+
+        :param x: X position of the new point.
+        :param y: Y position of the new point.
+        :type float: x
+        :type float: y
+
+        """
         cairo.cairo_move_to(self._pointer, x, y)
         self._check_status()
 
     def rel_move_to(self, dx, dy):
+        """Begin a new sub-path.
+        After this call the current point will be offset by ``(dx, dy)``.
+
+        Given a current point of ``(x, y)``,
+        ``context.rel_move_to(dx, dy)`` is logically equivalent to
+        ``context.move_to(x + dx, y + dy)``.
+
+        :param dx: The X offset.
+        :param dy: The Y offset.
+        :type float: dx
+        :type float: dy
+        :raises:
+            :exc:`CairoError` if there is no current point.
+            Doing so will cause leave the context in an error state.
+
+        """
         cairo.cairo_rel_move_to(self._pointer, dx, dy)
         self._check_status()
 
     def line_to(self, x, y):
+        """Adds a line to the path from the current point
+        to position ``(x, y)`` in user-space coordinates.
+        After this call the current point will be ``(x, y)``.
+
+        If there is no current point before the call to :meth:`line_to`
+        this method will behave as ``context.move_to(x, y)``.
+
+        :param x: X coordinate of the end of the new line.
+        :param y: Y coordinate of the end of the new line.
+        :type float: x
+        :type float: y
+
+        """
         cairo.cairo_line_to(self._pointer, x, y)
         self._check_status()
 
     def rel_line_to(self, dx, dy):
+        """ Relative-coordinate version of :meth:`line_to`.
+        Adds a line to the path from the current point
+        to a point that is offset from the current point
+        by ``(dx, dy)`` in user space.
+        After this call the current point will be offset by ``(dx, dy)``.
+
+        Given a current point of ``(x, y)``,
+        ``context.rel_line_to(dx, dy)`` is logically equivalent to
+        ``context.line_to(x + dx, y + dy)``.
+
+        :param dx: The X offset to the end of the new line.
+        :param dy: The Y offset to the end of the new line.
+        :type float: dx
+        :type float: dy
+        :raises:
+            :exc:`CairoError` if there is no current point.
+            Doing so will cause leave the context in an error state.
+
+        """
         cairo.cairo_rel_line_to(self._pointer, dx, dy)
         self._check_status()
 
+    def rectangle(self, x, y, width, height):
+        """Adds a closed sub-path rectangle
+        of the given size to the current path
+        at position ``(x, y)`` in user-space coordinates.
+
+        This method is logically equivalent to::
+
+            context.move_to(x, y)
+            context.rel_line_to(width, 0)
+            context.rel_line_to(0, height)
+            context.rel_line_to(-width, 0)
+            context.close_path()
+
+        :param x: The X coordinate of the top left corner of the rectangle.
+        :param y: The Y coordinate of the top left corner of the rectangle.
+        :param width: Width of the rectangle.
+        :param height: Height of the rectangle.
+        :type float: x
+        :type float: y
+        :type float: width
+        :type float: heigth
+
+        """
+        cairo.cairo_rectangle(self._pointer, x, y, width, height)
+        self._check_status()
+
+    def arc(self, xc, yc, radius, angle1, angle2):
+        """Adds a circular arc of the given radius to the current path.
+        The arc is centered at ``(xc, yc)``,
+        begins at :obj:`angle1`
+        and proceeds in the direction of increasing angles
+        to end at :obj:`angle2`.
+        If :obj:`angle2` is less than :obj:`angle1`
+        it will be progressively increased by ``2 * pi``
+        until it is greater than :obj:`angle1`.
+
+        If there is a current point,
+        an initial line segment will be added to the path
+        to connect the current point to the beginning of the arc.
+        If this initial line is undesired,
+        it can be avoided by calling :meth:`new_sub_path`
+        before calling :meth:`arc`.
+
+        Angles are measured in radians.
+        An angle of 0 is in the direction of the positive X axis
+        (in user space).
+        An angle of ``pi / 2`` radians (90 degrees)
+        is in the direction of the positive Y axis (in user space).
+        Angles increase in the direction from the positive X axis
+        toward the positive Y axis.
+        So with the default transformation matrix,
+        angles increase in a clockwise direction.
+
+        (To convert from degrees to radians, use ``degrees * pi / 180``.)
+
+        This method gives the arc in the direction of increasing angles;
+        see :meth:`arc_negative` to get the arc
+        in the direction of decreasing angles.
+
+        The arc is circular in user space.
+        To achieve an elliptical arc,
+        you can scale the current transformation matrix
+        by different amounts in the X and Y directions.
+        For example, to draw an ellipse in the box
+        given by x, y, width, height::
+
+            from math import pi
+            with context:
+                context.translate(x + width / 2., y + height / 2.)
+                context.scale(width / 2., height / 2.)
+                context.arc(0, 0, 1, 0, 2 * pi)
+
+        :param xc: X position of the center of the arc.
+        :param yc: Y position of the center of the arc.
+        :param radius: The radius of the arc.
+        :param angle1: The start angle, in radians.
+        :param angle2: The end angle, in radians.
+        :type xc: float
+        :type yc: float
+        :type radius: float
+        :type angle1: float
+        :type angle2: float
+
+        """
+        cairo.cairo_arc(self._pointer, xc, yc, radius, angle1, angle2)
+        self._check_status()
+
+    def arc_negative(self, xc, yc, radius, angle1, angle2):
+        """Adds a circular arc of the given radius to the current path.
+        The arc is centered at ``(xc, yc)``,
+        begins at :obj:`angle1`
+        and proceeds in the direction of decreasing angles
+        to end at :obj:`angle2`.
+        If :obj:`angle2` is greater than :obj:`angle1`
+        it will be progressively decreased by ``2 * pi``
+        until it is greater than :obj:`angle1`.
+
+        See :meth:`arc` for more details.
+        This method differs only in
+        the direction of the arc between the two angles.
+
+        :param xc: X position of the center of the arc.
+        :param yc: Y position of the center of the arc.
+        :param radius: The radius of the arc.
+        :param angle1: The start angle, in radians.
+        :param angle2: The end angle, in radians.
+        :type xc: float
+        :type yc: float
+        :type radius: float
+        :type angle1: float
+        :type angle2: float
+
+        """
+        cairo.cairo_arc_negative(self._pointer, xc, yc, radius, angle1, angle2)
+        self._check_status()
+
     def curve_to(self, x1, y1, x2, y2, x3, y3):
+        """Adds a cubic Bézier spline to the path
+        from the current point
+        to position ``(x3, y3)`` in user-space coordinates,
+        using ``(x1, y1)`` and ``(x2, y2)`` as the control points.
+        After this call the current point will be ``(x3, y3)``.
+
+        If there is no current point before the call to :meth:`curve_to`
+        this method will behave as if preceded by
+        a call to ``context.move_to(x1, y1)``.
+
+        :param x1: The X coordinate of the first control point.
+        :param y1: The Y coordinate of the first control point.
+        :param x2: The X coordinate of the second control point.
+        :param y2: The Y coordinate of the second control point.
+        :param x3: The X coordinate of the end of the curve.
+        :param y3: The Y coordinate of the end of the curve.
+        :type x1: float
+        :type y1: float
+        :type x2: float
+        :type y2: float
+        :type x3: float
+        :type y3: float
+
+        """
         cairo.cairo_curve_to(self._pointer, x1, y1, x2, y2, x3, y3)
         self._check_status()
 
     def rel_curve_to(self, dx1, dy1, dx2, dy2, dx3, dy3):
+        """ Relative-coordinate version of :meth:`curve_to`.
+        All offsets are relative to the current point.
+        Adds a cubic Bézier spline to the path from the current point
+        to a point offset from the current point by ``(dx3, dy3)``,
+        using points offset by ``(dx1, dy1)`` and ``(dx2, dy2)``
+        as the control points.
+        After this call the current point will be offset by ``(dx3, dy3)``.
+
+        Given a current point of ``(x, y)``,
+        ``context.rel_curve_to(dx1, dy1, dx2, dy2, dx3, dy3)``
+        is logically equivalent to
+        ``context.curve_to(x+dx1, y+dy1, x+dx2, y+dy2, x+dx3, y+dy3)``.
+
+        :param dx1: The X offset to the first control point.
+        :param dy1: The Y offset to the first control point.
+        :param dx2: The X offset to the second control point.
+        :param dy2: The Y offset to the second control point.
+        :param dx3: The X offset to the end of the curve.
+        :param dy3: The Y offset to the end of the curve.
+        :type dx1: float
+        :type dy1: float
+        :type dx2: float
+        :type dy2: float
+        :type dx3: float
+        :type dy3: float
+        :raises:
+            :exc:`CairoError` if there is no current point.
+            Doing so will cause leave the context in an error state.
+
+        """
         cairo.cairo_rel_curve_to(self._pointer, dx1, dy1, dx2, dy2, dx3, dy3)
         self._check_status()
 
+    def text_path(self, text):
+        """Adds closed paths for text to the current path.
+        The generated path if filled,
+        achieves an effect similar to that of :meth:`show_text`.
+
+        Text conversion and positioning is done similar to :meth:`show_text`.
+
+        Like :meth:`show_text`,
+        after this call the current point is moved to the origin of where
+        the next glyph would be placed in this same progression.
+        That is, the current point will be at the origin of the final glyph
+        offset by its advance values.
+        This allows for chaining multiple calls to to :meth:`text_path`
+        without having to set current point in between.
+
+        :param text: The text to show, as an Unicode or UTF-8 string.
+
+        .. note::
+            The :meth:`text_path` method is part of
+            what the cairo designers call the "toy" text API.
+            It is convenient for short demos and simple programs,
+            but it is not expected to be adequate
+            for serious text-using applications.
+            See :meth:`glyph_path` for the "real" text path API in cairo.
+
+        """
+        cairo.cairo_text_path(self._pointer, _encode_string(text))
+        self._check_status()
+
+    def glyph_path(self, glyphs):
+        """Adds closed paths for the glyphs to the current path.
+        The generated path if filled,
+        achieves an effect similar to that of :meth:`show_glyphs`.
+
+        :param glyphs:
+            The glyphs to show.
+            See :meth:`show_text_glyphs` for the data structure.
+
+        """
+        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
+        cairo.cairo_glyph_path(self._pointer, glyphs, len(glyphs))
+        self._check_status()
+
     def close_path(self):
+        """Adds a line segment to the path
+        from the current point
+        to the beginning of the current sub-path,
+        (the most recent point passed to cairo_move_to()),
+        and closes this sub-path.
+        After this call the current point will be
+        at the joined endpoint of the sub-path.
+
+        The behavior of :meth:`close_path` is distinct
+        from simply calling :meth:`line_to` with the equivalent coordinate
+        in the case of stroking.
+        When a closed sub-path is stroked,
+        there are no caps on the ends of the sub-path.
+        Instead, there is a line join
+        connecting the final and initial segments of the sub-path.
+
+        If there is no current point before the call to :meth:`close_path`,
+        this method will have no effect.
+
+        """
         cairo.cairo_close_path(self._pointer)
         self._check_status()
 
@@ -791,29 +1265,6 @@ class Context(object):
             self._pointer, extents + 0, extents + 1, extents + 2, extents + 3)
         self._check_status()
         return tuple(extents)
-
-    def new_path(self):
-        cairo.cairo_new_path(self._pointer)
-        self._check_status()
-
-    def new_sub_path(self):
-        cairo.cairo_new_sub_path(self._pointer)
-        self._check_status()
-
-    def get_current_point(self):
-        """Return the (x, y) coordinates of the current point,
-        or (0., 0.) if there is no current point.
-
-        """
-        # I’d prefer returning None if self.has_current_point() is False
-        # But keep (0, 0) for compat with pycairo.
-        xy = ffi.new('double[2]')
-        cairo.cairo_get_current_point(self._pointer, xy + 0, xy + 1)
-        self._check_status()
-        return tuple(xy)
-
-    def has_current_point(self):
-        return bool(cairo.cairo_has_current_point(self._pointer))
 
     ##
     ##  Drawing operators
@@ -1238,23 +1689,34 @@ class Context(object):
             glyphs, len(glyphs), clusters, len(clusters), flags)
         self._check_status()
 
-    def text_path(self, text):
-        cairo.cairo_text_path(self._pointer, _encode_string(text))
-        self._check_status()
-
-    def glyph_path(self, glyphs):
-        glyphs = ffi.new('cairo_glyph_t[]', glyphs)
-        cairo.cairo_glyph_path(self._pointer, glyphs, len(glyphs))
-        self._check_status()
-
     ##
     ##  Pages
     ##
 
     def show_page(self):
+        """Emits and clears the current page
+        for backends that support multiple pages.
+        Use :meth:`copy_page` if you don't want to clear the page.
+
+        This is a convenience method
+        that simply calls :meth:`Surface.show_page`
+        on the context’s target.
+
+        """
         cairo.cairo_show_page(self._pointer)
         self._check_status()
 
     def copy_page(self):
+        """Emits the current page  for backends that support multiple pages,
+        but doesn't clear it,
+        so the contents of the current page will be retained
+        for the next page too.
+        Use :meth:`show_page` if you want to clear the page.
+
+        This is a convenience method
+        that simply calls :meth:`Surface.copy_page`
+        on the context’s target.
+
+        """
         cairo.cairo_copy_page(self._pointer)
         self._check_status()

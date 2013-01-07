@@ -184,8 +184,8 @@ class Matrix(object):
         first scale the coordinates by :obj:`sx` and :obj:`sy`,
         then apply the original transformation to the coordinates.
 
-        If :obj:`sy` is omitted, it is the same as :obj:`sx` so that scaling
-        preserves aspect ratios.
+        If :obj:`sy` is omitted, it is the same as :obj:`sx`
+        so that scaling preserves aspect ratios.
 
         .. note::
             This changes the matrix in-place.
