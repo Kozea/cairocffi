@@ -1677,6 +1677,8 @@ class Context(object):
         :type y: float
         :returns: A boolean.
 
+        *New in cairo 1.10.*
+
         """
         return bool(cairo.cairo_in_clip(self._pointer, x, y))
 

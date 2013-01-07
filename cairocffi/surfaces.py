@@ -242,6 +242,8 @@ class Surface(object):
         :returns:
             A new :class:`Surface` object.
 
+        *New in cairo 1.10.*
+
         """
         return Surface._from_pointer(
             cairo.cairo_surface_create_for_rectangle(
@@ -420,7 +422,7 @@ class Surface(object):
         :param data: The image data to attach to the surface.
         :type data: bytes
 
-        New in cairo 1.10.
+        *New in cairo 1.10.*
 
         """
         mime_type = ffi.new('char[]', mime_type.encode('utf8'))
@@ -447,7 +449,7 @@ class Surface(object):
             A CFFI buffer object, or :obj:`None`
             if no data has been attached with the given mime type.
 
-        New in cairo 1.10.
+        *New in cairo 1.10.*
 
         """
         buffer_address = ffi.new('unsigned char **')
@@ -464,7 +466,7 @@ class Surface(object):
         :param mime_type: The MIME type of the image data.
         :type mime_type: ASCII string
 
-        New in cairo 1.12.
+        *New in cairo 1.12.*
 
         """
         mime_type = ffi.new('char[]', mime_type.encode('utf8'))
@@ -817,6 +819,8 @@ class PDFSurface(Surface):
 
         :param version: A :ref:`PDF_VERSION` string.
 
+        *New in cairo 1.10.*
+
         """
         cairo.cairo_pdf_surface_restrict_to_version(self._pointer, version)
         self._check_status()
@@ -827,6 +831,8 @@ class PDFSurface(Surface):
         See :meth:`restrict_to_version`.
 
         :return: A list of :ref:`PDF_VERSION` strings.
+
+        *New in cairo 1.10.*
 
         """
         versions = ffi.new('cairo_pdf_version_t const **')
@@ -840,6 +846,8 @@ class PDFSurface(Surface):
         """Return the string representation of the given :ref:`PDF_VERSION`.
         See :meth:`get_versions` for a way to get
         the list of valid version ids.
+
+        *New in cairo 1.10.*
 
         """
         c_string = cairo.cairo_pdf_version_to_string(version)
