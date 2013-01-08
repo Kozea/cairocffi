@@ -17,7 +17,7 @@ from .constants import _CAIRO_HEADERS
 from .compat import FileNotFoundError
 
 
-VERSION = '0.1'
+VERSION = '0.2'
 
 
 ffi = FFI()
@@ -305,7 +305,8 @@ class Matrix(object):
     del _component_property
 
 
-from .surfaces import Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface
+from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,
+                       SVGSurface, RecordingSurface)
 from .patterns import (Pattern, SolidPattern, SurfacePattern,
                        Gradient, LinearGradient, RadialGradient)
 from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions

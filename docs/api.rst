@@ -36,6 +36,10 @@ SVGSurface
 ----------
 .. autoclass:: SVGSurface
 
+RecordingSurface
+----------------
+.. autoclass:: RecordingSurface
+
 
 Context
 =======

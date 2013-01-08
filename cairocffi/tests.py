@@ -26,6 +26,7 @@ import pytest
 import cairocffi
 from . import (cairo_version, cairo_version_string, Context, Matrix,
                Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface,
+               RecordingSurface,
                Pattern, SolidPattern, SurfacePattern,
                LinearGradient, RadialGradient,
                FontFace, ToyFontFace, ScaledFont, FontOptions)
@@ -348,6 +349,41 @@ def test_ps_surface():
     assert b'%%Lorem' in ps_bytes
     assert b'%%ipsum' in ps_bytes
     assert b'%%dolor' in ps_bytes
+
+
+def test_recording_surface():
+    if cairo_version() < 11000:
+        pytest.xfail()
+    empty_pixels = ImageSurface('ARGB32', 100, 100).get_data()[:]
+
+    surface = ImageSurface('ARGB32', 100, 100)
+    context = Context(surface)
+    context.move_to(20, 50)
+    context.show_text('Something about us.')
+    text_pixels = surface.get_data()[:]
+    assert text_pixels != empty_pixels
+
+    for extents in [None, (0, 0, 140, 80)]:
+        recording_surface = RecordingSurface('COLOR_ALPHA', extents)
+        context = Context(recording_surface)
+        context.move_to(20, 50)
+        assert recording_surface.ink_extents() == (0, 0, 0, 0)
+        context.show_text('Something about us.')
+        assert recording_surface.ink_extents() != (0, 0, 0, 0)
+
+        surface = ImageSurface('ARGB32', 100, 100)
+        context = Context(surface)
+        context.set_source_surface(recording_surface)
+        context.paint()
+        assert surface.get_data()[:] == text_pixels
+
+
+def test_recording_surface_get_extents():
+    if cairo_version() < 11000:
+        pytest.xfail()
+    for extents in [None, (0, 0, 140, 80)]:
+        surface = RecordingSurface('COLOR_ALPHA', extents)
+        assert surface.get_extents() == extents
 
 
 def test_matrix():
