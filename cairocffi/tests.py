@@ -421,6 +421,17 @@ def test_solid_pattern():
         cairocffi.patterns.PATTERN_TYPE_TO_CLASS['SOLID'] = SolidPattern
 
 
+def pdf_with_pattern(pattern=None):
+    file_obj = io.BytesIO()
+    surface = PDFSurface(file_obj, 100, 100)
+    context = Context(surface)
+    if pattern is not None:
+        context.set_source(pattern)
+    context.paint()
+    surface.finish()
+    return file_obj.getvalue()
+
+
 def test_linear_gradient():
     gradient = LinearGradient(1, 2, 10, 20)
     assert gradient.get_linear_points() == (1, 2, 10, 20)
@@ -442,10 +453,13 @@ def test_linear_gradient():
     context.paint()
     assert surface.get_data()[:] == b'\x00\x3f\xbf\xff' * 4
 
+    assert b'/ShadingType 2' not in pdf_with_pattern()
+    assert b'/ShadingType 2' in pdf_with_pattern(gradient)
+
 
 def test_radial_gradient():
-    gradient = RadialGradient(42, 420, 10, 43, 430, 20)
-    assert gradient.get_radial_circles() == (42, 420, 10, 43, 430, 20)
+    gradient = RadialGradient(42, 420, 10, 43, 430, 100)
+    assert gradient.get_radial_circles() == (42, 420, 10, 43, 430, 100)
     gradient.add_color_stop_rgb(1, 1, .5, .25)
     gradient.add_color_stop_rgb(offset=.5, red=1, green=.5, blue=.25)
     gradient.add_color_stop_rgba(.5, 1, .5, .75, .25)
@@ -453,6 +467,9 @@ def test_radial_gradient():
         (.5, 1, .5, .25, 1),
         (.5, 1, .5, .75, .25),
         (1, 1, .5, .25, 1)]
+
+    assert b'/ShadingType 3' not in pdf_with_pattern()
+    assert b'/ShadingType 3' in pdf_with_pattern(gradient)
 
 
 def test_context_as_context_manager():
