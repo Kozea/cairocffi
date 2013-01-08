@@ -1,0 +1,17 @@
+cairocffi changelog
+-------------------
+
+Version 0.2
+...........
+
+Released on 2013-01-08.
+
+Added :class:`RecordingSurface`.
+
+
+Version 0.1
+...........
+
+Released on  2013-01-07.
+
+First PyPI release.

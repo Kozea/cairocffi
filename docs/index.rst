@@ -9,3 +9,4 @@ Documentation
     overview
     api
     cffi_api
+    changelog

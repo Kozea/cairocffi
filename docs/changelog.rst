@@ -1,0 +1,2 @@
+.. currentmodule:: cairocffi
+.. include:: ../CHANGES
