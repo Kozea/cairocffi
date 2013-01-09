@@ -168,10 +168,7 @@ def test_surface():
 def test_mime_data():
     if cairo_version() < 11000:
         pytest.xfail()
-    # Also test we get actually booleans:
-    assert PDFSurface(None, 1, 1).supports_mime_type('image/jpeg') is True
-    surface = ImageSurface('A8', 1, 1)
-    assert surface.supports_mime_type('image/jpeg') is False
+    surface = PDFSurface(None, 1, 1)
     assert surface.get_mime_data('image/jpeg') is None
     gc.collect()  # Clean up KeepAlive stuff from other tests
     assert len(cairocffi.surfaces.KeepAlive.instances) == 0
@@ -181,9 +178,19 @@ def test_mime_data():
 
     surface.set_mime_data('image/jpeg', None)
     assert len(cairocffi.surfaces.KeepAlive.instances) == 0
-    assert surface.get_mime_data('image/jpeg') is None
+    if cairo_version() >= 11200:
+        # This actually segfauts on cairo 1.10.x
+        assert surface.get_mime_data('image/jpeg') is None
     surface.finish()
     assert_raise_finished(surface.set_mime_data, 'image/jpeg', None)
+
+
+def test_supports_mime_type():
+    if cairo_version() < 11200:
+        pytest.xfail()
+    # Also test we get actual booleans:
+    assert PDFSurface(None, 1, 1).supports_mime_type('image/jpeg') is True
+    assert ImageSurface('A8', 1, 1).supports_mime_type('image/jpeg') is False
 
 
 def test_png():
@@ -351,10 +358,12 @@ def test_ps_surface():
     assert b'%%dolor' in ps_bytes
 
 
-def test_recording_surface():
+def _recording_surface_common(extents):
     if cairo_version() < 11000:
         pytest.xfail()
-    empty_pixels = ImageSurface('ARGB32', 100, 100).get_data()[:]
+    surface = ImageSurface('ARGB32', 100, 100)
+    empty_pixels = surface.get_data()[:]
+    assert empty_pixels == b'\x00' * 40000
 
     surface = ImageSurface('ARGB32', 100, 100)
     context = Context(surface)
@@ -363,23 +372,40 @@ def test_recording_surface():
     text_pixels = surface.get_data()[:]
     assert text_pixels != empty_pixels
 
-    for extents in [None, (0, 0, 140, 80)]:
-        recording_surface = RecordingSurface('COLOR_ALPHA', extents)
-        context = Context(recording_surface)
-        context.move_to(20, 50)
-        assert recording_surface.ink_extents() == (0, 0, 0, 0)
-        context.show_text('Something about us.')
-        assert recording_surface.ink_extents() != (0, 0, 0, 0)
+    recording_surface = RecordingSurface('COLOR_ALPHA', extents)
+    context = Context(recording_surface)
+    context.move_to(20, 50)
+    assert recording_surface.ink_extents() == (0, 0, 0, 0)
+    context.show_text('Something about us.')
+    recording_surface.flush()
+    assert recording_surface.ink_extents() != (0, 0, 0, 0)
 
-        surface = ImageSurface('ARGB32', 100, 100)
-        context = Context(surface)
-        context.set_source_surface(recording_surface)
-        context.paint()
-        assert surface.get_data()[:] == text_pixels
+    surface = ImageSurface('ARGB32', 100, 100)
+    context = Context(surface)
+    context.set_source_surface(recording_surface)
+    context.paint()
+    recorded_pixels = surface.get_data()[:]
+    return text_pixels, recorded_pixels
+
+
+def test_recording_surface():
+    text_pixels, recorded_pixels = _recording_surface_common((0, 0, 140, 80))
+    assert recorded_pixels == text_pixels
+    # Test we get a result without failure,
+    # but only test the result in the next function.
+    _recording_surface_common(None)
+
+
+def test_unbounded_recording_surface():
+    if cairo_version() < 11200:
+        # Unbounded recording surfaces do not seem to record anything on 1.10.
+        pytest.xfail()
+    text_pixels, recorded_pixels = _recording_surface_common(None)
+    assert recorded_pixels == text_pixels
 
 
 def test_recording_surface_get_extents():
-    if cairo_version() < 11000:
+    if cairo_version() < 11200:
         pytest.xfail()
     for extents in [None, (0, 0, 140, 80)]:
         surface = RecordingSurface('COLOR_ALPHA', extents)
