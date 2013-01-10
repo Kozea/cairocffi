@@ -22,7 +22,10 @@ VERSION = '0.2'
 
 ffi = FFI()
 ffi.cdef(_CAIRO_HEADERS)
-cairo = ffi.dlopen('cairo')
+try:
+    cairo = ffi.dlopen('cairo')
+except OSError:
+    cairo = ffi.dlopen('libcairo-2')  # Alternative name on Windows.
 
 
 class CairoError(Exception):
