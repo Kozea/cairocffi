@@ -136,11 +136,19 @@ class Matrix(object):
         :returns: A ``(xx, yx, xy, yy, x0, y0)`` tuple of floats.
 
         """
-        return (self.xx, self.yx, self.xy, self.yy, self.x0, self.y0)
+        ptr = self._pointer
+        return (ptr.xx, ptr.yx, ptr.xy, ptr.yy, ptr.x0, ptr.y0)
 
     def copy(self):
         """Return a new copy of this matrix."""
         return type(self)(*self.as_tuple())
+
+    def __getitem__(self, index):
+        return getattr(
+            self._pointer, ('xx', 'yx', 'xy', 'yy', 'x0', 'y0')[index])
+
+    def __iter__(self):
+        return iter(self.as_tuple())
 
     def __eq__(self, other):
         return self.as_tuple() == other.as_tuple()

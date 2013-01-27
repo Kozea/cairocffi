@@ -421,6 +421,7 @@ def test_matrix():
     assert m.as_tuple() == (1, 0,  0, 1,  12, 4)
     m.scale(2, 7)
     assert m.as_tuple() == (2, 0,  0, 7,  12, 4)
+    assert m[3] == 7
     assert m.yy == 7
     m.yy = 3
     assert m.as_tuple() == (2, 0,  0, 3,  12, 4)
@@ -434,6 +435,13 @@ def test_matrix():
     assert m2.as_tuple() == (0.5, 0,  0, 1./3,  -12 / 2, -4. / 3)
     assert m.inverted() == m2
     assert m.as_tuple() == (2, 0,  0, 3,  12, 4)  # Unchanged
+
+    m2 = Matrix(*m)
+    assert m2 == m
+    m2.invert()
+    assert m2.as_tuple() == (0.5, 0,  0, 1./3,  -12 / 2, -4. / 3)
+    assert m.inverted() == m2
+    assert m.as_tuple() == (2, 0,  0, 3,  12, 4)  # Still unchanged
 
     m.rotate(math.pi / 2)
     assert round_tuple(m.as_tuple()) == (0, 3,  -2, 0,  12, 4)
