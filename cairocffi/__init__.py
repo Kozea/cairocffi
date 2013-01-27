@@ -156,6 +156,11 @@ class Matrix(object):
     def __ne__(self, other):
         return self.as_tuple() != other.as_tuple()
 
+    def __repr__(self):
+        class_ = type(self)
+        return '%s.%s(%g, %g, %g, %g, %g, %g)' % (
+            (class_.__module__, class_.__name__) + self.as_tuple())
+
     def multiply(self, other):
         """Multiply with another matrix
         and return the result as a new :class:`Matrix` object.
