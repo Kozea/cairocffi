@@ -24,7 +24,7 @@ ffi = FFI()
 ffi.cdef(_CAIRO_HEADERS)
 try:
     cairo = ffi.dlopen('cairo')
-except OSError:
+except OSError:  # pragma: no cover
     cairo = ffi.dlopen('libcairo-2')  # Alternative name on Windows.
 
 
