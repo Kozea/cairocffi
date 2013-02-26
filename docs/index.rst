@@ -8,5 +8,6 @@ Documentation
 
     overview
     api
+    pixbuf
     cffi_api
     changelog
