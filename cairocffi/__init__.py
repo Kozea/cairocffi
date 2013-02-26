@@ -20,17 +20,15 @@ from .compat import FileNotFoundError
 VERSION = '0.2'
 
 
-# Python3: def dlopen(ffi, *names, required=True):
-def dlopen(ffi, *names, **kwargs):
+def dlopen(ffi, *names):
     """Try various names for the same libraries, for different platforms."""
-    required = kwargs.pop('required', True)
     for name in names:
         try:
             return ffi.dlopen(name)
         except OSError:
             pass
-    if required:
-        return ffi.dlopen(names[0])  # Re-raise the exception.
+    # Re-raise the exception.
+    return ffi.dlopen(names[0])  # pragma: no cover
 
 
 ffi = FFI()
