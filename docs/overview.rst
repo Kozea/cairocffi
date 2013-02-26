@@ -27,7 +27,7 @@ but ``cairo`` is shorter and nicer to use::
 cairocffi will dynamically load cairo as a shared library at this point.
 If it fails to find it, you will see an exception like this::
 
-    OSError: library not found: 'libcairo-2'
+    OSError: library not found: 'cairo'
 
 Make sure cairo is correctly installed and available through your system’s
 usual mechanisms.
@@ -42,31 +42,14 @@ where to find shared libraries.
 Installing cairo on Windows
 ...........................
 
-On Windows Pycairo is sometimes compiled statically against cairo.
-In other words, having Pycairo does not necessarily mean having a cairo DLL
-that cairocffi can use.
+CFFI needs a ``libcairo-2.dll`` file
+in a directory that is listed in the ``PATH`` environment variable.
 
-
-.. TODO: decide what to recommend to install cairo
-
-    http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.24/
-    PyGTK all-in-one
-        Has installer
-        cairo 1.8.10
-        32-bit only
-
-    http://www.gtk.org/download/
-    GTK all-in-one
-        No installer
-            unzip + add bin to PATH
-        cairo 1.10.0
-        32 or 64-bit
-        Minimal DLLs:
-            libcairo-2.dll
-            libfontconfig-1.dll
-            freetype6.dll
-            libpng14-14.dll
-            zlib1.dll
+`Alexander Shaduri’s GTK installer
+<http://gtk-win.sourceforge.net/home/index.php/Main/Downloads>`_ works.
+(Make sure to leave the *Set up PATH environment variable* checkbox checked.)
+Pycairo on Windows is sometimes compiled statically against cairo
+and may not provide a ``.dll`` file that CFFI can use.
 
 
 cairo versions
