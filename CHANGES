@@ -1,6 +1,18 @@
 cairocffi changelog
 -------------------
 
+Version 0.3
+...........
+
+Released on 2013-02-26.
+
+* Add :mod:`cairocffi.pixbuf`, for loading images with GDK-PixBuf.
+* Add iteration and item access on :class:`Matrix`.
+* Better `Windows support`_ by trying to load ``libcairo-2.dll``
+
+.. _Windows support: http://packages.python.org/cairocffi/overview.html#installing-cairo-on-windows
+
+
 Version 0.2
 ...........
 
