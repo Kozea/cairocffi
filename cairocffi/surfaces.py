@@ -386,10 +386,10 @@ class Surface(object):
 
     def set_mime_data(self, mime_type, data):
         """
-         Attach an image in the format :obj:`mime_type` to this surface.
+        Attach an image in the format :obj:`mime_type` to this surface.
 
-         To remove the data from a surface,
-         call this method with same mime type and :obj:`None` for data.
+        To remove the data from a surface,
+        call this method with same mime type and :obj:`None` for data.
 
         The attached image (or filename) data can later
         be used by backends which support it

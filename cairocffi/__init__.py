@@ -20,12 +20,22 @@ from .compat import FileNotFoundError
 VERSION = '0.2'
 
 
+# Python3: def dlopen(ffi, *names, required=True):
+def dlopen(ffi, *names, **kwargs):
+    """Try various names for the same libraries, for different platforms."""
+    required = kwargs.pop('required', True)
+    for name in names:
+        try:
+            return ffi.dlopen(name)
+        except OSError:
+            pass
+    if required:
+        return ffi.dlopen(names[0])  # Re-raise the exception.
+
+
 ffi = FFI()
 ffi.cdef(_CAIRO_HEADERS)
-try:
-    cairo = ffi.dlopen('cairo')
-except OSError:  # pragma: no cover
-    cairo = ffi.dlopen('libcairo-2')  # Alternative name on Windows.
+cairo = dlopen(ffi, 'cairo', 'libcairo-2')
 
 
 class CairoError(Exception):
