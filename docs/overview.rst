@@ -45,7 +45,7 @@ Installing cairo on Windows
 cairocffi needs a ``libcairo-2.dll`` file
 in a directory that is listed in the ``PATH`` environment variable.
 
-`Alexander Shaduri’s GTK installer
+`Alexander Shaduri’s GTK+ installer
 <http://gtk-win.sourceforge.net/home/index.php/Main/Downloads>`_ works.
 (Make sure to leave the *Set up PATH environment variable* checkbox checked.)
 Pycairo on Windows is sometimes compiled statically against cairo
