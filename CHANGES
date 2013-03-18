@@ -1,6 +1,14 @@
 cairocffi changelog
 -------------------
 
+Version 0.3.1
+.............
+
+Released on 2013-03-18.
+
+Fix handling of GDK-PixBuf errors.
+
+
 Version 0.3
 ...........
 
