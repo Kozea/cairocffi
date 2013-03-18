@@ -31,6 +31,7 @@ JPEG_BYTES = zlib.decompress(base64.b64decode(
 def test_api():
     with pytest.raises(ValueError):
         pixbuf.decode_to_image_surface(b'')
+        pixbuf.decode_to_image_surface(b'Not a valid image.')
     surface, format_name = pixbuf.decode_to_image_surface(PNG_BYTES)
     assert format_name == 'png'
     assert_decoded(surface)

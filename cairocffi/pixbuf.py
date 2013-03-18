@@ -89,19 +89,19 @@ gdk = dlopen(ffi, 'gdk-3', 'gdk-x11-2.0', 'libgdk-win32-2.0-0')
 gobject.g_type_init()
 
 
-def handle_g_error(error, raise_=False):
+def handle_g_error(error):
     """Convert a :c:type:`GError` to a Python :exception:`ValueError`,
     and optionally raise it.
 
     """
     if error != ffi.NULL:
-        error_message = ffi.string(error.message).decode('utf8', 'replace')
-        gobject.g_error_free(error)
-        exception = ValueError('Pixbuf error: ' + error_message)
-        if raise_:  # pragma: no cover
-            raise exception
+        if error.message != ffi.NULL:
+            message = ('Pixbuf error: ' +
+                       ffi.string(error.message).decode('utf8', 'replace'))
         else:
-            return exception
+            message = 'Pixbuf error'
+        gobject.g_error_free(error)
+        raise ValueError(message)
 
 
 class Pixbuf(object):
@@ -130,13 +130,9 @@ def decode_to_pixbuf(image_data):
     error = ffi.new('GError **')
     gdk_pixbuf.gdk_pixbuf_loader_write(
         loader, ffi.new('guchar[]', image_data), len(image_data), error)
-    write_exception = handle_g_error(error[0])
+    handle_g_error(error[0])
     gdk_pixbuf.gdk_pixbuf_loader_close(loader, error)
-    close_exception = handle_g_error(error[0])
-    if write_exception is not None:  # pragma: no cover
-        raise write_exception  # Only after closing
-    if close_exception is not None:  # pragma: no cover
-        raise close_exception
+    handle_g_error(error[0])
 
     format_ = gdk_pixbuf.gdk_pixbuf_loader_get_format(loader)
     format_name = (
@@ -245,6 +241,6 @@ def pixbuf_to_cairo_png(pixbuf):
         buffer_pointer, buffer_size, ffi.new('char[]', b'png'), error,
         ffi.new('char[]', b'compression'), ffi.new('char[]', b'0'),
         ffi.NULL)
-    handle_g_error(error[0], raise_=True)
+    handle_g_error(error[0])
     png_bytes = ffi.buffer(buffer_pointer[0], buffer_size[0])
     return ImageSurface.create_from_png(BytesIO(png_bytes))

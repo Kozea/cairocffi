@@ -21,7 +21,7 @@ VERSION = '0.3'
 
 
 def dlopen(ffi, *names):
-    """Try various names for the same libraries, for different platforms."""
+    """Try various names for the same library, for different platforms."""
     for name in names:
         try:
             return ffi.dlopen(name)
