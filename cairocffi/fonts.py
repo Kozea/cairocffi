@@ -10,7 +10,7 @@
 
 """
 
-from . import ffi, cairo, _check_status, Matrix
+from . import ffi, cairo, _check_status, Matrix, constants
 from .compat import xrange
 
 
@@ -74,7 +74,8 @@ class ToyFontFace(FontFace):
     :param weight: The :ref:`FONT_WEIGHT` string for the font face.
 
     """
-    def __init__(self, family='', slant='NORMAL', weight='NORMAL'):
+    def __init__(self, family='', slant=constants.FONT_SLANT_NORMAL,
+                 weight=constants.FONT_WEIGHT_NORMAL):
         FontFace.__init__(self, cairo.cairo_toy_font_face_create(
             _encode_string(family), slant, weight))
 
@@ -93,7 +94,7 @@ class ToyFontFace(FontFace):
 
 
 FONT_TYPE_TO_CLASS = {
-    'TOY': ToyFontFace,
+    constants.FONT_TYPE_TOY: ToyFontFace,
 }
 
 
@@ -359,8 +360,12 @@ class ScaledFont(object):
                 for i in xrange(num_clusters[0])
                 for cluster in [clusters[i]]]
             # Intentionally trigger a KeyError on unknown flags
-            clusters_backwards = {
-                'BACKWARDS': True, '#0': False}[cluster_flags[0]]
+            if cluster_flags[0] == constants.TEXT_CLUSTER_FLAG_BACKWARD:
+                clusters_backwards = True
+            elif cluster_flags[0] == 0:
+                clusters_backwards = False
+            else:
+                raise KeyError
             return glyphs, clusters, clusters_backwards
         else:
             return glyphs

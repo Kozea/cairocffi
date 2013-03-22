@@ -14,7 +14,7 @@ import io
 import sys
 import ctypes
 
-from . import ffi, cairo, _check_status
+from . import ffi, cairo, _check_status, constants
 from .fonts import FontOptions, _encode_string
 
 
@@ -23,13 +23,13 @@ SURFACE_TARGET_KEY = ffi.new('cairo_user_data_key_t *')
 
 def _make_read_func(file_obj):
     """Return a CFFI callback that reads from a file-like object."""
-    @ffi.callback("cairo_read_func_t", error='READ_ERROR')
+    @ffi.callback("cairo_read_func_t", error=constants.STATUS_READ_ERROR)
     def read_func(closure, data, length):
         string = file_obj.read(length)
         if len(string) < length:  # EOF too early
             return 'READ_ERROR'
         ffi.buffer(data, length)[:len(string)] = string
-        return 'SUCCESS'
+        return constants.STATUS_SUCCESS
     return read_func
 
 
@@ -38,10 +38,10 @@ def _make_write_func(file_obj):
     if file_obj is None:
         return ffi.NULL
 
-    @ffi.callback("cairo_write_func_t", error='WRITE_ERROR')
+    @ffi.callback("cairo_write_func_t", error=constants.STATUS_WRITE_ERROR)
     def read_func(_closure, data, length):
         file_obj.write(ffi.buffer(data, length))
-        return 'SUCCESS'
+        return constants.STATUS_SUCCESS
     return read_func
 
 
@@ -1266,8 +1266,8 @@ class RecordingSurface(Surface):
 
 
 SURFACE_TYPE_TO_CLASS = {
-    'IMAGE': ImageSurface,
-    'PDF': PDFSurface,
-    'SVG': SVGSurface,
-    'RECORDING': RecordingSurface,
+    constants.SURFACE_TYPE_IMAGE: ImageSurface,
+    constants.SURFACE_TYPE_PDF: PDFSurface,
+    constants.SURFACE_TYPE_SVG: SVGSurface,
+    constants.SURFACE_TYPE_RECORDING: RecordingSurface,
 }

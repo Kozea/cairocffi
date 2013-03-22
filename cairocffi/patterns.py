@@ -10,7 +10,7 @@
 
 """
 
-from . import ffi, cairo, _check_status, Matrix
+from . import ffi, cairo, _check_status, Matrix, constants
 from .surfaces import Surface
 from .compat import xrange
 
@@ -364,8 +364,8 @@ class RadialGradient(Gradient):
 
 
 PATTERN_TYPE_TO_CLASS = {
-    'SOLID': SolidPattern,
-    'SURFACE': SurfacePattern,
-    'LINEAR': LinearGradient,
-    'RADIAL': RadialGradient,
+    constants.PATTERN_TYPE_SOLID: SolidPattern,
+    constants.PATTERN_TYPE_SURFACE: SurfacePattern,
+    constants.PATTERN_TYPE_LINEAR: LinearGradient,
+    constants.PATTERN_TYPE_RADIAL: RadialGradient,
 }

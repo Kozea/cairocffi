@@ -65,12 +65,13 @@ def test_install_as_pycairo():
 
 
 def test_image_surface():
-    assert ImageSurface.format_stride_for_width('ARGB32', 100) == 400
-    assert ImageSurface.format_stride_for_width('A8', 100) == 100
+    assert ImageSurface.format_stride_for_width(
+        cairocffi.FORMAT_ARGB32, 100) == 400
+    assert ImageSurface.format_stride_for_width(
+        cairocffi.FORMAT_A8, 100) == 100
 
-    assert cairocffi.FORMAT_ARGB32 == 'ARGB32'
-    surface = ImageSurface('ARGB32', 20, 30)
-    assert surface.get_format() == 'ARGB32'
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 20, 30)
+    assert surface.get_format() == cairocffi.FORMAT_ARGB32
     assert surface.get_width() == 20
     assert surface.get_height() == 30
     assert surface.get_stride() == 20 * 4
@@ -78,9 +79,10 @@ def test_image_surface():
     with pytest.raises(ValueError):
         # buffer too small
         data = array.array('B', b'\x00' * 799)
-        ImageSurface.create_for_data(data, 'ARGB32', 10, 20)
+        ImageSurface.create_for_data(data, cairocffi.FORMAT_ARGB32, 10, 20)
     data = array.array('B', b'\x00' * 800)
-    surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20, stride=40)
+    surface = ImageSurface.create_for_data(data, cairocffi.FORMAT_ARGB32,
+                                           10, 20, stride=40)
     context = Context(surface)
     # The default source is opaque black:
     assert context.get_source().get_rgba() == (0, 0, 0, 1)
@@ -94,7 +96,8 @@ def test_image_bytearray_buffer():
     # Also test buffers through ctypes.c_char.from_buffer,
     # not available on PyPy
     data = bytearray(800)
-    surface = ImageSurface.create_for_data(data, 'ARGB32', 10, 20, stride=40)
+    surface = ImageSurface.create_for_data(data, cairocffi.FORMAT_ARGB32,
+                                           10, 20, stride=40)
     Context(surface).paint_with_alpha(0.5)
     assert data == pixel(b'\x80\x00\x00\x00') * 200
 
@@ -102,11 +105,11 @@ def test_image_bytearray_buffer():
 def test_surface_create_similar_image():
     if cairo_version() < 11200:
         pytest.xfail()
-    surface = ImageSurface('ARGB32', 20, 30)
-    similar = surface.create_similar_image('A8', 4, 100)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 20, 30)
+    similar = surface.create_similar_image(cairocffi.FORMAT_A8, 4, 100)
     assert isinstance(similar, ImageSurface)
-    assert similar.get_content() == 'ALPHA'
-    assert similar.get_format() == 'A8'
+    assert similar.get_content() == cairocffi.CONTENT_ALPHA
+    assert similar.get_format() == cairocffi.FORMAT_A8
     assert similar.get_width() == 4
     assert similar.get_height() == 100
 
@@ -114,7 +117,7 @@ def test_surface_create_similar_image():
 def test_surface_create_for_rectangle():
     if cairo_version() < 11000:
         pytest.xfail()
-    surface = ImageSurface('A8', 4, 4)
+    surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
     data = surface.get_data()
     assert data[:] == b'\x00' * 16
     Context(surface.create_for_rectangle(1, 1, 2, 2)).paint()
@@ -126,11 +129,11 @@ def test_surface_create_for_rectangle():
 
 
 def test_surface():
-    surface = ImageSurface('ARGB32', 20, 30)
-    similar = surface.create_similar('ALPHA', 4, 100)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 20, 30)
+    similar = surface.create_similar(cairocffi.CONTENT_ALPHA, 4, 100)
     assert isinstance(similar, ImageSurface)
-    assert similar.get_content() == 'ALPHA'
-    assert similar.get_format() == 'A8'
+    assert similar.get_content() == cairocffi.CONTENT_ALPHA
+    assert similar.get_format() == cairocffi.FORMAT_A8
     assert similar.get_width() == 4
     assert similar.get_height() == 100
     assert similar.has_show_text_glyphs() is False
@@ -149,14 +152,15 @@ def test_surface():
 
     context = Context(surface)
     assert isinstance(context.get_target(), ImageSurface)
+    surface_map = cairocffi.surfaces.SURFACE_TYPE_TO_CLASS
     try:
-        del cairocffi.surfaces.SURFACE_TYPE_TO_CLASS['IMAGE']
+        del surface_map[cairocffi.SURFACE_TYPE_IMAGE]
         target = context.get_target()
         assert target._pointer == surface._pointer
         assert isinstance(target, Surface)
         assert not isinstance(target, ImageSurface)
     finally:
-        cairocffi.surfaces.SURFACE_TYPE_TO_CLASS['IMAGE'] = ImageSurface
+        surface_map[cairocffi.SURFACE_TYPE_IMAGE] = ImageSurface
 
     surface.finish()
     assert_raise_finished(surface.copy_page)
@@ -190,7 +194,8 @@ def test_supports_mime_type():
         pytest.xfail()
     # Also test we get actual booleans:
     assert PDFSurface(None, 1, 1).supports_mime_type('image/jpeg') is True
-    assert ImageSurface('A8', 1, 1).supports_mime_type('image/jpeg') is False
+    surface = ImageSurface(cairocffi.FORMAT_A8, 1, 1)
+    assert surface.supports_mime_type('image/jpeg') is False
 
 
 def test_png():
@@ -203,7 +208,7 @@ def test_png():
         filename = os.path.join(tempdir, 'foo.png')
         filename_bytes = filename.encode(sys.getfilesystemencoding())
 
-        surface = ImageSurface('ARGB32', 1, 1)
+        surface = ImageSurface(cairocffi.FORMAT_ARGB32, 1, 1)
         surface.write_to_png(filename)
         with open(filename, 'rb') as fd:
             written_png_bytes = fd.read()
@@ -224,7 +229,7 @@ def test_png():
             fd.write(png_bytes)
         for source in [io.BytesIO(png_bytes), filename, filename_bytes]:
             surface = ImageSurface.create_from_png(source)
-            assert surface.get_format() == 'ARGB32'
+            assert surface.get_format() == cairocffi.FORMAT_ARGB32
             assert surface.get_width() == 1
             assert surface.get_height() == 1
             assert surface.get_stride() == 4
@@ -239,9 +244,9 @@ def test_pdf_versions():
     if cairo_version() < 11000:
         pytest.xfail()
     assert set(PDFSurface.get_versions()) >= set([
-        'PDF_VERSION_1_4', 'PDF_VERSION_1_5'])
-    assert PDFSurface.version_to_string('PDF_VERSION_1_4') == 'PDF 1.4'
-    with pytest.raises(ValueError):
+        cairocffi.PDF_VERSION_1_4, cairocffi.PDF_VERSION_1_5])
+    assert PDFSurface.version_to_string(cairocffi.PDF_VERSION_1_4) == 'PDF 1.4'
+    with pytest.raises(TypeError):
         PDFSurface.version_to_string('PDF_VERSION_42')
     with pytest.raises(ValueError):
         PDFSurface.version_to_string(42)
@@ -252,7 +257,7 @@ def test_pdf_versions():
 
     file_obj = io.BytesIO()
     surface = PDFSurface(file_obj, 1, 1)
-    surface.restrict_to_version('PDF_VERSION_1_4')
+    surface.restrict_to_version(cairocffi.PDF_VERSION_1_4)
     surface.finish()
     assert file_obj.getvalue().startswith(b'%PDF-1.4')
 
@@ -291,9 +296,9 @@ def test_pdf_surface():
 
 def test_svg_surface():
     assert set(SVGSurface.get_versions()) >= set([
-        'SVG_VERSION_1_1', 'SVG_VERSION_1_2'])
-    assert SVGSurface.version_to_string('SVG_VERSION_1_1') == 'SVG 1.1'
-    with pytest.raises(ValueError):
+        cairocffi.SVG_VERSION_1_1, cairocffi.SVG_VERSION_1_2])
+    assert SVGSurface.version_to_string(cairocffi.SVG_VERSION_1_1) == 'SVG 1.1'
+    with pytest.raises(TypeError):
         SVGSurface.version_to_string('SVG_VERSION_42')
     with pytest.raises(ValueError):
         SVGSurface.version_to_string(42)
@@ -313,14 +318,15 @@ def test_svg_surface():
         assert b'viewBox="0 0 123 432"' in svg_bytes
 
     surface = SVGSurface(None, 1, 1)
-    surface.restrict_to_version('SVG_VERSION_1_1')  # Not obvious to test
+    # Not obvious to test
+    surface.restrict_to_version(cairocffi.SVG_VERSION_1_1)
 
 
 def test_ps_surface():
     assert set(PSSurface.get_levels()) >= set([
-        'PS_LEVEL_2', 'PS_LEVEL_3'])
-    assert PSSurface.ps_level_to_string('PS_LEVEL_3') == 'PS Level 3'
-    with pytest.raises(ValueError):
+        cairocffi.PS_LEVEL_2, cairocffi.PS_LEVEL_3])
+    assert PSSurface.ps_level_to_string(cairocffi.PS_LEVEL_3) == 'PS Level 3'
+    with pytest.raises(TypeError):
         PSSurface.ps_level_to_string('PS_LEVEL_42')
     with pytest.raises(ValueError):
         PSSurface.ps_level_to_string(42)
@@ -339,7 +345,7 @@ def test_ps_surface():
 
     file_obj = io.BytesIO()
     surface = PSSurface(file_obj, 1, 1)
-    surface.restrict_to_level('PS_LEVEL_2')  # Not obvious to test
+    surface.restrict_to_level(cairocffi.PS_LEVEL_2)  # Not obvious to test
     assert surface.get_eps() is False
     surface.set_eps('lol')
     assert surface.get_eps() is True
@@ -361,18 +367,19 @@ def test_ps_surface():
 def _recording_surface_common(extents):
     if cairo_version() < 11000:
         pytest.xfail()
-    surface = ImageSurface('ARGB32', 100, 100)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 100, 100)
     empty_pixels = surface.get_data()[:]
     assert empty_pixels == b'\x00' * 40000
 
-    surface = ImageSurface('ARGB32', 100, 100)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 100, 100)
     context = Context(surface)
     context.move_to(20, 50)
     context.show_text('Something about us.')
     text_pixels = surface.get_data()[:]
     assert text_pixels != empty_pixels
 
-    recording_surface = RecordingSurface('COLOR_ALPHA', extents)
+    recording_surface = RecordingSurface(cairocffi.CONTENT_COLOR_ALPHA,
+                                         extents)
     context = Context(recording_surface)
     context.move_to(20, 50)
     assert recording_surface.ink_extents() == (0, 0, 0, 0)
@@ -380,7 +387,7 @@ def _recording_surface_common(extents):
     recording_surface.flush()
     assert recording_surface.ink_extents() != (0, 0, 0, 0)
 
-    surface = ImageSurface('ARGB32', 100, 100)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 100, 100)
     context = Context(surface)
     context.set_source_surface(recording_surface)
     context.paint()
@@ -408,7 +415,7 @@ def test_recording_surface_get_extents():
     if cairo_version() < 11200:
         pytest.xfail()
     for extents in [None, (0, 0, 140, 80)]:
-        surface = RecordingSurface('COLOR_ALPHA', extents)
+        surface = RecordingSurface(cairocffi.CONTENT_COLOR_ALPHA, extents)
         assert surface.get_extents() == extents
 
 
@@ -452,20 +459,20 @@ def test_matrix():
 
 
 def test_surface_pattern():
-    surface = ImageSurface('A1', 1, 1)
+    surface = ImageSurface(cairocffi.FORMAT_A1, 1, 1)
     pattern = SurfacePattern(surface)
 
     surface_again = pattern.get_surface()
     assert surface_again is not surface
     assert surface_again._pointer == surface._pointer
 
-    assert pattern.get_extend() == 'NONE'
-    pattern.set_extend('REPEAT')
-    assert pattern.get_extend() == 'REPEAT'
+    assert pattern.get_extend() == cairocffi.EXTEND_NONE
+    pattern.set_extend(cairocffi.EXTEND_REPEAT)
+    assert pattern.get_extend() == cairocffi.EXTEND_REPEAT
 
-    assert pattern.get_filter() == 'GOOD'
-    pattern.set_filter('BEST')
-    assert pattern.get_filter() == 'BEST'
+    assert pattern.get_filter() == cairocffi.FILTER_GOOD
+    pattern.set_filter(cairocffi.FILTER_BEST)
+    assert pattern.get_filter() == cairocffi.FILTER_BEST
 
     assert pattern.get_matrix() == Matrix()  # identity
     matrix = Matrix.init_rotate(0.5)
@@ -483,14 +490,15 @@ def test_solid_pattern():
     pattern = SolidPattern(1, .5, .25)
     context.set_source(pattern)
     assert isinstance(context.get_source(), SolidPattern)
+    pattern_map = cairocffi.patterns.PATTERN_TYPE_TO_CLASS
     try:
-        del cairocffi.patterns.PATTERN_TYPE_TO_CLASS['SOLID']
+        del pattern_map[cairocffi.PATTERN_TYPE_SOLID]
         re_pattern = context.get_source()
         assert re_pattern._pointer == pattern._pointer
         assert isinstance(re_pattern, Pattern)
         assert not isinstance(re_pattern, SolidPattern)
     finally:
-        cairocffi.patterns.PATTERN_TYPE_TO_CLASS['SOLID'] = SolidPattern
+        pattern_map[cairocffi.PATTERN_TYPE_SOLID] = SolidPattern
 
 
 def pdf_with_pattern(pattern=None):
@@ -515,7 +523,7 @@ def test_linear_gradient():
         (.5, 1, .5, .75, .25),
         (1, 1, .5, .25, 1)]
 
-    surface = ImageSurface('A8', 4, 4)
+    surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
     assert surface.get_data()[:] == b'\x00' * 16
     gradient = LinearGradient(1, 0, 3, 0)
     gradient.add_color_stop_rgba(0, 0, 0, 0, 0)
@@ -545,7 +553,7 @@ def test_radial_gradient():
 
 
 def test_context_as_context_manager():
-    surface = ImageSurface('ARGB32', 1, 1)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 1, 1)
     context = Context(surface)
     # The default source is opaque black:
     assert context.get_source().get_rgba() == (0, 0, 0, 1)
@@ -566,17 +574,19 @@ def test_context_as_context_manager():
 
 
 def test_context_groups():
-    surface = ImageSurface('ARGB32', 1, 1)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 1, 1)
     context = Context(surface)
     assert isinstance(context.get_target(), ImageSurface)
     assert context.get_target()._pointer == surface._pointer
     assert context.get_group_target()._pointer == surface._pointer
-    assert context.get_group_target().get_content() == 'COLOR_ALPHA'
+    assert (context.get_group_target().get_content() ==
+            cairocffi.CONTENT_COLOR_ALPHA)
     assert surface.get_data()[:] == pixel(b'\x00\x00\x00\x00')
 
     with context:
-        context.push_group_with_content('ALPHA')
-        assert context.get_group_target().get_content() == 'ALPHA'
+        context.push_group_with_content(cairocffi.CONTENT_ALPHA)
+        assert (context.get_group_target().get_content() ==
+                cairocffi.CONTENT_ALPHA)
         context.set_source_rgba(1, .2, .4, .8)  # Only A is actually used
         assert isinstance(context.get_source(), SolidPattern)
         context.paint()
@@ -601,7 +611,7 @@ def test_context_groups():
 
 
 def test_context_current_transform_matrix():
-    surface = ImageSurface('ARGB32', 1, 1)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 1, 1)
     context = Context(surface)
     assert isinstance(context.get_matrix(), Matrix)
     assert context.get_matrix().as_tuple() == (1, 0, 0, 1, 0, 0)
@@ -629,7 +639,7 @@ def test_context_current_transform_matrix():
 
 
 def test_context_path():
-    surface = ImageSurface('ARGB32', 1, 1)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 1, 1)
     context = Context(surface)
 
     assert context.copy_path() == []
@@ -637,9 +647,9 @@ def test_context_path():
     assert context.get_current_point() == (0, 0)
     context.arc(100, 200, 20, math.pi/2, 0)
     path_1 = context.copy_path()
-    assert path_1[0] == ('MOVE_TO', (100, 220))
+    assert path_1[0] == (cairocffi.PATH_MOVE_TO, (100, 220))
     assert len(path_1) > 1
-    assert all(part[0] == 'CURVE_TO' for part in path_1[1:])
+    assert all(part[0] == cairocffi.PATH_CURVE_TO for part in path_1[1:])
     assert context.has_current_point() is True
     assert context.get_current_point() == (120, 200)
 
@@ -654,23 +664,23 @@ def test_context_path():
 
     context.arc_negative(100, 200, 20, math.pi/2, 0)
     path_2 = context.copy_path()
-    assert path_2[0] == ('MOVE_TO', (100, 220))
+    assert path_2[0] == (cairocffi.PATH_MOVE_TO, (100, 220))
     assert len(path_2) > 1
-    assert all(part[0] == 'CURVE_TO' for part in path_2[1:])
+    assert all(part[0] == cairocffi.PATH_CURVE_TO for part in path_2[1:])
     assert path_2 != path_1
 
     context.new_path()
     context.rectangle(10, 20, 100, 200)
     path = context.copy_path()
     # Some cairo versions add a MOVE_TO after a CLOSE_PATH
-    if path[-1] == ('MOVE_TO', (10, 20)):  # pragma: no cover
+    if path[-1] == (cairocffi.PATH_MOVE_TO, (10, 20)):  # pragma: no cover
         path = path[:-1]
     assert path == [
-        ('MOVE_TO', (10, 20)),
-        ('LINE_TO', (110, 20)),
-        ('LINE_TO', (110, 220)),
-        ('LINE_TO', (10, 220)),
-        ('CLOSE_PATH', ())]
+        (cairocffi.PATH_MOVE_TO, (10, 20)),
+        (cairocffi.PATH_LINE_TO, (110, 20)),
+        (cairocffi.PATH_LINE_TO, (110, 220)),
+        (cairocffi.PATH_LINE_TO, (10, 220)),
+        (cairocffi.PATH_CLOSE_PATH, ())]
     assert context.path_extents() == (10, 20, 110, 220)
 
     context.new_path()
@@ -682,70 +692,70 @@ def test_context_path():
     context.rel_curve_to(20, 30, 70, 50, 100, 120)
     context.close_path()
     path = context.copy_path()
-    if path[-1] == ('MOVE_TO', (12, 35)):  # pragma: no cover
+    if path[-1] == (cairocffi.PATH_MOVE_TO, (12, 35)):  # pragma: no cover
         path = path[:-1]
     assert path == [
-        ('MOVE_TO', (10, 20)),
-        ('LINE_TO', (10, 30)),
-        ('MOVE_TO', (12, 35)),
-        ('LINE_TO', (14, 40)),
-        ('CURVE_TO', (20, 30, 70, 50, 100, 120)),
-        ('CURVE_TO', (120, 150, 170, 170, 200, 240)),
-        ('CLOSE_PATH', ())]
+        (cairocffi.PATH_MOVE_TO, (10, 20)),
+        (cairocffi.PATH_LINE_TO, (10, 30)),
+        (cairocffi.PATH_MOVE_TO, (12, 35)),
+        (cairocffi.PATH_LINE_TO, (14, 40)),
+        (cairocffi.PATH_CURVE_TO, (20, 30, 70, 50, 100, 120)),
+        (cairocffi.PATH_CURVE_TO, (120, 150, 170, 170, 200, 240)),
+        (cairocffi.PATH_CLOSE_PATH, ())]
 
     context.new_path()
     context.move_to(10, 15)
     context.curve_to(20, 30, 70, 50, 100, 120)
     assert context.copy_path() == [
-        ('MOVE_TO', (10, 15)),
-        ('CURVE_TO', (20, 30, 70, 50, 100, 120))]
+        (cairocffi.PATH_MOVE_TO, (10, 15)),
+        (cairocffi.PATH_CURVE_TO, (20, 30, 70, 50, 100, 120))]
     path = context.copy_path_flat()
     assert len(path) > 2
-    assert path[0] == ('MOVE_TO', (10, 15))
-    assert all(part[0] == 'LINE_TO' for part in path[1:])
-    assert path[-1] == ('LINE_TO', (100, 120))
+    assert path[0] == (cairocffi.PATH_MOVE_TO, (10, 15))
+    assert all(part[0] == cairocffi.PATH_LINE_TO for part in path[1:])
+    assert path[-1] == (cairocffi.PATH_LINE_TO, (100, 120))
 
     context.new_path()
     context.move_to(10, 20)
     context.line_to(10, 30)
     path = context.copy_path()
     assert path == [
-        ('MOVE_TO', (10, 20)),
-        ('LINE_TO', (10, 30))]
-    additional_path = [('LINE_TO', (30, 150))]
+        (cairocffi.PATH_MOVE_TO, (10, 20)),
+        (cairocffi.PATH_LINE_TO, (10, 30))]
+    additional_path = [(cairocffi.PATH_LINE_TO, (30, 150))]
     context.append_path(additional_path)
     assert context.copy_path() == path + additional_path
     # Incorrect number of points:
     with pytest.raises(ValueError):
-        context.append_path([('LINE_TO', (30, 150, 1))])
+        context.append_path([(cairocffi.PATH_LINE_TO, (30, 150, 1))])
     with pytest.raises(ValueError):
-        context.append_path([('LINE_TO', (30, 150, 1, 4))])
+        context.append_path([(cairocffi.PATH_LINE_TO, (30, 150, 1, 4))])
 
 
 def test_context_properties():
-    surface = ImageSurface('ARGB32', 1, 1)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 1, 1)
     context = Context(surface)
 
-    assert context.get_antialias() == 'DEFAULT'
-    context.set_antialias('BEST')
-    assert context.get_antialias() == 'BEST'
+    assert context.get_antialias() == cairocffi.ANTIALIAS_DEFAULT
+    context.set_antialias(cairocffi.ANTIALIAS_BEST)
+    assert context.get_antialias() == cairocffi.ANTIALIAS_BEST
 
     assert context.get_dash() == ([], 0)
     context.set_dash([4, 1, 3, 2], 1.5)
     assert context.get_dash() == ([4, 1, 3, 2], 1.5)
     assert context.get_dash_count() == 4
 
-    assert context.get_fill_rule() == 'WINDING'
-    context.set_fill_rule('EVEN_ODD')
-    assert context.get_fill_rule() == 'EVEN_ODD'
+    assert context.get_fill_rule() == cairocffi.FILL_RULE_WINDING
+    context.set_fill_rule(cairocffi.FILL_RULE_EVEN_ODD)
+    assert context.get_fill_rule() == cairocffi.FILL_RULE_EVEN_ODD
 
-    assert context.get_line_cap() == 'BUTT'
-    context.set_line_cap('SQUARE')
-    assert context.get_line_cap() == 'SQUARE'
+    assert context.get_line_cap() == cairocffi.LINE_CAP_BUTT
+    context.set_line_cap(cairocffi.LINE_CAP_SQUARE)
+    assert context.get_line_cap() == cairocffi.LINE_CAP_SQUARE
 
-    assert context.get_line_join() == 'MITER'
-    context.set_line_join('ROUND')
-    assert context.get_line_join() == 'ROUND'
+    assert context.get_line_join() == cairocffi.LINE_JOIN_MITER
+    context.set_line_join(cairocffi.LINE_JOIN_ROUND)
+    assert context.get_line_join() == cairocffi.LINE_JOIN_ROUND
 
     assert context.get_line_width() == 2
     context.set_line_width(13)
@@ -755,9 +765,9 @@ def test_context_properties():
     context.set_miter_limit(4)
     assert context.get_miter_limit() == 4
 
-    assert context.get_operator() == 'OVER'
-    context.set_operator('XOR')
-    assert context.get_operator() == 'XOR'
+    assert context.get_operator() == cairocffi.OPERATOR_OVER
+    context.set_operator(cairocffi.OPERATOR_XOR)
+    assert context.get_operator() == cairocffi.OPERATOR_XOR
 
     assert context.get_tolerance() == 0.1
     context.set_tolerance(0.25)
@@ -765,7 +775,7 @@ def test_context_properties():
 
 
 def test_context_fill():
-    surface = ImageSurface('A8', 4, 4)
+    surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
     assert surface.get_data()[:] == b'\x00' * 16
     context = Context(surface)
     context.set_source_rgba(0, 0, 0, .5)
@@ -799,7 +809,7 @@ def test_context_fill():
 
 def test_context_stroke():
     for preserve in [True, False]:
-        surface = ImageSurface('A8', 4, 4)
+        surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
         assert surface.get_data()[:] == b'\x00' * 16
         context = Context(surface)
         context.set_source_rgba(0, 0, 0, 1)
@@ -817,7 +827,7 @@ def test_context_stroke():
 
 
 def test_context_clip():
-    surface = ImageSurface('A8', 4, 4)
+    surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
     assert surface.get_data()[:] == b'\x00' * 16
     context = Context(surface)
     context.rectangle(1, 1, 2, 2)
@@ -843,7 +853,7 @@ def test_context_clip():
 def test_context_in_clip():
     if cairo_version() < 11000:
         pytest.xfail()
-    surface = ImageSurface('A8', 4, 4)
+    surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
     context = Context(surface)
     context.rectangle(1, 1, 2, 2)
     assert context.in_clip(.5, 2) is True
@@ -854,7 +864,7 @@ def test_context_in_clip():
 
 
 def test_context_mask():
-    mask_surface = ImageSurface('ARGB32', 2, 2)
+    mask_surface = ImageSurface(cairocffi.FORMAT_ARGB32, 2, 2)
     context = Context(mask_surface)
     context.set_source_rgba(1, 0, .5, 1)
     context.rectangle(0, 0, 1, 1)
@@ -863,7 +873,7 @@ def test_context_mask():
     context.rectangle(1, 1, 1, 1)
     context.fill()
 
-    surface = ImageSurface('ARGB32', 4, 4)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 4, 4)
     context = Context(surface)
     context.mask(SurfacePattern(mask_surface))
     o = pixel(b'\x00\x00\x00\x00')
@@ -876,7 +886,7 @@ def test_context_mask():
         o + o + o + o
     )
 
-    surface = ImageSurface('ARGB32', 4, 4)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 4, 4)
     context = Context(surface)
     context.mask_surface(mask_surface, surface_x=1, surface_y=2)
     o = pixel(b'\x00\x00\x00\x00')
@@ -891,7 +901,7 @@ def test_context_mask():
 
 
 def test_context_font():
-    surface = ImageSurface('ARGB32', 10, 10)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 10, 10)
     context = Context._from_pointer(Context(surface)._pointer, incref=True)
     assert context.get_font_matrix().as_tuple() == (10, 0, 0, 10, 0, 0)
     context.set_font_matrix(Matrix(2, 0,  0, 3,  12, 4))
@@ -900,21 +910,22 @@ def test_context_font():
     assert context.get_font_matrix().as_tuple() == (14, 0, 0, 14, 0, 0)
 
     context.set_font_size(10)
-    context.select_font_face(b'serif', 'ITALIC')
+    context.select_font_face(b'serif', cairocffi.FONT_SLANT_ITALIC)
     font_face = context.get_font_face()
     assert isinstance(font_face, ToyFontFace)
     assert font_face.get_family() == 'serif'
-    assert font_face.get_slant() == 'ITALIC'
-    assert font_face.get_weight() == 'NORMAL'
+    assert font_face.get_slant() == cairocffi.FONT_SLANT_ITALIC
+    assert font_face.get_weight() == cairocffi.FONT_WEIGHT_NORMAL
 
     try:
-        del cairocffi.fonts.FONT_TYPE_TO_CLASS['TOY']
+        del cairocffi.fonts.FONT_TYPE_TO_CLASS[cairocffi.FONT_TYPE_TOY]
         re_font_face = context.get_font_face()
         assert re_font_face._pointer == font_face._pointer
         assert isinstance(re_font_face, FontFace)
         assert not isinstance(re_font_face, ToyFontFace)
     finally:
-        cairocffi.fonts.FONT_TYPE_TO_CLASS['TOY'] = ToyFontFace
+        cairocffi.fonts.FONT_TYPE_TO_CLASS[cairocffi.FONT_TYPE_TOY] = \
+            ToyFontFace
 
     ascent, descent, height, max_x_advance, max_y_advance = (
         context.font_extents())
@@ -925,7 +936,8 @@ def test_context_font():
     _, _, _, _, x_advance, y_advance = context.text_extents('i' * 10)
     assert x_advance > 0
     assert y_advance == 0
-    context.set_font_face(ToyFontFace(u('monospace'), weight='BOLD'))
+    context.set_font_face(ToyFontFace(u('monospace'),
+                          weight=cairocffi.FONT_WEIGHT_BOLD))
     _, _, _, _, x_advance_mono, y_advance = context.text_extents('i' * 10)
     assert x_advance_mono > x_advance
     assert y_advance == 0
@@ -937,10 +949,14 @@ def test_context_font():
     context.show_text('a')
     assert surface.get_data()[:] != b'\x00' * 400
 
-    assert context.get_font_options().get_hint_metrics() == 'DEFAULT'
-    context.set_font_options(FontOptions(hint_metrics='ON'))
-    assert context.get_font_options().get_hint_metrics() == 'ON'
-    assert surface.get_font_options().get_hint_metrics() == 'ON'
+    assert (context.get_font_options().get_hint_metrics() ==
+            cairocffi.HINT_METRICS_DEFAULT)
+    context.set_font_options(
+        FontOptions(hint_metrics=cairocffi.HINT_METRICS_ON))
+    assert (context.get_font_options().get_hint_metrics() ==
+            cairocffi.HINT_METRICS_ON)
+    assert (surface.get_font_options().get_hint_metrics() ==
+            cairocffi.HINT_METRICS_ON)
 
     context.set_font_matrix(Matrix(2, 0,  0, 3,  12, 4))
     assert context.get_scaled_font().get_font_matrix().as_tuple() == (
@@ -976,8 +992,8 @@ def test_scaled_font():
 
     font = ScaledFont(
         ToyFontFace('monospace'), Matrix(xx=20, yy=20), Matrix(xx=3, yy=.5),
-        FontOptions(antialias='BEST'))
-    assert font.get_font_options().get_antialias() == 'BEST'
+        FontOptions(antialias=cairocffi.ANTIALIAS_BEST))
+    assert font.get_font_options().get_antialias() == cairocffi.ANTIALIAS_BEST
     assert font.get_font_matrix().as_tuple() == (20, 0, 0, 20, 0, 0)
     assert font.get_ctm().as_tuple() == (3, 0, 0, .5, 0, 0)
     assert font.get_scale_matrix().as_tuple() == (60, 0, 0, 10, 0, 0)
@@ -991,29 +1007,29 @@ def test_scaled_font():
 def test_font_options():
     options = FontOptions()
 
-    assert options.get_antialias() == 'DEFAULT'
-    options.set_antialias('FAST')
-    assert options.get_antialias() == 'FAST'
+    assert options.get_antialias() == cairocffi.ANTIALIAS_DEFAULT
+    options.set_antialias(cairocffi.ANTIALIAS_FAST)
+    assert options.get_antialias() == cairocffi.ANTIALIAS_FAST
 
-    assert options.get_subpixel_order() == 'DEFAULT'
-    options.set_subpixel_order('BGR')
-    assert options.get_subpixel_order() == 'BGR'
+    assert options.get_subpixel_order() == cairocffi.SUBPIXEL_ORDER_DEFAULT
+    options.set_subpixel_order(cairocffi.SUBPIXEL_ORDER_BGR)
+    assert options.get_subpixel_order() == cairocffi.SUBPIXEL_ORDER_BGR
 
-    assert options.get_hint_style() == 'DEFAULT'
-    options.set_hint_style('SLIGHT')
-    assert options.get_hint_style() == 'SLIGHT'
+    assert options.get_hint_style() == cairocffi.HINT_STYLE_DEFAULT
+    options.set_hint_style(cairocffi.HINT_STYLE_SLIGHT)
+    assert options.get_hint_style() == cairocffi.HINT_STYLE_SLIGHT
 
-    assert options.get_hint_metrics() == 'DEFAULT'
-    options.set_hint_metrics('OFF')
-    assert options.get_hint_metrics() == 'OFF'
+    assert options.get_hint_metrics() == cairocffi.HINT_METRICS_DEFAULT
+    options.set_hint_metrics(cairocffi.HINT_METRICS_OFF)
+    assert options.get_hint_metrics() == cairocffi.HINT_METRICS_OFF
 
-    options_1 = FontOptions(hint_metrics='ON')
-    assert options_1.get_hint_metrics() == 'ON'
-    assert options_1.get_antialias() == 'DEFAULT'
+    options_1 = FontOptions(hint_metrics=cairocffi.HINT_METRICS_ON)
+    assert options_1.get_hint_metrics() == cairocffi.HINT_METRICS_ON
+    assert options_1.get_antialias() == cairocffi.HINT_METRICS_DEFAULT
     options_2 = options_1.copy()
     assert options_2 == options_1
     assert len(set([options_1, options_2])) == 1  # test __hash__
-    options_2.set_antialias('BEST')
+    options_2.set_antialias(cairocffi.ANTIALIAS_BEST)
     assert options_2 != options_1
     assert len(set([options_1, options_2])) == 2
     options_1.merge(options_2)
@@ -1021,7 +1037,7 @@ def test_font_options():
 
 
 def test_glyphs():
-    surface = ImageSurface('ARGB32', 100, 20)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 100, 20)
     context = Context(surface)
     font = context.get_scaled_font()
     text = u('Étt')
@@ -1061,14 +1077,14 @@ def test_glyphs():
     glyph_pixels = surface.get_data()[:]
     assert glyph_pixels != empty
 
-    surface = ImageSurface('ARGB32', 100, 20)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 100, 20)
     context = Context(surface)
     context.move_to(5, 15)
     context.show_text_glyphs(text, glyphs, clusters, is_backwards)
     text_glyphs_pixels = surface.get_data()[:]
     assert glyph_pixels == text_glyphs_pixels
 
-    surface = ImageSurface('ARGB32', 100, 20)
+    surface = ImageSurface(cairocffi.FORMAT_ARGB32, 100, 20)
     context = Context(surface)
     context.move_to(5, 15)
     context.show_text(text)
