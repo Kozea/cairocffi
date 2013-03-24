@@ -33,6 +33,12 @@ except NameError:
     xrange = range
 
 
+try:
+    basestring = basestring
+except NameError:
+    basestring = str
+
+
 if sys.version_info >= (3,):
     u = lambda x: x
 else:

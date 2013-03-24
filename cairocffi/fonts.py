@@ -12,6 +12,8 @@
 
 from . import ffi, cairo, _check_status, Matrix, constants
 from .compat import xrange
+from .constants import _FONT_SLANT, _FONT_WEIGHT, _ANTIALIAS, _SUBPIXEL_ORDER
+from .constants import _HINT_STYLE, _HINT_METRICS
 
 
 def _encode_string(string):
@@ -70,12 +72,14 @@ class ToyFontFace(FontFace):
     See that method for limitations and other details of toy font faces.
 
     :param family: a font family name, as an Unicode or UTF-8 string.
-    :param slant: The :ref:`FONT_SLANT` string for the font face.
-    :param weight: The :ref:`FONT_WEIGHT` string for the font face.
+    :param slant: The :ref:`FONT_SLANT` value for the font face.
+    :param weight: The :ref:`FONT_WEIGHT` value for the font face.
 
     """
     def __init__(self, family='', slant=constants.FONT_SLANT_NORMAL,
                  weight=constants.FONT_WEIGHT_NORMAL):
+        slant = _FONT_SLANT._to_enum(slant)
+        weight = _FONT_WEIGHT._to_enum(weight)
         FontFace.__init__(self, cairo.cairo_toy_font_face_create(
             _encode_string(family), slant, weight))
 
@@ -85,12 +89,14 @@ class ToyFontFace(FontFace):
             self._pointer)).decode('utf8', 'replace')
 
     def get_slant(self):
-        """Return this font face’s :ref:`FONT_SLANT` string."""
-        return cairo.cairo_toy_font_face_get_slant(self._pointer)
+        """Return this font face’s :ref:`FONT_SLANT` value."""
+        slant = cairo.cairo_toy_font_face_get_slant(self._pointer)
+        return _FONT_SLANT._from_enum(slant)
 
     def get_weight(self):
-        """Return this font face’s :ref:`FONT_WEIGHT` string."""
-        return cairo.cairo_toy_font_face_get_weight(self._pointer)
+        """Return this font face’s :ref:`FONT_WEIGHT` value."""
+        weight = cairo.cairo_toy_font_face_get_weight(self._pointer)
+        return _FONT_WEIGHT._from_enum(weight)
 
 
 FONT_TYPE_TO_CLASS = {
@@ -440,12 +446,14 @@ class FontOptions(object):
         This specifies the type of antialiasing to do when rendering text.
 
         """
+        antialias = _ANTIALIAS._to_enum(antialias)
         cairo.cairo_font_options_set_antialias(self._pointer, antialias)
         self._check_status()
 
     def get_antialias(self):
-        """Return the :ref:`ANTIALIAS` string for the font options object."""
-        return cairo.cairo_font_options_get_antialias(self._pointer)
+        """Return the :ref:`ANTIALIAS` value for the font options object."""
+        antialias = cairo.cairo_font_options_get_antialias(self._pointer)
+        return _ANTIALIAS._from_enum(antialias)
 
     def set_subpixel_order(self, subpixel_order):
         """Changes the :ref:`SUBPIXEL_ORDER` for the font options object.
@@ -455,16 +463,18 @@ class FontOptions(object):
          :obj:`SUBPIXEL <ANTIALIAS_SUBPIXEL>`.
 
         """
+        subpixel_order = _SUBPIXEL_ORDER._to_enum(subpixel_order)
         cairo.cairo_font_options_set_subpixel_order(
             self._pointer, subpixel_order)
         self._check_status()
 
     def get_subpixel_order(self):
-        """Return the :ref:`SUBPIXEL_ORDER` string
+        """Return the :ref:`SUBPIXEL_ORDER` value
         for the font options object.
 
         """
-        return cairo.cairo_font_options_get_subpixel_order(self._pointer)
+        order = cairo.cairo_font_options_get_subpixel_order(self._pointer)
+        return _SUBPIXEL_ORDER._from_enum(order)
 
     def set_hint_style(self, hint_style):
         """Changes the :ref:`HINT_STYLE` for the font options object.
@@ -472,12 +482,14 @@ class FontOptions(object):
         and if so, whether to optimize for fidelity or contrast.
 
         """
+        hint_style = _HINT_STYLE._to_enum(hint_style)
         cairo.cairo_font_options_set_hint_style(self._pointer, hint_style)
         self._check_status()
 
     def get_hint_style(self):
-        """Return the :ref:`HINT_STYLE` string for the font options object."""
-        return cairo.cairo_font_options_get_hint_style(self._pointer)
+        """Return the :ref:`HINT_STYLE` value for the font options object."""
+        hint_style = cairo.cairo_font_options_get_hint_style(self._pointer)
+        return _HINT_STYLE._from_enum(hint_style)
 
     def set_hint_metrics(self, hint_metrics):
         """Changes the :ref:`HINT_METRICS` for the font options object.
@@ -485,12 +497,14 @@ class FontOptions(object):
         to integer values in device units.
 
         """
+        hint_metrics = _HINT_METRICS._to_enum(hint_metrics)
         cairo.cairo_font_options_set_hint_metrics(self._pointer, hint_metrics)
         self._check_status()
 
     def get_hint_metrics(self):
-        """Return the :ref:`HINT_METRICS` string
+        """Return the :ref:`HINT_METRICS` value
         for the font options object.
 
         """
-        return cairo.cairo_font_options_get_hint_metrics(self._pointer)
+        hint_metrics = cairo.cairo_font_options_get_hint_metrics(self._pointer)
+        return _HINT_METRICS._from_enum(hint_metrics)

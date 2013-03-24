@@ -64,6 +64,100 @@ def test_install_as_pycairo():
     assert cairo is cairocffi
 
 
+def test_str_enums():
+    for format in ['ARGB32', cairocffi.FORMAT_ARGB32, 0]:
+        surface = ImageSurface(format, 10, 10)
+        assert str(surface.get_format()) == 'ARGB32'
+        assert surface.get_format() == 0
+        assert surface.get_format() == cairocffi.FORMAT_ARGB32
+
+    with pytest.raises(ValueError):
+        surface = ImageSurface("BOGUS", 10, 10)
+
+    with pytest.raises(TypeError):
+        surface = ImageSurface([], 10, 10)
+
+
+def test_surface_str_enums():
+    ImageSurface.format_stride_for_width('ARGB32', 100)
+    surface = ImageSurface('ARGB32', 10, 10)
+    assert str(surface.get_format()) == 'ARGB32'
+
+    surface.create_similar('COLOR', 100, 100)
+    surface.create_similar_image('A8', 100, 100)
+    assert str(surface.get_content()) == 'COLOR_ALPHA'
+
+    surface = PDFSurface(None, 0, 0)
+    surface.restrict_to_version('PDF_VERSION_1_4')
+    assert str(surface.get_versions()[0]).startswith('PDF_VERSION_')
+    assert surface.version_to_string('PDF_VERSION_1_4') == 'PDF 1.4'
+
+    surface = PSSurface(None, 0, 0)
+    assert str(surface.get_levels()[0]).startswith("PS_LEVEL_")
+    assert PSSurface.ps_level_to_string("PS_LEVEL_2") == "PS Level 2"
+
+    surface = SVGSurface(None, 0, 0)
+    surface.restrict_to_version('SVG_VERSION_1_1')
+    assert str(SVGSurface.get_versions()[0]).startswith("SVG_VERSION_")
+    assert surface.version_to_string("SVG_VERSION_1_1") == "SVG 1.1"
+
+    RecordingSurface('COLOR', None)
+
+
+def test_font_str_enums():
+    face = ToyFontFace(slant="NORMAL", weight="NORMAL")
+    assert str(face.get_slant()) == "NORMAL"
+    assert str(face.get_weight()) == "NORMAL"
+
+    options = FontOptions(antialias='BEST')
+    assert str(options.get_antialias()) == 'BEST'
+    options.set_antialias('NONE')
+
+    options.set_subpixel_order('RGB')
+    assert str(options.get_subpixel_order()) == 'RGB'
+
+    options.set_hint_style('FULL')
+    assert str(options.get_hint_style()) == 'FULL'
+
+    options.set_hint_metrics('OFF')
+    assert str(options.get_hint_metrics()) == 'OFF'
+
+
+def test_pattern_str_enums():
+    pattern = SolidPattern(0, 0, 0)
+    pattern.set_extend('REPEAT')
+    assert str(pattern.get_extend()) == 'REPEAT'
+
+    pattern.set_filter('GOOD')
+    assert str(pattern.get_filter()) == 'GOOD'
+
+
+def test_context_str_enums():
+    surface = ImageSurface('ARGB32', 10, 10)
+    context = Context(surface)
+
+    context.arc(100, 200, 20, math.pi/2, 0)
+    assert str(context.copy_path()[-1][0]) == "CURVE_TO"
+    assert str(context.copy_path_flat()[-1][0]) == "LINE_TO"
+
+    context.append_path([("LINE_TO", (10, 10))])
+    assert str(context.copy_path()[-1][0]) == "LINE_TO"
+
+    context.select_font_face('', slant="NORMAL", weight="NORMAL")
+
+    context.set_fill_rule('WINDING')
+    assert str(context.get_fill_rule()) == 'WINDING'
+
+    context.set_line_cap('SQUARE')
+    assert str(context.get_line_cap()) == 'SQUARE'
+
+    context.set_line_join('BEVEL')
+    assert str(context.get_line_join()) == 'BEVEL'
+
+    context.set_operator('DEST_OVER')
+    assert str(context.get_operator()) == 'DEST_OVER'
+
+
 def test_image_surface():
     assert ImageSurface.format_stride_for_width(
         cairocffi.FORMAT_ARGB32, 100) == 400
@@ -246,7 +340,7 @@ def test_pdf_versions():
     assert set(PDFSurface.get_versions()) >= set([
         cairocffi.PDF_VERSION_1_4, cairocffi.PDF_VERSION_1_5])
     assert PDFSurface.version_to_string(cairocffi.PDF_VERSION_1_4) == 'PDF 1.4'
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         PDFSurface.version_to_string('PDF_VERSION_42')
     with pytest.raises(ValueError):
         PDFSurface.version_to_string(42)
@@ -298,7 +392,7 @@ def test_svg_surface():
     assert set(SVGSurface.get_versions()) >= set([
         cairocffi.SVG_VERSION_1_1, cairocffi.SVG_VERSION_1_2])
     assert SVGSurface.version_to_string(cairocffi.SVG_VERSION_1_1) == 'SVG 1.1'
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         SVGSurface.version_to_string('SVG_VERSION_42')
     with pytest.raises(ValueError):
         SVGSurface.version_to_string(42)
@@ -326,7 +420,7 @@ def test_ps_surface():
     assert set(PSSurface.get_levels()) >= set([
         cairocffi.PS_LEVEL_2, cairocffi.PS_LEVEL_3])
     assert PSSurface.ps_level_to_string(cairocffi.PS_LEVEL_3) == 'PS Level 3'
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         PSSurface.ps_level_to_string('PS_LEVEL_42')
     with pytest.raises(ValueError):
         PSSurface.ps_level_to_string(42)
@@ -1083,6 +1177,8 @@ def test_glyphs():
     context.show_text_glyphs(text, glyphs, clusters, is_backwards)
     text_glyphs_pixels = surface.get_data()[:]
     assert glyph_pixels == text_glyphs_pixels
+
+    context.show_text_glyphs(text, glyphs, clusters, True)
 
     surface = ImageSurface(cairocffi.FORMAT_ARGB32, 100, 20)
     context = Context(surface)

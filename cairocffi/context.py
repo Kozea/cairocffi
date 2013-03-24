@@ -15,6 +15,8 @@ from .patterns import Pattern
 from .surfaces import Surface
 from .fonts import FontFace, ScaledFont, FontOptions, _encode_string
 from .compat import xrange
+from .constants import _PATH, _FONT_SLANT, _FONT_WEIGHT, _FILL_RULE, _LINE_CAP
+from .constants import _OPERATOR, _LINE_JOIN
 
 
 PATH_POINTS_PER_TYPE = {
@@ -38,6 +40,7 @@ def _encode_path(path_items):
     path_items = list(path_items)
     length = 0
     for path_type, coordinates in path_items:
+        path_type = _PATH._to_enum(path_type)
         num_points = points_per_type[path_type]
         length += 1 + num_points  # 1 header + N points
         if len(coordinates) != 2 * num_points:
@@ -47,6 +50,7 @@ def _encode_path(path_items):
     data = ffi.new('cairo_path_data_t[]', length)
     position = 0
     for path_type, coordinates in path_items:
+        path_type = _PATH._to_enum(path_type)
         header = data[position].header
         header.type = path_type
         header.length = 1 + len(coordinates) // 2
@@ -75,6 +79,7 @@ def _iter_path(pointer):
     while position < num_data:
         path_data = data[position]
         path_type = path_data.header.type
+        path_type = _PATH._from_enum(path_type)
         points = ()
         for i in xrange(points_per_type[path_type]):
             point = data[position + i + 1].point
@@ -247,7 +252,7 @@ class Context(object):
         which you should see for a more detailed description
         of group rendering.
 
-        :param content: A :ref:`CONTENT` string.
+        :param content: A :ref:`CONTENT` value.
 
         """
         cairo.cairo_push_group_with_content(self._pointer, content)
@@ -418,14 +423,14 @@ class Context(object):
         Note that this option does not affect text rendering,
         instead see :meth:`FontOptions.set_antialias`.
 
-        :param antialias: An :ref:`ANTIALIAS` string.
+        :param antialias: An :ref:`ANTIALIAS` value.
 
         """
         cairo.cairo_set_antialias(self._pointer, antialias)
         self._check_status()
 
     def get_antialias(self):
-        """Return the :ref:`ANTIALIAS` string."""
+        """Return the :ref:`ANTIALIAS` value."""
         return cairo.cairo_get_antialias(self._pointer)
 
     def set_dash(self, dashes, offset=0):
@@ -498,15 +503,17 @@ class Context(object):
 
         The default fill rule is :obj:`WINDING <FILL_RULE_WINDING>`.
 
-        :param fill_rule: A :ref:`FILL_RULE` string.
+        :param fill_rule: A :ref:`FILL_RULE` value.
 
         """
+        fill_rule = _FILL_RULE._to_enum(fill_rule)
         cairo.cairo_set_fill_rule(self._pointer, fill_rule)
         self._check_status()
 
     def get_fill_rule(self):
-        """Return the current :ref:`FILL_RULE` string."""
-        return cairo.cairo_get_fill_rule(self._pointer)
+        """Return the current :ref:`FILL_RULE` value."""
+        fill_rule = cairo.cairo_get_fill_rule(self._pointer)
+        return _FILL_RULE._from_enum(fill_rule)
 
     def set_line_cap(self, line_cap):
         """Set the current :ref:`LINE_CAP` within the cairo context.
@@ -517,15 +524,17 @@ class Context(object):
 
         The default line cap is :obj:`BUTT <LINE_CAP_BUTT>`.
 
-        :param line_cap: A :ref:`LINE_CAP` string.
+        :param line_cap: A :ref:`LINE_CAP` value.
 
         """
+        line_cap = _LINE_CAP._to_enum(line_cap)
         cairo.cairo_set_line_cap(self._pointer, line_cap)
         self._check_status()
 
     def get_line_cap(self):
-        """Return the current :ref:`LINE_CAP` string."""
-        return cairo.cairo_get_line_cap(self._pointer)
+        """Return the current :ref:`LINE_CAP` value."""
+        line_cap = cairo.cairo_get_line_cap(self._pointer)
+        return _LINE_CAP._from_enum(line_cap)
 
     def set_line_join(self, line_join):
         """Set the current :ref:`LINE_JOIN` within the cairo context.
@@ -536,15 +545,17 @@ class Context(object):
 
         The default line cap is :obj:`MITER <LINE_JOIN_MITER>`.
 
-        :param line_join: A :ref:`LINE_JOIN` string.
+        :param line_join: A :ref:`LINE_JOIN` value.
 
         """
+        line_join = _LINE_JOIN._to_enum(line_join)
         cairo.cairo_set_line_join(self._pointer, line_join)
         self._check_status()
 
     def get_line_join(self):
-        """Return the current :ref:`LINE_JOIN` string."""
-        return cairo.cairo_get_line_join(self._pointer)
+        """Return the current :ref:`LINE_JOIN` value."""
+        line_join = cairo.cairo_get_line_join(self._pointer)
+        return _LINE_JOIN._from_enum(line_join)
 
     def set_line_width(self, width):
         """Sets the current line width within the cairo context.
@@ -627,15 +638,17 @@ class Context(object):
 
         The default operator is :obj:`OVER <OPERATOR_OVER>`.
 
-        :param operator: A :ref:`OPERATOR` string.
+        :param operator: A :ref:`OPERATOR` value.
 
         """
+        operator = _OPERATOR._to_enum(operator)
         cairo.cairo_set_operator(self._pointer, operator)
         self._check_status()
 
     def get_operator(self):
-        """Return the current :ref:`OPERATOR` string."""
-        return cairo.cairo_get_operator(self._pointer)
+        """Return the current :ref:`OPERATOR` value."""
+        operator = cairo.cairo_get_operator(self._pointer)
+        return _OPERATOR._from_enum(operator)
 
     def set_tolerance(self, tolerance):
         """Sets the tolerance used when converting paths into trapezoids.
@@ -1247,7 +1260,7 @@ class Context(object):
 
         :returns:
             A list of ``(path_operation, coordinates)`` tuples
-            of a :ref:`PATH_OPERATION` string
+            of a :ref:`PATH_OPERATION` value
             and a tuple of floats coordinates
             whose content depends on the operation type:
 
@@ -1747,6 +1760,8 @@ class Context(object):
         followed by :meth:`set_font_face`.
 
         """
+        slant = _FONT_SLANT._to_enum(slant)
+        weight = _FONT_WEIGHT._to_enum(weight)
         cairo.cairo_select_font_face(
             self._pointer, _encode_string(family), slant, weight)
         self._check_status()
@@ -1766,10 +1781,7 @@ class Context(object):
     def get_font_face(self):
         """Return the current font face.
 
-        :param font_face:
-            A new :class:`FontFace` object
-            wrapping an existing cairo object.
-
+        :returns: The current :class:`FontFace`
         """
         return FontFace._from_pointer(
             cairo.cairo_get_font_face(self._pointer), incref=True)
@@ -2152,7 +2164,10 @@ class Context(object):
         """
         glyphs = ffi.new('cairo_glyph_t[]', glyphs)
         clusters = ffi.new('cairo_text_cluster_t[]', clusters)
-        flags = 'BACKWARDS' if clusters_backwards else 0
+        if clusters_backwards:
+            flags = constants.TEXT_CLUSTER_FLAG_BACKWARD
+        else:
+            flags = 0
         cairo.cairo_show_text_glyphs(
             self._pointer, _encode_string(text), -1,
             glyphs, len(glyphs), clusters, len(clusters), flags)

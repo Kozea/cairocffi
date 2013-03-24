@@ -16,6 +16,7 @@ import ctypes
 
 from . import ffi, cairo, _check_status, constants
 from .fonts import FontOptions, _encode_string
+from .constants import _FORMAT, _PDF_VERSION, _CONTENT, _PS_LEVEL, _SVG_VERSION
 
 
 SURFACE_TARGET_KEY = ffi.new('cairo_user_data_key_t *')
@@ -166,7 +167,7 @@ class Surface(object):
         Use :meth:`create_similar_image` if you need an image surface
         which can be painted quickly to the target surface.
 
-        :param content: the :ref:`CONTENT` string for the new surface.
+        :param content: the :ref:`CONTENT` value for the new surface.
         :param width: width of the new surface (in device-space units)
         :param height: height of the new surface (in device-space units)
         :type content: str
@@ -175,12 +176,13 @@ class Surface(object):
         :returns: A new instance of :class:`Surface` or one of its subclasses.
 
         """
+        content = _CONTENT._to_enum(content)
         return Surface._from_pointer(
             cairo.cairo_surface_create_similar(
                 self._pointer, content, width, height),
             incref=False)
 
-    def create_similar_image(self, content, width, height):
+    def create_similar_image(self, format, width, height):
         """
         Create a new image surface that is as compatible as possible
         for uploading to and the use in conjunction with this surface.
@@ -191,7 +193,7 @@ class Surface(object):
 
         Use :meth:`create_similar` if you don't need an image surface.
 
-        :param format: the :ref:`FORMAT` string for the new surface
+        :param format: the :ref:`FORMAT` value for the new surface
         :param width: width of the new surface, (in device-space units)
         :param height: height of the new surface (in device-space units)
         :type format: str
@@ -200,9 +202,10 @@ class Surface(object):
         :returns: A new :class:`ImageSurface` instance.
 
         """
+        format = _FORMAT._to_enum(format)
         return Surface._from_pointer(
             cairo.cairo_surface_create_similar_image(
-                self._pointer, content, width, height),
+                self._pointer, format, width, height),
             incref=False)
 
     def create_for_rectangle(self, x, y, width, height):
@@ -251,12 +254,13 @@ class Surface(object):
             incref=False)
 
     def get_content(self):
-        """Returns the :ref:`CONTENT` string of this surface,
+        """Returns the :ref:`CONTENT` value of this surface,
         which indicates whether the surface contains color
         and/or alpha information.
 
         """
-        return cairo.cairo_surface_get_content(self._pointer)
+        content = cairo.cairo_surface_get_content(self._pointer)
+        return _CONTENT._from_enum(content)
 
     def has_show_text_glyphs(self):
         """Returns whether the surface supports sophisticated
@@ -610,7 +614,7 @@ class ImageSurface(Surface):
     The contents of bits within a pixel,
     but not belonging to the given format are undefined).
 
-    :param format: :ref:`FORMAT` string for the surface to create.
+    :param format: :ref:`FORMAT` value for the surface to create.
     :param width: Width of the surface, in pixels.
     :param height: Height of the surface, in pixels.
     :param data:
@@ -630,6 +634,7 @@ class ImageSurface(Surface):
 
     """
     def __init__(self, format, width, height, data=None, stride=None):
+        format = _FORMAT._to_enum(format)
         if data is None:
             pointer = cairo.cairo_image_surface_create(format, width, height)
         else:
@@ -664,7 +669,7 @@ class ImageSurface(Surface):
             data = bytearray(stride * height)
             surface = ImageSurface(format, width, height, data, stride)
 
-        :param format: A :ref:`FORMAT` string.
+        :param format: A :ref:`FORMAT` value.
         :param width: The desired width of the surface, in pixels.
         :type format: str
         :type width: int
@@ -673,6 +678,7 @@ class ImageSurface(Surface):
             or -1 if either the format is invalid or the width too large.
 
         """
+        format = _FORMAT._to_enum(format)
         return cairo.cairo_format_stride_for_width(format, width)
 
     @classmethod
@@ -700,7 +706,7 @@ class ImageSurface(Surface):
 
     def get_data(self):
         """Return the buffer pointing to the image’s pixel data,
-        encoded according to the surface’s :ref:`FORMAT` string.
+        encoded according to the surface’s :ref:`FORMAT` value.
 
         A call to :meth:`flush` is required before accessing the pixel data
         to ensure that all pending drawing operations are finished.
@@ -714,8 +720,9 @@ class ImageSurface(Surface):
             size=self.get_stride() * self.get_height())
 
     def get_format(self):
-        """Return the :ref:`FORMAT` string of the surface."""
-        return cairo.cairo_image_surface_get_format(self._pointer)
+        """Return the :ref:`FORMAT` value of the surface."""
+        format = cairo.cairo_image_surface_get_format(self._pointer)
+        return _FORMAT._from_enum(format)
 
     def get_width(self):
         """Return the width of the surface, in pixels."""
@@ -817,11 +824,12 @@ class PDFSurface(Surface):
         The simplest way to do this is to call this method
         immediately after creating the surface.
 
-        :param version: A :ref:`PDF_VERSION` string.
+        :param version: A :ref:`PDF_VERSION` value.
 
         *New in cairo 1.10.*
 
         """
+        version = _PDF_VERSION._to_enum(version)
         cairo.cairo_pdf_surface_restrict_to_version(self._pointer, version)
         self._check_status()
 
@@ -830,7 +838,7 @@ class PDFSurface(Surface):
         """Return the list of supported PDF versions.
         See :meth:`restrict_to_version`.
 
-        :return: A list of :ref:`PDF_VERSION` strings.
+        :return: A list of :ref:`PDF_VERSION` values.
 
         *New in cairo 1.10.*
 
@@ -839,7 +847,8 @@ class PDFSurface(Surface):
         num_versions = ffi.new('int *')
         cairo.cairo_pdf_get_versions(versions, num_versions)
         versions = versions[0]
-        return [versions[i] for i in range(num_versions[0])]
+        values = (versions[i] for i in range(num_versions[0]))
+        return [_PDF_VERSION._from_enum(v) for v in values]
 
     @staticmethod
     def version_to_string(version):
@@ -850,7 +859,8 @@ class PDFSurface(Surface):
         *New in cairo 1.10.*
 
         """
-        c_string = cairo.cairo_pdf_version_to_string(version)
+        c_version = _PDF_VERSION._to_enum(version)
+        c_string = cairo.cairo_pdf_version_to_string(c_version)
         if c_string == ffi.NULL:
             raise ValueError(version)
         return ffi.string(c_string).decode('ascii')
@@ -1061,7 +1071,7 @@ class PSSurface(Surface):
         The simplest way to do this is to call this method
         immediately after creating the surface.
 
-        :param version: A :ref:`PS_LEVEL` string.
+        :param version: A :ref:`PS_LEVEL` value.
 
         """
         cairo.cairo_ps_surface_restrict_to_level(self._pointer, level)
@@ -1072,14 +1082,15 @@ class PSSurface(Surface):
         """Return the list of supported PostScript levels.
         See :meth:`restrict_to_level`.
 
-        :return: A list of :ref:`PS_LEVEL` strings.
+        :return: A list of :ref:`PS_LEVEL` values.
 
         """
         levels = ffi.new('cairo_ps_level_t const **')
         num_levels = ffi.new('int *')
         cairo.cairo_ps_get_levels(levels, num_levels)
         levels = levels[0]
-        return [levels[i] for i in range(num_levels[0])]
+        values = (levels[i] for i in range(num_levels[0]))
+        return [_PS_LEVEL._from_enum(v) for v in values]
 
     @staticmethod
     def ps_level_to_string(level):
@@ -1088,7 +1099,8 @@ class PSSurface(Surface):
         the list of valid level ids.
 
         """
-        c_string = cairo.cairo_ps_level_to_string(level)
+        c_level = _PS_LEVEL._to_enum(level)
+        c_string = cairo.cairo_ps_level_to_string(c_level)
         if c_string == ffi.NULL:
             raise ValueError(level)
         return ffi.string(c_string).decode('ascii')
@@ -1154,9 +1166,10 @@ class SVGSurface(Surface):
         The simplest way to do this is to call this method
         immediately after creating the surface.
 
-        :param version: A :ref:`SVG_VERSION` string.
+        :param version: A :ref:`SVG_VERSION` value.
 
         """
+        version = _SVG_VERSION._to_enum(version)
         cairo.cairo_svg_surface_restrict_to_version(self._pointer, version)
         self._check_status()
 
@@ -1165,14 +1178,15 @@ class SVGSurface(Surface):
         """Return the list of supported SVG versions.
         See :meth:`restrict_to_version`.
 
-        :return: A list of :ref:`SVG_VERSION` strings.
+        :return: A list of :ref:`SVG_VERSION` values.
 
         """
         versions = ffi.new('cairo_svg_version_t const **')
         num_versions = ffi.new('int *')
         cairo.cairo_svg_get_versions(versions, num_versions)
         versions = versions[0]
-        return [versions[i] for i in range(num_versions[0])]
+        values = (versions[i] for i in range(num_versions[0]))
+        return [_SVG_VERSION._from_enum(v) for v in values]
 
     @staticmethod
     def version_to_string(version):
@@ -1181,7 +1195,8 @@ class SVGSurface(Surface):
         the list of valid version ids.
 
         """
-        c_string = cairo.cairo_svg_version_to_string(version)
+        c_version = _SVG_VERSION._to_enum(version)
+        c_string = cairo.cairo_svg_version_to_string(c_version)
         if c_string == ffi.NULL:
             raise ValueError(version)
         return ffi.string(c_string).decode('ascii')
@@ -1215,7 +1230,7 @@ class RecordingSurface(Surface):
     to snapshot all necessary objects (paths, patterns, etc.),
     in order to achieve accurate replay.
 
-    :param content: The :ref:`CONTENT` string of the recording surface
+    :param content: The :ref:`CONTENT` value of the recording surface
     :param extents:
         The extents to record
         as a ``(x, y, width, height)`` tuple of floats in device units,
@@ -1229,6 +1244,7 @@ class RecordingSurface(Surface):
 
     """
     def __init__(self, content, extents):
+        content = _CONTENT._to_enum(content)
         extents = (ffi.new('cairo_rectangle_t *', extents)
                    if extents is not None else ffi.NULL)
         Surface.__init__(
