@@ -89,6 +89,9 @@ the :func:`install_as_pycairo` function can help::
     import cairo
     assert cairo is cairocffi
 
+It is also possible to :ref:`convert pycairo contexts to cairocffi
+<converting_pycairo>`.
+
 
 Basic usage
 -----------
