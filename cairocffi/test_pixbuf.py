@@ -15,7 +15,7 @@ import zlib
 
 import pytest
 
-from . import pixbuf
+from . import pixbuf, constants
 from .compat import pixel
 
 
@@ -55,10 +55,11 @@ def test_png():
     pixbuf_obj, format_name = pixbuf.decode_to_pixbuf(JPEG_BYTES)
     assert format_name == 'jpeg'
     assert_decoded(pixbuf.pixbuf_to_cairo_slices(pixbuf_obj),
-                   'RGB24', b'\xff\x00\x80\xff')
+                   constants.FORMAT_RGB24, b'\xff\x00\x80\xff')
 
 
-def assert_decoded(surface, format_='ARGB32', rgba=b'\x80\x00\x40\x80'):
+def assert_decoded(surface, format_=constants.FORMAT_ARGB32,
+                   rgba=b'\x80\x00\x40\x80'):
     assert surface.get_width() == 3
     assert surface.get_height() == 2
     assert surface.get_format() == format_

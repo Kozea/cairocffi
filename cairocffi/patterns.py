@@ -10,9 +10,10 @@
 
 """
 
-from . import ffi, cairo, _check_status, Matrix
+from . import ffi, cairo, _check_status, Matrix, constants
 from .surfaces import Surface
 from .compat import xrange
+from .constants import _EXTEND, _FILTER
 
 
 class Pattern(object):
@@ -70,16 +71,18 @@ class Pattern(object):
         and :obj:`PAD <EXTEND_PAD>` for :class:`Gradient` patterns.
 
         """
+        extend = _EXTEND._to_enum(extend)
         cairo.cairo_pattern_set_extend(self._pointer, extend)
         self._check_status()
 
     def get_extend(self):
         """Gets the current extend mode for this pattern.
 
-        :returns: A :ref:`EXTEND` string.
+        :returns: A :ref:`EXTEND` value.
 
         """
-        return cairo.cairo_pattern_get_extend(self._pointer)
+        extend = cairo.cairo_pattern_get_extend(self._pointer)
+        return _EXTEND._from_enum(extend)
 
     # pycairo only has filters on SurfacePattern,
     # but cairo seems to accept it on any pattern.
@@ -98,15 +101,17 @@ class Pattern(object):
             context.get_source().set_filter('NEAREST')
 
         """
+        filter = _FILTER._to_enum(filter)
         cairo.cairo_pattern_set_filter(self._pointer, filter)
         self._check_status()
 
     def get_filter(self):
-        """Return the current filter string for this pattern.
+        """Return the current filter value for this pattern.
         See :ref:`FILTER` for details on each filter.
 
         """
-        return cairo.cairo_pattern_get_filter(self._pointer)
+        filter = cairo.cairo_pattern_get_filter(self._pointer)
+        return _FILTER._from_enum(filter)
 
     def set_matrix(self, matrix):
         """Sets the pattern’s transformation matrix to :obj:`matrix`.
@@ -364,8 +369,8 @@ class RadialGradient(Gradient):
 
 
 PATTERN_TYPE_TO_CLASS = {
-    'SOLID': SolidPattern,
-    'SURFACE': SurfacePattern,
-    'LINEAR': LinearGradient,
-    'RADIAL': RadialGradient,
+    constants.PATTERN_TYPE_SOLID: SolidPattern,
+    constants.PATTERN_TYPE_SURFACE: SurfacePattern,
+    constants.PATTERN_TYPE_LINEAR: LinearGradient,
+    constants.PATTERN_TYPE_RADIAL: RadialGradient,
 }

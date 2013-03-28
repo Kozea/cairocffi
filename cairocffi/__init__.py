@@ -13,7 +13,7 @@
 import sys
 from cffi import FFI
 
-from .constants import _CAIRO_HEADERS
+from . import constants
 from .compat import FileNotFoundError
 
 
@@ -32,7 +32,7 @@ def dlopen(ffi, *names):
 
 
 ffi = FFI()
-ffi.cdef(_CAIRO_HEADERS)
+ffi.cdef(constants._CAIRO_HEADERS)
 cairo = dlopen(ffi, 'cairo', 'libcairo-2')
 
 
@@ -45,21 +45,22 @@ class CairoError(Exception):
 
 Error = CairoError  # pycairo compat
 
-STATUS_TO_EXCEPTION = dict(
-    NO_MEMORY=MemoryError,
-    READ_ERROR=IOError,
-    WRITE_ERRORS=IOError,
-    TEMP_FILE_ERROR=IOError,
-    FILE_NOT_FOUND=FileNotFoundError,
-)
+STATUS_TO_EXCEPTION = {
+    constants.STATUS_NO_MEMORY: MemoryError,
+    constants.STATUS_READ_ERROR: IOError,
+    constants.STATUS_WRITE_ERROR: IOError,
+    constants.STATUS_TEMP_FILE_ERROR: IOError,
+    constants.STATUS_FILE_NOT_FOUND: FileNotFoundError,
+}
 
 
 def _check_status(status):
     """Take a cairo status code and raise an exception if/as appropriate."""
-    if status != 'SUCCESS':
+    if status != constants.STATUS_SUCCESS:
         exception = STATUS_TO_EXCEPTION.get(status, CairoError)
+        status_name = ffi.string(ffi.cast("cairo_status_t", status))
         message = 'cairo returned %s: %s' % (
-            status, ffi.string(cairo.cairo_status_to_string(status)))
+            status_name, ffi.string(cairo.cairo_status_to_string(status)))
         raise exception(message, status)
 
 
