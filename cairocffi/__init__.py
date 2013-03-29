@@ -17,7 +17,7 @@ from .constants import _CAIRO_HEADERS
 from .compat import FileNotFoundError
 
 
-VERSION = '0.3.1'
+VERSION = '0.3.2'
 
 
 def dlopen(ffi, *names):

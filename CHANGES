@@ -1,6 +1,16 @@
 cairocffi changelog
 -------------------
 
+Version 0.3.2
+.............
+
+Released on 2013-03-29.
+
+No change since 0.3.1, but depend on CFFI < 0.6
+because of backward-incompatible changes.
+cairocffi 0.4 will require CFFI 0.6 or more.
+
+
 Version 0.3.1
 .............
 
