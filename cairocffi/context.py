@@ -10,7 +10,8 @@
 
 """
 
-from . import ffi, cairo, _check_status, Matrix, constants
+from . import ffi, cairo, _check_status, constants
+from .matrix import Matrix
 from .patterns import Pattern
 from .surfaces import Surface
 from .fonts import FontFace, ScaledFont, FontOptions, _encode_string

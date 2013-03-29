@@ -24,12 +24,7 @@ import contextlib
 import pytest
 
 import cairocffi
-from . import (cairo_version, cairo_version_string, Context, Matrix,
-               Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface,
-               RecordingSurface,
-               Pattern, SolidPattern, SurfacePattern,
-               LinearGradient, RadialGradient,
-               FontFace, ToyFontFace, ScaledFont, FontOptions)
+from . import *
 from .compat import u, pixel
 
 
@@ -432,8 +427,8 @@ def test_matrix():
     assert m.yy == 7
     m.yy = 3
     assert m.as_tuple() == (2, 0,  0, 3,  12, 4)
-    assert repr(m) == 'cairocffi.Matrix(2, 0, 0, 3, 12, 4)'
-    assert str(m) == 'cairocffi.Matrix(2, 0, 0, 3, 12, 4)'
+    assert repr(m) == 'Matrix(2, 0, 0, 3, 12, 4)'
+    assert str(m) == 'Matrix(2, 0, 0, 3, 12, 4)'
 
     assert m.transform_distance(1, 2) == (2, 6)
     assert m.transform_point(1, 2) == (14, 10)
