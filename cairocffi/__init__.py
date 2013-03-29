@@ -33,7 +33,7 @@ def dlopen(ffi, *names):
 
 ffi = FFI()
 ffi.cdef(_CAIRO_HEADERS)
-cairo = dlopen(ffi, 'cairo', 'libcairo-2')
+cairo = dlopen(ffi, 'libcairo.so.2', 'libcairo-2.dll', 'cairo', 'libcairo-2')
 
 
 class CairoError(Exception):
