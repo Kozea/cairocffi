@@ -88,9 +88,6 @@ gdk = dlopen(ffi, 'gdk-3', 'gdk-x11-2.0', 'libgdk-win32-2.0-0')
 
 gobject.g_type_init()
 
-GDK_COLORSPACE_RGB = \
-    ffi.typeof("GdkColorspace").relements["GDK_COLORSPACE_RGB"]
-
 
 def handle_g_error(error):
     """Convert a :c:type:`GError` to a Python :exception:`ValueError`,
@@ -186,7 +183,7 @@ def pixbuf_to_cairo_slices(pixbuf):
     (cairo uses pre-multiplied alpha, but not Pixbuf.)
 
     """
-    assert pixbuf.get_colorspace() == GDK_COLORSPACE_RGB
+    assert pixbuf.get_colorspace() == gdk.GDK_COLORSPACE_RGB
     assert pixbuf.get_n_channels() == 3
     assert pixbuf.get_bits_per_sample() == 8
     width = pixbuf.get_width()
