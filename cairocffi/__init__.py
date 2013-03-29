@@ -17,7 +17,7 @@ from . import constants
 from .compat import FileNotFoundError
 
 
-VERSION = '0.3.1'
+VERSION = '0.4'
 
 
 def dlopen(ffi, *names):
@@ -92,6 +92,8 @@ def install_as_pycairo():
     sys.modules['cairo'] = sys.modules[__name__]
 
 
+# Implementation is in submodules, but public API is all here.
+
 from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,
                        SVGSurface, RecordingSurface)
 from .patterns import (Pattern, SolidPattern, SurfacePattern,
@@ -100,5 +102,4 @@ from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions
 from .context import Context
 from .matrix import Matrix
 
-# For compatibility with pycairo. In cairocffi users can just use strings.
 from .constants import *
