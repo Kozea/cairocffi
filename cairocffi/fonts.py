@@ -390,8 +390,8 @@ class FontOptions(object):
         after creating a new :class:`FontOptions`::
 
             options = FontOptions()
-            options.set_antialias('BEST')
-            assert FontOptions(antialias='BEST') == options
+            options.set_antialias(cairocffi.ANTIALIAS_BEST)
+            assert FontOptions(antialias=cairocffi.ANTIALIAS_BEST) == options
 
     """
     def __init__(self, **values):

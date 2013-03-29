@@ -704,7 +704,8 @@ class ImageSurface(Surface):
 
         A call to :meth:`flush` is required before accessing the pixel data
         to ensure that all pending drawing operations are finished.
-        A call to :meth:`mark_dirty` is required after the data is modified.
+        A call to :meth:`~Surface.mark_dirty` is required
+        after the data is modified.
 
         :returns: A read-write CFFI buffer object.
 

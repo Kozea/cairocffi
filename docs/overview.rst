@@ -96,7 +96,7 @@ Basic usage
 For doing something useful with cairo,
 you need at least a surface and a context::
 
-    surface = cairo.ImageSurface('RGB24', 300, 200)
+    surface = cairo.ImageSurface(cairo.FORMAT_RGB24, 300, 200)
     context = cairo.Context(surface)
     with context:
         context.set_source_rgb(1, 1, 1)  # White

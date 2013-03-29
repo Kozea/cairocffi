@@ -31,9 +31,10 @@ Module-level objects
     The libcairo library, pre-loaded with :meth:`ffi.dlopen`.
     All cairo functions are accessible as attributes of this object::
 
-        from cairocffi import cairo as cairo_c
+        import cairocffi
+        from cairocffi import cairo as cairo_c, SURFACE_TYPE_XLIB
 
-        if cairo_c.cairo_surface_get_type(surface._pointer) == 'XLIB':
+        if cairo_c.cairo_surface_get_type(surface._pointer) == SURFACE_TYPE_XLIB:
             ...
 
     See the `cairo manual`_ for details.

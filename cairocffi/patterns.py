@@ -96,7 +96,7 @@ class Pattern(object):
 
         For example::
 
-            context.get_source().set_filter('NEAREST')
+            context.get_source().set_filter(cairocffi.FILTER_NEAREST)
 
         """
         cairo.cairo_pattern_set_filter(self._pointer, filter)
