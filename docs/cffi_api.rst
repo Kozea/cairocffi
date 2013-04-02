@@ -164,7 +164,7 @@ Example: using Pango through CFFI with cairocffi
 ------------------------------------------------
 
 The program below shows a fairly standard usage of CFFI
-to access Pango’ C API.
+to access Pango’s C API.
 The :attr:`Context._pointer` pointer needs to be cast
 in order to be recognized by the new :obj:`~pango_example.ffi` object.
 The C definitions are copied from `Pango’s`_ and `GLib’s`_ documentation.
