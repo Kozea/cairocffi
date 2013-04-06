@@ -4,7 +4,7 @@ cairocffi changelog
 Version 0.4
 ...........
 
-Not released yet.
+Released on 2013-04-06.
 
 * **Backward-incompatible change**:
   Change constants (:ref:`enumerated values`) to be integers
