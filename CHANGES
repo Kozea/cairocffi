@@ -1,6 +1,27 @@
 cairocffi changelog
 -------------------
 
+Version 0.4
+...........
+
+Not released yet.
+
+* **Backward-incompatible change**:
+  Change constants (:ref:`enumerated values`) to be integers
+  instead of strings, going along with CFFI’s handling of C enums in 0.6.
+  Passing a literal string does not work anymore.
+
+  .. code-block:: python
+
+      # Before cairocffi 0.4:
+      surface = cairocffi.ImageSurface('ARGB32', 300, 400)
+
+      # All cairocffi versions:
+      surface = cairocffi.ImageSurface(cairocffi.FORMAT_ARGB32, 300, 400)
+
+* Compatibility with CFFI 0.6
+
+
 Version 0.3.1
 .............
 

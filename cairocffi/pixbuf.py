@@ -16,7 +16,7 @@ from io import BytesIO
 from functools import partial
 from array import array
 
-from . import ffi, dlopen, ImageSurface, Context
+from . import ffi, dlopen, ImageSurface, Context, constants
 from .compat import xrange
 
 
@@ -170,7 +170,7 @@ def pixbuf_to_cairo_gdk(pixbuf):
     This method is fastest but GDK is not always available.
 
     """
-    dummy_context = Context(ImageSurface('ARGB32', 1, 1))
+    dummy_context = Context(ImageSurface(constants.FORMAT_ARGB32, 1, 1))
     gdk.gdk_cairo_set_source_pixbuf(
         ffi.cast('cairo_t *', dummy_context._pointer), pixbuf._pointer, 0, 0)
     return dummy_context.get_source().get_surface()
@@ -183,7 +183,7 @@ def pixbuf_to_cairo_slices(pixbuf):
     (cairo uses pre-multiplied alpha, but not Pixbuf.)
 
     """
-    assert pixbuf.get_colorspace() == 'GDK_COLORSPACE_RGB'
+    assert pixbuf.get_colorspace() == gdk.GDK_COLORSPACE_RGB
     assert pixbuf.get_n_channels() == 3
     assert pixbuf.get_bits_per_sample() == 8
     width = pixbuf.get_width()
@@ -194,7 +194,8 @@ def pixbuf_to_cairo_slices(pixbuf):
     pixels = pixels[:]
 
     # Convert GdkPixbuf’s big-endian RGBA to cairo’s native-endian ARGB
-    cairo_stride = ImageSurface.format_stride_for_width('RGB24', width)
+    cairo_stride = ImageSurface.format_stride_for_width(
+        constants.FORMAT_RGB24, width)
     data = bytearray(cairo_stride * height)
     big_endian = sys.byteorder == 'big'
     pixbuf_row_length = width * 3  # stride == row_length + padding
@@ -222,7 +223,8 @@ def pixbuf_to_cairo_slices(pixbuf):
 
     if NO_FROM_BUFFER:
         data = array('B', data)
-    return ImageSurface('RGB24', width, height, data, cairo_stride)
+    return ImageSurface(constants.FORMAT_RGB24,
+                        width, height, data, cairo_stride)
 
 
 NO_FROM_BUFFER = not hasattr(ctypes.c_char, 'from_buffer')  # PyPy

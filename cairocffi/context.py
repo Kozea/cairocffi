@@ -10,7 +10,8 @@
 
 """
 
-from . import ffi, cairo, _check_status, Matrix
+from . import ffi, cairo, _check_status, constants
+from .matrix import Matrix
 from .patterns import Pattern
 from .surfaces import Surface
 from .fonts import FontFace, ScaledFont, FontOptions, _encode_string
@@ -18,10 +19,11 @@ from .compat import xrange
 
 
 PATH_POINTS_PER_TYPE = {
-    'MOVE_TO': 1,
-    'LINE_TO': 1,
-    'CURVE_TO': 3,
-    'CLOSE_PATH': 0}
+    constants.PATH_MOVE_TO: 1,
+    constants.PATH_LINE_TO: 1,
+    constants.PATH_CURVE_TO: 3,
+    constants.PATH_CLOSE_PATH: 0
+}
 
 
 def _encode_path(path_items):
@@ -55,7 +57,7 @@ def _encode_path(path_items):
             point.x = coordinates[i]
             point.y = coordinates[i + 1]
             position += 1
-    path = ffi.new('cairo_path_t *', ('SUCCESS', data, length))
+    path = ffi.new('cairo_path_t *', (constants.STATUS_SUCCESS, data, length))
     return path, data
 
 
@@ -1705,7 +1707,8 @@ class Context(object):
     ##  Fonts
     ##
 
-    def select_font_face(self, family='', slant='NORMAL', weight='NORMAL'):
+    def select_font_face(self, family='', slant=constants.FONT_SLANT_NORMAL,
+                         weight=constants.FONT_WEIGHT_NORMAL):
         """Selects a family and style of font from a simplified description
         as a family name, slant and weight.
 
