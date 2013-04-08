@@ -1,6 +1,27 @@
 cairocffi changelog
 -------------------
 
+Version 0.4
+...........
+
+Released on 2013-04-06.
+
+No change since 0.3.1, but depend on CFFI < 0.6
+because of backward-incompatible changes.
+cairocffi 0.4 will require CFFI 0.6 or more.
+
+
+  .. code-block:: python
+
+      # Before cairocffi 0.4:
+      surface = cairocffi.ImageSurface('ARGB32', 300, 400)
+
+      # All cairocffi versions:
+      surface = cairocffi.ImageSurface(cairocffi.FORMAT_ARGB32, 300, 400)
+
+* Compatibility with CFFI 0.6
+
+
 Version 0.3.2
 .............
 

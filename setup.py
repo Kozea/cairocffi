@@ -28,5 +28,5 @@ setup(
         'Topic :: Multimedia :: Graphics',
     ],
     packages=find_packages(),
-    install_requires=['cffi<0.6'],
+    install_requires=['cffi>=0.6'],
 )
