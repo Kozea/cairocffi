@@ -790,8 +790,8 @@ class Context(object):
         except that the translation components of the CTM
         will be ignored when transforming ``(dx, dy)``.
 
-        :param x: X component of a distance vector.
-        :param y: Y component of a distance vector.
+        :param dx: X component of a distance vector.
+        :param dy: Y component of a distance vector.
         :type x: float
         :type y: float
         :returns: A ``(device_dx, device_dy)`` tuple of floats.
@@ -825,8 +825,8 @@ class Context(object):
         except that the translation components of the inverse CTM
         will be ignored when transforming ``(dx, dy)``.
 
-        :param x: X component of a distance vector.
-        :param y: Y component of a distance vector.
+        :param dx: X component of a distance vector.
+        :param dy: Y component of a distance vector.
         :type x: float
         :type y: float
         :returns: A ``(user_dx, user_dy)`` tuple of floats.
