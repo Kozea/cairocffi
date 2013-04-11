@@ -72,7 +72,8 @@ ffi.cdef('''
         const char *type, GError **error, ...);
 
     void              gdk_cairo_set_source_pixbuf    (
-        cairo_t *cr, const GdkPixbuf *pixbuf, double pixbuf_x, double pixbuf_y);
+        cairo_t *cr, const GdkPixbuf *pixbuf,
+        double pixbuf_x, double pixbuf_y);
 
 
     void              g_object_ref                   (gpointer object);
@@ -137,7 +138,7 @@ def decode_to_pixbuf(image_data):
     format_ = gdk_pixbuf.gdk_pixbuf_loader_get_format(loader)
     format_name = (
         ffi.string(gdk_pixbuf.gdk_pixbuf_format_get_name(format_))
-            .decode('ascii')
+        .decode('ascii')
         if format_ != ffi.NULL else None)
 
     pixbuf = gdk_pixbuf.gdk_pixbuf_loader_get_pixbuf(loader)

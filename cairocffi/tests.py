@@ -219,7 +219,6 @@ def test_png():
         assert file_obj.getvalue() == written_png_bytes
         assert surface.write_to_png() == written_png_bytes
 
-
         with open(filename, 'wb') as fd:
             fd.write(png_bytes)
         for source in [io.BytesIO(png_bytes), filename, filename_bytes]:
@@ -233,6 +232,8 @@ def test_png():
     with pytest.raises(IOError):
         # Truncated input
         surface = ImageSurface.create_from_png(io.BytesIO(png_bytes[:30]))
+    with pytest.raises(IOError):
+        surface = ImageSurface.create_from_png(io.BytesIO(b''))
 
 
 def test_pdf_versions():
@@ -963,7 +964,6 @@ def test_context_font():
     # Reset the default
     context.set_font_face(None)
     # TODO: test this somehow.
-
 
 
 def test_scaled_font():

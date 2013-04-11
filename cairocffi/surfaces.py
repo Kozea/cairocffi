@@ -27,7 +27,7 @@ def _make_read_func(file_obj):
     def read_func(closure, data, length):
         string = file_obj.read(length)
         if len(string) < length:  # EOF too early
-            return 'READ_ERROR'
+            return constants.STATUS_READ_ERROR
         ffi.buffer(data, length)[:len(string)] = string
         return constants.STATUS_SUCCESS
     return read_func

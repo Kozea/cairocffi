@@ -63,5 +63,4 @@ def assert_decoded(surface, format_=constants.FORMAT_ARGB32,
     assert surface.get_width() == 3
     assert surface.get_height() == 2
     assert surface.get_format() == format_
-    data = surface.get_data()[:]
     assert surface.get_data()[:] == pixel(rgba) * 6
