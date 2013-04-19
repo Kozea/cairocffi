@@ -16,13 +16,17 @@ from io import BytesIO
 from functools import partial
 from array import array
 
-from . import ffi, dlopen, ImageSurface, Context, constants
+import cffi
+
+from . import ffi as cairo_ffi, dlopen, ImageSurface, Context, constants
 from .compat import xrange
 
 
 __all__ = ['decode_to_image_surface']
 
 
+ffi  = cffi.FFI()
+ffi.include(cairo_ffi)
 ffi.cdef('''
 
     typedef unsigned long   gsize;
@@ -173,7 +177,7 @@ def pixbuf_to_cairo_gdk(pixbuf):
     """
     dummy_context = Context(ImageSurface(constants.FORMAT_ARGB32, 1, 1))
     gdk.gdk_cairo_set_source_pixbuf(
-        ffi.cast('cairo_t *', dummy_context._pointer), pixbuf._pointer, 0, 0)
+        dummy_context._pointer, pixbuf._pointer, 0, 0)
     return dummy_context.get_source().get_surface()
 
 
