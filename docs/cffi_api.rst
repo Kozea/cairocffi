@@ -98,8 +98,8 @@ Wrappers
 
 .. _converting_pycairo:
 
-Converting pycairo wrappers
----------------------------
+Converting pycairo wrappers to cairocffi
+----------------------------------------
 
 Some libraries such as PyGTK or PyGObject
 provide a pycairo :class:`~cairo.Context` object for you to draw on.
@@ -109,54 +109,17 @@ and create a cairocffi wrapper for the same cairo context.
 The follwing function does that with unsafe pointer manipulation.
 It only works on CPython.
 
-.. code-block:: python
+.. literalinclude:: ../utils/pycairo_to_cairocffi.py
 
-    import cairo  # pycairo
-    import cairocffi
 
-    def _UNSAFE_cairocffi_context_from_pycairo_context(pycairo_context):
-        # Sanity check. Continuing with another type would probably segfault.
-        if not isinstance(context, cairo.Context):
-            raise TypeError('Expected a cairo.Context, got %r' % pycairo_context)
+Converting cairocffi wrappers to pycairo
+----------------------------------------
 
-        # On CPython, id() gives the memory address of a Python object.
-        # pycairo implements Context as a C struct:
-        #   typedef struct {
-        #     PyObject_HEAD
-        #     cairo_t *ctx;
-        #     PyObject *base;
-        #   } PycairoContext;
-        pycairo_context_address = id(pycairo_context)
+The reverse conversion is also possible.
+Here we use ctypes rather than CFFI
+because Python’s C API is sensitive to the GIL.
 
-        # Still on CPython, object.__basicsize__ is the size of PyObject_HEAD.
-        ctx_field_address = pycairo_context_address + object.__basicsize__
-
-        # Wrap the address of the 'ctx' field in a CFFI cdata (pointer) object.
-        ctx_field_pointer = cairocffi.ffi.cast('cairo_t **', ctx_field_address)
-
-        # Dereference that pointer, ie. read the ctx field.
-        # The result is the pointer to the underlying cairo_t C struct.
-        cairo_t_pointer = ctx_field_pointer[0]
-
-        # Finally we can create a cairocffi context!
-        return cairocffi.Context._from_pointer(cairo_t_pointer, incref=True)
-
-If you’re willing to compile C code against pycairo,
-using :c:func:`PycairoContext_GET` from pycairo’s C API might be more robust.
-Untested C code:
-
-.. code-block:: c
-
-    PycairoContext *pycairo_context = ...;
-    PyObject *cairo_t_address = PyLong_FromLong(
-        (uintptr_t) PycairoContext_GET(pycairo_context));
-
-In Python:
-
-.. code-block:: python
-
-    cairo_t_pointer = cairocffi.ffi.cast('cairo_t *', cairo_t_address)
-    context = cairocffi.Context._from_pointer(cairo_t_pointer, incref=True)
+.. literalinclude:: ../utils/cairocffi_to_pycairo.py
 
 
 .. _using_pango:
