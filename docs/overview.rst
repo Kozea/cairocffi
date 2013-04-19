@@ -89,6 +89,11 @@ the :func:`install_as_pycairo` function can help::
     import cairo
     assert cairo is cairocffi
 
+Alternatively, add a ``cairo.py`` file somewhere in your ``sys.path``,
+so that it’s imported instead of pycairo::
+
+    from cairocffi import *
+
 It is also possible to :ref:`convert pycairo contexts to cairocffi
 <converting_pycairo>`.
 
