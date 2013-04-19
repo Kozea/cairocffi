@@ -6,7 +6,7 @@ ALL_THE_CODE = ''.join(
     line
     for module in [
         cairocffi, cairocffi.surfaces, cairocffi.patterns,
-        cairocffi.fonts, cairocffi.context]
+        cairocffi.fonts, cairocffi.context, cairocffi.matrix]
     for line in inspect.getsourcelines(module)[0])
 
 
@@ -20,4 +20,4 @@ class Visitor(pycparser.c_ast.NodeVisitor):
                 break
 
 print('cairo functions never used in cairocffi:\n')
-Visitor().visit(pycparser.CParser().parse(cairocffi._CAIRO_HEADERS))
+Visitor().visit(pycparser.CParser().parse(cairocffi.constants._CAIRO_HEADERS))
