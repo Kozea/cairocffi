@@ -317,7 +317,7 @@ class ScaledFont(object):
         :param text: The text to convert, as an Unicode or UTF-8 string.
         :param with_clusters: Whether to compute the cluster mapping.
         :returns:
-            A ``(glyphs, clusters, clusters_backwards)`` tuple
+            A ``(glyphs, clusters, clusters_flags)`` tuple
             if :obj:`with_clusters` is true, otherwise just :obj:`glyphs`.
             See :meth:`Context.show_text_glyphs` for the data structure.
 
@@ -360,14 +360,7 @@ class ScaledFont(object):
                 (cluster.num_bytes, cluster.num_glyphs)
                 for i in xrange(num_clusters[0])
                 for cluster in [clusters[i]]]
-            # Intentionally trigger a KeyError on unknown flags
-            if cluster_flags[0] == constants.TEXT_CLUSTER_FLAG_BACKWARD:
-                clusters_backwards = True
-            elif cluster_flags[0] == 0:
-                clusters_backwards = False
-            else:
-                raise KeyError
-            return glyphs, clusters, clusters_backwards
+            return glyphs, clusters, cluster_flags[0]
         else:
             return glyphs
 

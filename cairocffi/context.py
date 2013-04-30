@@ -2093,7 +2093,7 @@ class Context(object):
         cairo.cairo_show_glyphs(self._pointer, glyphs, len(glyphs))
         self._check_status()
 
-    def show_text_glyphs(self, text, glyphs, clusters, clusters_backwards):
+    def show_text_glyphs(self, text, glyphs, clusters, cluster_flags=0):
         """This operation has rendering effects similar to :meth:`show_glyphs`
         but, if the target surface supports it
         (see :meth:`Surface.has_show_text_glyphs`),
@@ -2141,11 +2141,13 @@ class Context(object):
             are not as well supported as normal clusters.
             For example, PDF rendering applications
             typically ignore those clusters when PDF text is being selected.
-        :type clusters_backwards: bool
-        :param clusters_backwards:
+        :type cluster_flags: int
+        :param cluster_flags:
+            Flags (as a bit field) for the cluster mapping.
             The first cluster always covers bytes
             from the beginning of :obj:`text`.
-            If :obj:`clusters_backwards` is false,
+            If :obj:`cluster_flags` does not have
+            the :obj:`TEXT_CLUSTER_FLAG_BACKWARD` flag set,
             the first cluster also covers the beginning of :obj:`glyphs`,
             otherwise it covers the end of the :obj:`glyphs` list
             and following clusters move backward.
@@ -2153,10 +2155,9 @@ class Context(object):
         """
         glyphs = ffi.new('cairo_glyph_t[]', glyphs)
         clusters = ffi.new('cairo_text_cluster_t[]', clusters)
-        flags = 'BACKWARDS' if clusters_backwards else 0
         cairo.cairo_show_text_glyphs(
             self._pointer, _encode_string(text), -1,
-            glyphs, len(glyphs), clusters, len(clusters), flags)
+            glyphs, len(glyphs), clusters, len(clusters), cluster_flags)
         self._check_status()
 
     ##

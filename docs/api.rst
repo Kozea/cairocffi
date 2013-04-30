@@ -830,3 +830,18 @@ that a generated SVG file will conform to.
 .. data:: SVG_VERSION_1_2
 
     The version 1.2 of the SVG specification.
+
+
+.. _cluster-flags:
+
+Cluster flags
+-------------
+
+Specifies properties of a text cluster mapping.
+Flags are integer values representing a bit field.
+
+.. data:: TEXT_CLUSTER_FLAG_BACKWARD
+    :annotation: = 0x00000001
+
+    The clusters in the cluster array
+    map to glyphs in the glyph array from end to start. (Since 1.8) 
