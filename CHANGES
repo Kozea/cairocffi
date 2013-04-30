@@ -1,6 +1,19 @@
 cairocffi changelog
 -------------------
 
+Version 0.4.1
+.............
+
+Released on 2013-04-30.
+
+* Various documentation improvements
+* Bug fixes:
+
+  * Fix error handling in :meth:`ImageSurface.create_from_png`.
+  * Fix :meth:`ScaledFont.text_to_glyphs` and :meth:`Context.show_text_glyphs`
+    with new-style enums.
+
+
 Version 0.4
 ...........
 
