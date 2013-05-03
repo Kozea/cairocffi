@@ -89,7 +89,10 @@ ffi.cdef('''
 
 gdk_pixbuf = dlopen(ffi, 'gdk_pixbuf-2.0', 'libgdk_pixbuf-2.0-0')
 gobject = dlopen(ffi, 'gobject-2.0', 'libgobject-2.0-0')
-gdk = dlopen(ffi, 'gdk-3', 'gdk-x11-2.0', 'libgdk-win32-2.0-0')
+try:
+    gdk = dlopen(ffi, 'gdk-3', 'gdk-x11-2.0', 'libgdk-win32-2.0-0')
+except OSError:
+    gdk = None
 
 gobject.g_type_init()
 
