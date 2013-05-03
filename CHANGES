@@ -1,6 +1,15 @@
 cairocffi changelog
 -------------------
 
+Version 0.4.2
+.............
+
+Released on 2013-05-03.
+
+* Fix `#9 <https://github.com/SimonSapin/cairocffi/issues/9>`_:
+  Make GTK acutally optional for PixBuf support.
+
+
 Version 0.4.1
 .............
 

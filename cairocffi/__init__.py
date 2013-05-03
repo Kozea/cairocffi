@@ -17,7 +17,7 @@ from . import constants
 from .compat import FileNotFoundError
 
 
-VERSION = '0.4.1'
+VERSION = '0.4.2'
 
 
 def dlopen(ffi, *names):
