@@ -17,7 +17,10 @@ from . import constants
 from .compat import FileNotFoundError
 
 
-VERSION = '0.4.2'
+VERSION = '0.4.3'
+# pycairo compat:
+version = VERSION
+version_info = version.split('.')
 
 
 def dlopen(ffi, *names):
