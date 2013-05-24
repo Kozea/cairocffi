@@ -191,7 +191,7 @@ def pixbuf_to_cairo_slices(pixbuf):
     (cairo uses pre-multiplied alpha, but not Pixbuf.)
 
     """
-    assert pixbuf.get_colorspace() == gdk.GDK_COLORSPACE_RGB
+    assert pixbuf.get_colorspace() == gdk_pixbuf.GDK_COLORSPACE_RGB
     assert pixbuf.get_n_channels() == 3
     assert pixbuf.get_bits_per_sample() == 8
     width = pixbuf.get_width()
