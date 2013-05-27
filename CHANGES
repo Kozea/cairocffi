@@ -1,6 +1,18 @@
 cairocffi changelog
 -------------------
 
+Version 0.4.3
+.............
+
+Released on 2013-05-27.
+
+* Fix `#10 <https://github.com/SimonSapin/cairocffi/issues/10>`_:
+  Pretend to be pycairo 1.10.0, for compatibility with matplotlib
+  which does version detection.
+* Fix `WeasyPrint#94 <https://github.com/Kozea/WeasyPrint/issues/94>`_:
+  Make (again??) GTK acutally optional for PixBuf support.
+
+
 Version 0.4.2
 .............
 
