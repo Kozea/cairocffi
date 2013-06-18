@@ -519,15 +519,18 @@ def test_linear_gradient():
         (.5, 1, .5, .75, .25),
         (1, 1, .5, .25, 1)]
 
-    surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
-    assert surface.get_data()[:] == b'\x00' * 16
-    gradient = LinearGradient(1, 0, 3, 0)
+    # Values chosen so that we can test get_data() bellow with an exact
+    # byte string that (hopefully) does not depend on rounding behavior:
+    # 255 / 5. == 51.0 == 0x33
+    surface = ImageSurface(cairocffi.FORMAT_A8, 8, 4)
+    assert surface.get_data()[:] == b'\x00' * 32
+    gradient = LinearGradient(1.5, 0, 6.5, 0)
     gradient.add_color_stop_rgba(0, 0, 0, 0, 0)
     gradient.add_color_stop_rgba(1, 0, 0, 0, 1)
     context = Context(surface)
     context.set_source(gradient)
     context.paint()
-    assert surface.get_data()[:] == b'\x00\x3f\xbf\xff' * 4
+    assert surface.get_data()[:] == b'\x00\x00\x33\x66\x99\xCC\xFF\xFF' * 4
 
     assert b'/ShadingType 2' not in pdf_with_pattern()
     assert b'/ShadingType 2' in pdf_with_pattern(gradient)
