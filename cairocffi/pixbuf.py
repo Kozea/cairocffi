@@ -97,11 +97,21 @@ except OSError:
 gobject.g_type_init()
 
 
-def handle_g_error(error):
-    """Convert a :c:type:`GError` to a Python :exception:`ValueError`,
-    and optionally raise it.
+class ImageLoadingError(ValueError):
+    """PixBuf returned an error when loading an image.
+
+    The image data is probably corrupted.
 
     """
+
+
+def handle_g_error(error, return_value):
+    """Convert a :c:type:`GError**` to a Python :exception:`ImageLoadingError`,
+    and raise it.
+
+    """
+    error = error[0]
+    assert bool(return_value) == (error == ffi.NULL)
     if error != ffi.NULL:
         if error.message != ffi.NULL:
             message = ('Pixbuf error: ' +
@@ -109,7 +119,7 @@ def handle_g_error(error):
         else:
             message = 'Pixbuf error'
         gobject.g_error_free(error)
-        raise ValueError(message)
+        raise ImageLoadingError(message)
 
 
 class Pixbuf(object):
@@ -131,16 +141,17 @@ def decode_to_pixbuf(image_data):
     :returns:
         A tuple of a new :class:`PixBuf` object
         and the name of the detected image format.
+    :raises:
+        :exc:`ImageLoadingError` if the image data is invalid
+        or in an unsupported format.
 
     """
     loader = ffi.gc(
         gdk_pixbuf.gdk_pixbuf_loader_new(), gobject.g_object_unref)
     error = ffi.new('GError **')
-    gdk_pixbuf.gdk_pixbuf_loader_write(
-        loader, ffi.new('guchar[]', image_data), len(image_data), error)
-    handle_g_error(error[0])
-    gdk_pixbuf.gdk_pixbuf_loader_close(loader, error)
-    handle_g_error(error[0])
+    handle_g_error(error, gdk_pixbuf.gdk_pixbuf_loader_write(
+        loader, ffi.new('guchar[]', image_data), len(image_data), error))
+    handle_g_error(error, gdk_pixbuf.gdk_pixbuf_loader_close(loader, error))
 
     format_ = gdk_pixbuf.gdk_pixbuf_loader_get_format(loader)
     format_name = (
@@ -149,8 +160,8 @@ def decode_to_pixbuf(image_data):
         if format_ != ffi.NULL else None)
 
     pixbuf = gdk_pixbuf.gdk_pixbuf_loader_get_pixbuf(loader)
-    assert pixbuf != ffi.NULL, (
-        'Got a NULL pixbuf after closing the loader without error.')
+    if pixbuf == ffi.NULL:
+        raise ImageLoadingError('Not enough image data (got a NULL pixbuf.)')
     return Pixbuf(pixbuf), format_name
 
 
@@ -162,6 +173,9 @@ def decode_to_image_surface(image_data):
     :returns:
         A tuple of a new :class:`~cairocffi.ImageSurface` object
         and the name of the detected image format.
+    :raises:
+        :exc:`ImageLoadingError` if the image data is invalid
+        or in an unsupported format.
 
     """
     pixbuf, format_name = decode_to_pixbuf(image_data)
@@ -247,10 +261,9 @@ def pixbuf_to_cairo_png(pixbuf):
     buffer_pointer = ffi.new('gchar **')
     buffer_size = ffi.new('gsize *')
     error = ffi.new('GError **')
-    pixbuf.save_to_buffer(
+    handle_g_error(error, pixbuf.save_to_buffer(
         buffer_pointer, buffer_size, ffi.new('char[]', b'png'), error,
         ffi.new('char[]', b'compression'), ffi.new('char[]', b'0'),
-        ffi.NULL)
-    handle_g_error(error[0])
+        ffi.NULL))
     png_bytes = ffi.buffer(buffer_pointer[0], buffer_size[0])
     return ImageSurface.create_from_png(BytesIO(png_bytes))

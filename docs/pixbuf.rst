@@ -28,4 +28,5 @@ if the format is known to be PNG.
 The pixel conversion is done by GTK+ if available,
 but a (slower) fallback method is used otherwise.
 
+.. autoexception:: ImageLoadingError
 .. autofunction:: decode_to_image_surface
