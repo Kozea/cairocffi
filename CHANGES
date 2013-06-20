@@ -1,6 +1,17 @@
 cairocffi changelog
 -------------------
 
+Version 0.5
+...........
+
+Released on 2013-06-20.
+
+Change :func:`~cairocffi.pixbuf.decode_to_image_surface`
+to raise a specific :exc:`~cairocffi.pixbuf.ImageLoadingError` exception
+instead of a generic :exc:`~exceptions.ValueError`.
+This new exception type inherits from :exc:`~exceptions.ValueError`.
+
+
 Version 0.4.3
 .............
 
