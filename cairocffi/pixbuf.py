@@ -25,7 +25,7 @@ from .compat import xrange
 __all__ = ['decode_to_image_surface']
 
 
-ffi  = cffi.FFI()
+ffi = cffi.FFI()
 ffi.include(cairo_ffi)
 ffi.cdef('''
 
@@ -89,6 +89,7 @@ ffi.cdef('''
 
 gdk_pixbuf = dlopen(ffi, 'gdk_pixbuf-2.0', 'libgdk_pixbuf-2.0-0')
 gobject = dlopen(ffi, 'gobject-2.0', 'libgobject-2.0-0')
+glib = dlopen(ffi, 'glib-2.0', 'libglib-2.0-0')
 try:
     gdk = dlopen(ffi, 'gdk-3', 'gdk-x11-2.0', 'libgdk-win32-2.0-0')
 except OSError:
@@ -118,7 +119,7 @@ def handle_g_error(error, return_value):
                        ffi.string(error.message).decode('utf8', 'replace'))
         else:
             message = 'Pixbuf error'
-        gobject.g_error_free(error)
+        glib.g_error_free(error)
         raise ImageLoadingError(message)
 
 
