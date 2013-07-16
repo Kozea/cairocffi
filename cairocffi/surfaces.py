@@ -13,6 +13,7 @@
 import io
 import sys
 import ctypes
+import weakref
 
 from . import ffi, cairo, _check_status, constants
 from .fonts import FontOptions, _encode_string
@@ -81,8 +82,15 @@ class KeepAlive(object):
 
     def __init__(self, *objects):
         self.objects = objects
+        weakself = weakref.ref(self)
+
+        def closure(_):
+            value = weakself()
+            if value is not None:
+                value.instances.remove(value)
+
         callback = ffi.callback(
-            'cairo_destroy_func_t', lambda _: self.instances.remove(self))
+            'cairo_destroy_func_t', closure)
         # cairo wants a non-NULL closure pointer.
         self.closure = (callback, callback)
 
