@@ -25,7 +25,7 @@ SURFACE_TARGET_KEY = ffi.new('cairo_user_data_key_t *')
 def _make_read_func(file_obj):
     """Return a CFFI callback that reads from a file-like object."""
     @ffi.callback("cairo_read_func_t", error=constants.STATUS_READ_ERROR)
-    def read_func(closure, data, length):
+    def read_func(_closure, data, length):
         string = file_obj.read(length)
         if len(string) < length:  # EOF too early
             return constants.STATUS_READ_ERROR
@@ -40,10 +40,10 @@ def _make_write_func(file_obj):
         return ffi.NULL
 
     @ffi.callback("cairo_write_func_t", error=constants.STATUS_WRITE_ERROR)
-    def read_func(_closure, data, length):
+    def write_func(_closure, data, length):
         file_obj.write(ffi.buffer(data, length))
         return constants.STATUS_SUCCESS
-    return read_func
+    return write_func
 
 
 def _encode_filename(filename):

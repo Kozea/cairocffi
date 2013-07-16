@@ -164,6 +164,25 @@ def test_surface():
     assert_raise_finished(surface.set_fallback_resolution, 3, 4)
 
 
+def test_target_lifetime():
+    # Test our work around for
+    # Related CFFI bug: https://bitbucket.org/cffi/cffi/issue/92/
+    if not hasattr(sys, 'getrefcount'):
+        pytest.xfail()  # PyPy
+    gc.collect()  # Clean up stuff from other tests
+    target = io.BytesIO()
+    initial_refcount = sys.getrefcount(target)
+    assert len(cairocffi.surfaces.KeepAlive.instances) == 0
+    surface = PDFSurface(target, 100, 100)
+    # The target is in a KeepAlive object
+    assert len(cairocffi.surfaces.KeepAlive.instances) == 1
+    assert sys.getrefcount(target) == initial_refcount + 1
+    del surface
+    gc.collect()  # Make sure surface is collected
+    assert len(cairocffi.surfaces.KeepAlive.instances) == 0
+    assert sys.getrefcount(target) == initial_refcount
+
+
 def test_mime_data():
     if cairo_version() < 11000:
         pytest.xfail()
