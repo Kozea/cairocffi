@@ -1,6 +1,18 @@
 cairocffi changelog
 -------------------
 
+Version 0.5.1
+.............
+
+Released on 2013-07-16.
+
+Fix `#15 <https://github.com/SimonSapin/cairocffi/pull/15>`_:
+Work around `CFFI bug #92 <https://bitbucket.org/cffi/cffi/issue/92/>`_
+that caused memory leaks when file-like :obj:`target` objects
+are passed to :meth:`Surface.write_to_png`, :class:`PDFSurface`,
+:class:`PSSurface` and :class:`SVGSurface`.
+
+
 Version 0.5
 ...........
 
