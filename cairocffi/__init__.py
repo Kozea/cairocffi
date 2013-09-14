@@ -22,6 +22,10 @@ VERSION = '0.5.1'
 version = '1.10.0'
 version_info = (1, 10, 0)
 
+# This will hold a PyCapsule compatible with the Pycairo CAPI
+# after enable_capi() is called.
+CAPI = None
+
 
 def dlopen(ffi, *names):
     """Try various names for the same library, for different platforms."""
@@ -93,6 +97,18 @@ def install_as_pycairo():
 
     """
     sys.modules['cairo'] = sys.modules[__name__]
+
+
+def enable_capi():
+    """Enable C API compatible with Pycairo
+
+    This calls "install_as_pycairo()" because it is a requirement.
+    See help(cairocffi.capi) for more details.
+    """
+    from . import capi
+    global CAPI
+    CAPI = capi.CAPI
+    install_as_pycairo()
 
 
 # Implementation is in submodules, but public API is all here.
