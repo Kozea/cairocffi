@@ -111,6 +111,9 @@ It only works on CPython.
 
 .. literalinclude:: ../utils/pycairo_to_cairocffi.py
 
+Converting other types of objects like surfaces is very similar,
+but left as an exercise to the reader.
+
 
 Converting cairocffi wrappers to pycairo
 ----------------------------------------
