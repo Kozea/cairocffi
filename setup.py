@@ -30,4 +30,5 @@ setup(
     ],
     packages=find_packages(),
     install_requires=['cffi>=0.6'],
+    zip_safe=False,
 )
