@@ -1,6 +1,15 @@
 cairocffi changelog
 -------------------
 
+Version 0.5.2
+.............
+
+Released on 2014-02-27.
+
+Fix `#21 <https://github.com/SimonSapin/cairocffi/pull/21>`_:
+``UnicodeDecodeError`` when installing with a non-UTF-8 locale.
+
+
 Version 0.5.1
 .............
 
