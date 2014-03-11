@@ -1,6 +1,15 @@
 cairocffi changelog
 -------------------
 
+Version 0.5.3
+.............
+
+Released on 2014-03-11.
+
+Fix `#28 <https://github.com/SimonSapin/cairocffi/pull/28>`_:
+Add another dynamic library name to try to load, for OS X.
+
+
 Version 0.5.2
 .............
 

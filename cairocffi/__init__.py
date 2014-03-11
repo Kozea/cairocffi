@@ -17,7 +17,7 @@ from . import constants
 from .compat import FileNotFoundError
 
 
-VERSION = '0.5.2'
+VERSION = '0.5.3'
 # pycairo compat:
 version = '1.10.0'
 version_info = (1, 10, 0)
@@ -36,7 +36,8 @@ def dlopen(ffi, *names):
 
 ffi = FFI()
 ffi.cdef(constants._CAIRO_HEADERS)
-cairo = dlopen(ffi, 'libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll', 'cairo', 'libcairo-2')
+cairo = dlopen(ffi, 'libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll',
+               'cairo', 'libcairo-2')
 
 
 class CairoError(Exception):
