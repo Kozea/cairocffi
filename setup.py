@@ -4,11 +4,18 @@ import re
 import io
 
 
-VERSION = re.search("VERSION = '([^']+)'", io.open(
-    path.join(path.dirname(__file__), 'cairocffi', '__init__.py')
-, encoding='utf-8').read().strip()).group(1)
+VERSION = re.search(
+    "VERSION = '([^']+)'",
+    io.open(
+        path.join(path.dirname(__file__), 'cairocffi', '__init__.py'),
+        encoding='utf-8',
+    ).read().strip()
+).group(1)
 
-LONG_DESCRIPTION = io.open(path.join(path.dirname(__file__), 'README.rst'), encoding='utf-8').read()
+LONG_DESCRIPTION = io.open(
+    path.join(path.dirname(__file__), 'README.rst'),
+    encoding='utf-8',
+).read()
 
 
 setup(
