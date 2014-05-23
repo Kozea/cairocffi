@@ -1,6 +1,18 @@
 cairocffi changelog
 -------------------
 
+Version 0.5.4
+.............
+
+Released on 2014-05-23.
+
+* Stop testing with tox on Python 3.1, start on 3.4
+* Start testing pushes and pull requests
+  `on Travis-CI <https://travis-ci.org/SimonSapin/cairocffi>`_
+* Add more variants of the library names to try with `dlopen()`.
+  This seems to be necessary on OpenBSD.
+
+
 Version 0.5.3
 .............
 

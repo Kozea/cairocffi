@@ -17,7 +17,7 @@ from . import constants
 from .compat import FileNotFoundError
 
 
-VERSION = '0.5.3'
+VERSION = '0.5.4'
 # pycairo compat:
 version = '1.10.0'
 version_info = (1, 10, 0)
