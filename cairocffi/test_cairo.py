@@ -413,9 +413,6 @@ def _recording_surface_common(extents):
 def test_recording_surface():
     text_pixels, recorded_pixels = _recording_surface_common((0, 0, 140, 80))
     assert recorded_pixels == text_pixels
-    # Test we get a result without failure,
-    # but only test the result in the next function.
-    _recording_surface_common(None)
 
 
 def test_unbounded_recording_surface():
