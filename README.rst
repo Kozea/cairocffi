@@ -18,6 +18,6 @@ to decode various image formats for use in cairo.
 * `Source code and issue tracker <https://github.com/SimonSapin/cairocffi>`_
   on GitHub.
 * Install with ``pip install cairocffi``
-* Python 2.6, 2.7 and 3.x. Tested with CPython and Pypy.
+* Python 2.6, 2.7 and 3.2+. Tested with CPython and Pypy.
 * API compatible with Pycairo.
 * Works with any version of cairo.
