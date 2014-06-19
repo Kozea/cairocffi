@@ -1280,3 +1280,36 @@ SURFACE_TYPE_TO_CLASS = {
     constants.SURFACE_TYPE_SVG: SVGSurface,
     constants.SURFACE_TYPE_RECORDING: RecordingSurface,
 }
+
+
+try:
+    import xcffib
+
+    class XCBSurface(Surface):
+        """The XCB surface is used to render cairo graphics to X Window System
+        windows and pixmaps using the XCB library.
+
+        Note that the XCB surface automatically takes advantage of the X render
+        extension if it is available.
+
+        :param conn: The `xcffib.Connection` object
+        :param drawable: An XID corresponding to an XCB drawable
+        :param visual: An xcffib.xproto.VISUALTYPE object.
+        :param width: width (integer)
+        :param height: height (integer)
+        """
+        def __init__(self, conn, drawable, visual, width, height):
+            c_visual = xcffib.visualtype_to_c_struct(visual)
+
+            p = cairo.cairo_xcb_surface_create(
+                conn._conn, drawable, c_visual, width, height)
+            Surface.__init__(self, p)
+
+        def set_size(self, width, height):
+            cairo.cairo_xcb_surface_set_size(self._pointer, width, height)
+            self._check_status()
+
+    SURFACE_TYPE_TO_CLASS[constants.SURFACE_TYPE_XCB] = XCBSurface
+
+except ImportError:
+    pass
