@@ -35,6 +35,14 @@ def dlopen(ffi, *names):
 
 
 ffi = FFI()
+
+try:
+    # Include XCB headers if we can.
+    import xcffib
+    ffi.include(xcffib.ffi)
+except ImportError:
+    pass
+
 ffi.cdef(constants._CAIRO_HEADERS)
 cairo = dlopen(ffi, 'libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll',
                'cairo', 'libcairo-2')
@@ -100,6 +108,10 @@ def install_as_pycairo():
 
 from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,
                        SVGSurface, RecordingSurface)
+try:
+    from .surfaces import XCBSurface
+except ImportError:
+    pass
 from .patterns import (Pattern, SolidPattern, SurfacePattern,
                        Gradient, LinearGradient, RadialGradient)
 from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions
