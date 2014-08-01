@@ -100,6 +100,10 @@ def install_as_pycairo():
 
 from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,
                        SVGSurface, RecordingSurface)
+try:
+    from .xcb import XCBSurface
+except ImportError:
+    pass
 from .patterns import (Pattern, SolidPattern, SurfacePattern,
                        Gradient, LinearGradient, RadialGradient)
 from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions
