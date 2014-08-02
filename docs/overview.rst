@@ -14,6 +14,13 @@ This will automatically install CFFI,
 which on CPython requires ``python-dev`` and ``libffi-dev``.
 See the `CFFI documentation`_ for details.
 
+cairocffi can also be setup to utizile XCB support via xcffib_.
+This can also be installed automatically with pip_::
+
+    pip install cairocffi[xcb]
+
+In addition to other dependencies, this will install xcffib.
+
 
 Importing
 ---------
@@ -36,6 +43,7 @@ where to find shared libraries.
 
 .. _pip: http://pip-installer.org/
 .. _CFFI documentation: http://cffi.readthedocs.org/
+.. _xcffib: https://github.com/tych0/xcffib/
 .. _Pycairo: http://cairographics.org/pycairo/
 
 
