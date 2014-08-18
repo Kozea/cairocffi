@@ -99,7 +99,7 @@ def install_as_pycairo():
 # Implementation is in submodules, but public API is all here.
 
 from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,
-                       SVGSurface, RecordingSurface)
+                       SVGSurface, RecordingSurface, Win32PrintingSurface)
 from .patterns import (Pattern, SolidPattern, SurfacePattern,
                        Gradient, LinearGradient, RadialGradient)
 from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions

@@ -685,4 +685,10 @@ cairo_surface_t *cairo_svg_surface_create_for_stream(cairo_write_func_t write_fu
 void cairo_svg_surface_restrict_to_version(cairo_surface_t *surface, cairo_svg_version_t version);
 void cairo_svg_get_versions(const cairo_svg_version_t **versions, int *num_versions);
 const char *cairo_svg_version_to_string(cairo_svg_version_t version);
+cairo_surface_t *cairo_win32_surface_create(HDC hdc);
+cairo_surface_t *cairo_win32_surface_create_with_dib(cairo_format_t format, int width, int height);
+cairo_surface_t *cairo_win32_surface_create_with_ddb (HDC hdc, cairo_format_t format, int width, int height);
+cairo_surface_t *cairo_win32_printing_surface_create(HDC hdc);
+HDC cairo_win32_surface_get_dc(cairo_surface_t *surface);
+cairo_surface_t *cairo_win32_surface_get_image(cairo_surface_t *surface);
 """
