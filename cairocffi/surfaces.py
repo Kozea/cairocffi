@@ -1274,9 +1274,15 @@ class RecordingSurface(Surface):
         return tuple(extents)
 
 
+class Win32PrintingSurface(Surface):
+    def __init__(self, hdc):
+        pointer = cairo.cairo_win32_printing_surface_create(ffi.cast('char*', hdc))
+        Surface.__init__(self, pointer)
+
 SURFACE_TYPE_TO_CLASS = {
     constants.SURFACE_TYPE_IMAGE: ImageSurface,
     constants.SURFACE_TYPE_PDF: PDFSurface,
     constants.SURFACE_TYPE_SVG: SVGSurface,
     constants.SURFACE_TYPE_RECORDING: RecordingSurface,
+    constants.SURFACE_TYPE_WIN32_PRINTING: Win32PrintingSurface
 }
