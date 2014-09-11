@@ -7,9 +7,6 @@ python:
   - "3.4"
   - "pypy"
 install:
-  - "pip install xcffib"
+  - "pip install xcffib pytest-xdist"
   - "pip install ."
-script: "py.test"
-before_install:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
+script: "py.test --boxed"
