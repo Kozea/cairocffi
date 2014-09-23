@@ -37,4 +37,5 @@ setup(
     ],
     packages=find_packages(),
     install_requires=['cffi>=0.6'],
+    extras_require={'xcb': ['xcffib']}
 )

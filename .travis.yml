@@ -6,6 +6,7 @@ python:
   - "3.3"
   - "3.4"
   - "pypy"
-install: "pip install ."
-script: "py.test"
-
+install:
+  - "pip install xcffib pytest-xdist"
+  - "pip install ."
+script: "py.test --boxed"
