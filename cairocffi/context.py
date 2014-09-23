@@ -137,9 +137,9 @@ class Context(object):
         return Surface._from_pointer(
             cairo.cairo_get_target(self._pointer), incref=True)
 
-    ##
-    ##  Save / restore
-    ##
+    #
+    #  Save / restore
+    #
 
     def save(self):
         """Makes a copy of the current state of this context
@@ -184,9 +184,9 @@ class Context(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.restore()
 
-    ##
-    ##  Groups
-    ##
+    #
+    #  Groups
+    #
 
     def push_group(self):
         """Temporarily redirects drawing to an intermediate surface
@@ -300,9 +300,9 @@ class Context(object):
         return Surface._from_pointer(
             cairo.cairo_get_group_target(self._pointer), incref=True)
 
-    ##
-    ##  Sources
-    ##
+    #
+    #  Sources
+    #
 
     def set_source_rgba(self, red, green, blue, alpha=1):
         """Sets the source pattern within this context to a solid color.
@@ -404,9 +404,9 @@ class Context(object):
         return Pattern._from_pointer(
             cairo.cairo_get_source(self._pointer), incref=True)
 
-    ##
-    ##  Context parameters
-    ##
+    #
+    #  Context parameters
+    #
 
     def set_antialias(self, antialias):
         """Set the :ref:`ANTIALIAS` of the rasterizer used for drawing shapes.
@@ -664,9 +664,9 @@ class Context(object):
         """Return the current tolerance as a float."""
         return cairo.cairo_get_tolerance(self._pointer)
 
-    ##
-    ##  CTM: Current transformation matrix
-    ##
+    #
+    #  CTM: Current transformation matrix
+    #
 
     def translate(self, tx, ty):
         """Modifies the current transformation matrix (CTM)
@@ -837,9 +837,9 @@ class Context(object):
         self._check_status()
         return tuple(xy)
 
-    ##
-    ##  Path
-    ##
+    #
+    #  Path
+    #
 
     def has_current_point(self):
         """Returns whether a current point is defined on the current path.
@@ -1342,9 +1342,9 @@ class Context(object):
         self._check_status()
         return tuple(extents)
 
-    ##
-    ##  Drawing operators
-    ##
+    #
+    #  Drawing operators
+    #
 
     def paint(self):
         """A drawing operator that paints the current source everywhere
@@ -1703,9 +1703,9 @@ class Context(object):
         cairo.cairo_reset_clip(self._pointer)
         self._check_status()
 
-    ##
-    ##  Fonts
-    ##
+    #
+    #  Fonts
+    #
 
     def select_font_face(self, family='', slant=constants.FONT_SLANT_NORMAL,
                          weight=constants.FONT_WEIGHT_NORMAL):
@@ -1933,9 +1933,9 @@ class Context(object):
             extents.ascent, extents.descent, extents.height,
             extents.max_x_advance, extents.max_y_advance)
 
-    ##
-    ##  Text
-    ##
+    #
+    #  Text
+    #
 
     def text_extents(self, text):
         """Returns the extents for a string of text.
@@ -2160,9 +2160,9 @@ class Context(object):
             glyphs, len(glyphs), clusters, len(clusters), cluster_flags)
         self._check_status()
 
-    ##
-    ##  Pages
-    ##
+    #
+    #  Pages
+    #
 
     def show_page(self):
         """Emits and clears the current page

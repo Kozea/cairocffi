@@ -945,7 +945,7 @@ def test_context_font():
     ascent, descent, height, max_x_advance, max_y_advance = (
         context.font_extents())
     # That’s about all we can assume for a default font.
-    #assert height > ascent + descent  # Not even this is true on all fonts
+#    assert height > ascent + descent  # Not even this is true on all fonts
     assert max_x_advance > 0
     assert max_y_advance == 0
     _, _, _, _, x_advance, y_advance = context.text_extents('i' * 10)

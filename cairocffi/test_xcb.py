@@ -21,6 +21,7 @@ import pytest
 
 from . import Context, XCBSurface, cairo_version
 
+
 @pytest.fixture
 def xcb_conn(request):
     """
@@ -30,6 +31,7 @@ def xcb_conn(request):
     display = os.environ.get('DISPLAY')
     if display:
         conn = xcffib.connect(display)
+
         def teardown_conn():
             conn.disconnect()
     else:
@@ -38,6 +40,7 @@ def xcb_conn(request):
     request.addfinalizer(teardown_conn)
     return conn
 
+
 def find_root_visual(conn):
     """Find the xcffib.xproto.VISUALTYPE corresponding to the root visual"""
     default_screen = conn.setup.roots[conn.pref_screen]
@@ -45,6 +48,7 @@ def find_root_visual(conn):
         for v in i.visuals:
             if v.visual_id == default_screen.root_visual:
                 return v
+
 
 def create_window(conn, width, height):
     """Creates a window of the given dimensions and returns the XID"""
@@ -67,6 +71,7 @@ def create_window(conn, width, height):
 
     return wid
 
+
 def create_pixmap(conn, wid, width, height):
     """Creates a window of the given dimensions and returns the XID"""
     pixmap = conn.generate_id()
@@ -79,6 +84,7 @@ def create_pixmap(conn, wid, width, height):
     )
 
     return pixmap
+
 
 def create_gc(conn):
     """Creates a simple graphics context"""
@@ -95,6 +101,7 @@ def create_gc(conn):
     )
 
     return gc
+
 
 def test_xcb_pixmap(xcb_conn):
     if cairo_version() < 12000:
@@ -134,11 +141,11 @@ def test_xcb_pixmap(xcb_conn):
 
     # copy the pixmap to the window
     xcb_conn.core.CopyArea(
-        pixmap, # source
-        wid,    # dest
-        gc,     # gc
-        0, 0,   # source x, source y
-        0, 0,   # dest x, dest y
+        pixmap,  # source
+        wid,     # dest
+        gc,      # gc
+        0, 0,    # source x, source y
+        0, 0,    # dest x, dest y
         width, height
     )
 
@@ -185,7 +192,8 @@ def test_xcb_window(xcb_conn):
     # now move the window and change its size
     xcb_conn.core.ConfigureWindow(
         wid,
-        ConfigWindow.X | ConfigWindow.Y | ConfigWindow.Width | ConfigWindow.Height,
+        (ConfigWindow.X | ConfigWindow.Y
+            | ConfigWindow.Width | ConfigWindow.Height),
         [
             5, 5,                   # x, y
             width * 2, height * 2   # width, height
