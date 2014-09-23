@@ -40,6 +40,10 @@ RecordingSurface
 ----------------
 .. autoclass:: RecordingSurface
 
+Win32PrintingSurface
+--------------------
+.. autoclass:: Win32PrintingSurface
+
 
 Context
 =======
