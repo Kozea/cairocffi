@@ -63,6 +63,9 @@ def generate(cairo_git_dir):
     PrintEnumsVisitor().visit(ast)
     print('_CAIRO_HEADERS = r"""%s"""' % source)
 
+    source = read_cairo_header(cairo_git_dir, '-xcb')
+    print('_CAIRO_XCB_HEADERS = r"""%s"""\n' % source)
+
 
 if __name__ == '__main__':
     if len(sys.argv) >= 2:
