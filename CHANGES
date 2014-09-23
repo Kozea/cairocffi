@@ -1,6 +1,17 @@
 cairocffi changelog
 -------------------
 
+Version 0.6
+...........
+
+Released on 2014-09-23.
+
+* `#39 <https://github.com/SimonSapin/cairocffi/pull/39>`_:
+  Add :class:`xcb.XCBSurface`.
+* `#42 <https://github.com/SimonSapin/cairocffi/pull/42>`_:
+  Add :class:`Win32PrintingSurface`.
+
+
 Version 0.5.4
 .............
 
