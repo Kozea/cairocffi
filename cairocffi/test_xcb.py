@@ -19,7 +19,7 @@ from xcffib.xproto import ConfigWindow, CW, EventMask, GC
 
 import pytest
 
-from . import Context, XCBSurface
+from . import Context, XCBSurface, cairo_version
 
 @pytest.fixture
 def xcb_conn(request):
@@ -97,6 +97,9 @@ def create_gc(conn):
     return gc
 
 def test_xcb_pixmap(xcb_conn):
+    if cairo_version() < 12000:
+        pytest.xfail()
+
     width = 10
     height = 10
 
@@ -146,6 +149,9 @@ def test_xcb_pixmap(xcb_conn):
 
 
 def test_xcb_window(xcb_conn):
+    if cairo_version() < 12000:
+        pytest.xfail()
+
     width = 10
     height = 10
 
