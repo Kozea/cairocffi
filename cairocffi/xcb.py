@@ -10,13 +10,13 @@
 """
 from xcffib import ffi as xcb_ffi, visualtype_to_c_struct
 
-from . import ffi, dlopen, constants
+from . import ffi, dlopen, constants, CAIRO_NAMES
 from .surfaces import Surface, SURFACE_TYPE_TO_CLASS
 
 ffi.include(xcb_ffi)
 ffi.cdef(constants._CAIRO_XCB_HEADERS)
-cairo_xcb = dlopen(ffi, 'libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll',
-                   'cairo', 'libcairo-2')
+cairo_xcb = dlopen(ffi, *CAIRO_NAMES)
+
 
 class XCBSurface(Surface):
     """The XCB surface is used to render cairo graphics to X Window System

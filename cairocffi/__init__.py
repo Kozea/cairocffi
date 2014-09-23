@@ -36,8 +36,9 @@ def dlopen(ffi, *names):
 
 ffi = FFI()
 ffi.cdef(constants._CAIRO_HEADERS)
-cairo = dlopen(ffi, 'libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll',
-               'cairo', 'libcairo-2')
+CAIRO_NAMES = ['libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll',
+               'cairo', 'libcairo-2']
+cairo = dlopen(ffi, *CAIRO_NAMES)
 
 
 class CairoError(Exception):
