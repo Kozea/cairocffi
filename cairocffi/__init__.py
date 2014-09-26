@@ -37,7 +37,7 @@ def dlopen(ffi, *names):
 ffi = FFI()
 ffi.cdef(constants._CAIRO_HEADERS)
 CAIRO_NAMES = ['libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll',
-               'cairo', 'libcairo-2']
+               'cairo.dll', 'cairo','libcairo-2']
 cairo = dlopen(ffi, *CAIRO_NAMES)
 
 
@@ -100,7 +100,8 @@ def install_as_pycairo():
 # Implementation is in submodules, but public API is all here.
 
 from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,
-                       SVGSurface, RecordingSurface, Win32PrintingSurface)
+                       SVGSurface, RecordingSurface, Win32Surface,
+                       Win32PrintingSurface)
 try:
     from .xcb import XCBSurface
 except ImportError:
