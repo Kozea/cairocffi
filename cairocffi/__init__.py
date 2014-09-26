@@ -40,13 +40,16 @@ def dlopen(ffi, *names):
 
 cairo = dlopen(ffi, 'cairo', 'cairo-2')
 
+
 class _keepref(object):
     """Function wrapper that keeps a reference to another object."""
     def __init__(self, ref, func):
         self.ref = ref
         self.func = func
+
     def __call__(self, *args, **kwargs):
         self.func(*args, **kwargs)
+
 
 class CairoError(Exception):
     """Raised when cairo returns an error status."""
@@ -107,7 +110,8 @@ def install_as_pycairo():
 # Implementation is in submodules, but public API is all here.
 
 from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,
-                       SVGSurface, RecordingSurface, Win32PrintingSurface)
+                       SVGSurface, RecordingSurface, Win32Surface,
+                       Win32PrintingSurface)
 try:
     from .xcb import XCBSurface
 except ImportError:
