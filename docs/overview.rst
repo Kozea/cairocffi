@@ -3,6 +3,26 @@ Overview
 
 .. currentmodule:: cairocffi
 
+Installing CFFI
+---------------
+
+cairocffi requires CFFI,
+which can be installed with pip_ but has its own dependencies
+that can be tricky to install.
+
+* On Linux, install ``python-dev`` and ``libffi-dev`` from your system’s package manager.
+* On OS X, install ``pkg-config`` and ``libffi``, for example with `Homebrew`_.
+  You may need to `set the PKG_CONFIG_PATH environment variable`_.
+* On Windows, consider using `Christoph Gohlke’s unofficial binary builds`_.
+
+See `CFFI’s own documentation`_ for details.
+
+.. _Homebrew: http://brew.sh/
+.. _set the PKG_CONFIG_PATH environment variable: http://cffi.readthedocs.org/#macos-x
+.. _Christoph Gohlke’s unofficial binary builds: http://www.lfd.uci.edu/~gohlke/pythonlibs/#cffi
+.. _CFFI’s own documentation: http://cffi.readthedocs.org/
+
+
 Installing cairocffi
 --------------------
 
@@ -10,9 +30,7 @@ Install with pip_::
 
     pip install cairocffi
 
-This will automatically install CFFI,
-which on CPython requires ``python-dev`` and ``libffi-dev``.
-See the `CFFI documentation`_ for details.
+This will automatically install CFFI.
 
 cairocffi can also be setup to utizile XCB support via xcffib_.
 This can also be installed automatically with pip_::
@@ -20,6 +38,9 @@ This can also be installed automatically with pip_::
     pip install cairocffi[xcb]
 
 In addition to other dependencies, this will install xcffib.
+
+.. _pip: http://pip-installer.org/
+.. _xcffib: https://github.com/tych0/xcffib/
 
 
 Importing
@@ -41,9 +62,6 @@ usual mechanisms.
 On Linux, the ``LD_LIBRARY_PATH`` environment variable can be used to indicate
 where to find shared libraries.
 
-.. _pip: http://pip-installer.org/
-.. _CFFI documentation: http://cffi.readthedocs.org/
-.. _xcffib: https://github.com/tych0/xcffib/
 .. _Pycairo: http://cairographics.org/pycairo/
 
 
