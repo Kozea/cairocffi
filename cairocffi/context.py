@@ -57,7 +57,7 @@ def _encode_path(path_items):
             point.x = coordinates[i]
             point.y = coordinates[i + 1]
             position += 1
-    path = ffi.new('cairo_path_t *', (constants.STATUS_SUCCESS, data, length))
+    path = ffi.new('cairo_path_t *', {'status': constants.STATUS_SUCCESS, 'data': data, 'num_data': length})
     return path, data
 
 
