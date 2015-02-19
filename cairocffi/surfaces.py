@@ -668,7 +668,7 @@ class ImageSurface(Surface):
         Typical usage will be of the form::
 
             from cairocffi import ImageSurface
-            stride = ImageSurface.stride_for_width(format, width)
+            stride = ImageSurface.format_stride_for_width(format, width)
             data = bytearray(stride * height)
             surface = ImageSurface(format, width, height, data, stride)
 
