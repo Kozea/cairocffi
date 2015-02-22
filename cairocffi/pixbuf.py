@@ -246,13 +246,9 @@ def pixbuf_to_cairo_slices(pixbuf):
             data[offset + 1:end:4] = green
             data[offset:end:4] = blue
 
-    if NO_FROM_BUFFER:
-        data = array('B', data)
+    data = array('B', data)
     return ImageSurface(constants.FORMAT_RGB24,
                         width, height, data, cairo_stride)
-
-
-NO_FROM_BUFFER = not hasattr(ctypes.c_char, 'from_buffer')  # PyPy
 
 
 def pixbuf_to_cairo_png(pixbuf):
