@@ -1,3 +1,5 @@
+# coding: utf8
+
 import inspect
 import pycparser
 import cairocffi

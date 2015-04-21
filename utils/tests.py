@@ -1,3 +1,5 @@
+# coding: utf8
+
 import io
 import cairo  # pycairo
 import cairocffi
