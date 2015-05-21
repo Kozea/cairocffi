@@ -11,3 +11,4 @@ install:
   - "pip install ."
   - "python -c 'import cffi, sys; sys.exit(cffi.__version_info__[0])' || python cairocffi/ffi_build.py"
 script: "py.test"
+sudo: false
