@@ -649,12 +649,12 @@ class ImageSurface(Surface):
             if stride is None:
                 stride = self.format_stride_for_width(format, width)
             if isinstance(data, ctypes.c_voidp):
-              address = data.value
+                address = data.value
             else:
-              address, length = from_buffer(data)
-              if length < stride * height:
-                  raise ValueError('Got a %d bytes buffer, needs at least %d.'
-                                   % (length, stride * height))
+                address, length = from_buffer(data)
+                if length < stride * height:
+                    raise ValueError('Got a %d bytes buffer, needs at least %d.'
+                                     % (length, stride * height))
             pointer = cairo.cairo_image_surface_create_for_data(
                 ffi.cast('char*', address), format, width, height, stride)
         Surface.__init__(self, pointer, target_keep_alive=data)
