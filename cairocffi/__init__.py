@@ -11,11 +11,11 @@
 """
 
 import sys
-from cffi import FFI
 
 from . import constants
 from .compat import FileNotFoundError
 
+from ._ffi import ffi
 
 VERSION = '0.6'
 # pycairo compat:
@@ -34,8 +34,6 @@ def dlopen(ffi, *names):
     return ffi.dlopen(names[0])  # pragma: no cover
 
 
-ffi = FFI()
-ffi.cdef(constants._CAIRO_HEADERS)
 CAIRO_NAMES = ['libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll',
                'cairo', 'libcairo-2']
 cairo = dlopen(ffi, *CAIRO_NAMES)

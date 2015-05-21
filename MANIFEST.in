@@ -1,3 +1,4 @@
 include README.rst CHANGES LICENSE tox.ini .coveragerc
 recursive-include docs *
 prune docs/_build
+exclude cairocffi/_ffi*.py

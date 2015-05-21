@@ -9,4 +9,5 @@ python:
 install:
   - "pip install xcffib"
   - "pip install ."
+  - "python cairocffi/ffi_build.py"
 script: "py.test"

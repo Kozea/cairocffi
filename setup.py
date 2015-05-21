@@ -36,6 +36,11 @@ setup(
         'Topic :: Multimedia :: Graphics',
     ],
     packages=find_packages(),
-    install_requires=['cffi>=0.6'],
-    extras_require={'xcb': ['xcffib']}
+    install_requires=['cffi>=1.1.0'],
+    setup_requires=['cffi>=1.1.0'],
+    cffi_modules=[
+        'cairocffi/ffi_build.py:ffi',
+        'cairocffi/ffi_build.py:ffi_pixbuf'
+    ],
+    extras_require={'xcb': ['xcffib>=0.3.2']},
 )
