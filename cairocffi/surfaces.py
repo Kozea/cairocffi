@@ -720,7 +720,7 @@ class ImageSurface(Surface):
         """
         return ffi.buffer(
             cairo.cairo_image_surface_get_data(self._pointer),
-            size=self.get_stride() * self.get_height())
+            self.get_stride() * self.get_height())
 
     def get_format(self):
         """Return the :ref:`FORMAT` string of the surface."""
