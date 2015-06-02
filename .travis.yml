@@ -9,5 +9,5 @@ python:
 install:
   - "pip install xcffib"
   - "pip install ."
-  - "python cairocffi/ffi_build.py"
+  - "python -c 'import cffi, sys; sys.exit(cffi.__version_info__[0])' || python cairocffi/ffi_build.py"
 script: "py.test"
