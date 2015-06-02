@@ -105,7 +105,7 @@ def create_gc(conn):
 
 
 def test_xcb_pixmap(xcb_conn):
-    if cairo_version() < 12000:
+    if cairo_version() < 11200:
         pytest.xfail()
 
     width = 10
@@ -157,7 +157,7 @@ def test_xcb_pixmap(xcb_conn):
 
 
 def test_xcb_window(xcb_conn):
-    if cairo_version() < 12000:
+    if cairo_version() < 11200:
         pytest.xfail()
 
     width = 10
