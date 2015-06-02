@@ -13,11 +13,12 @@
 
 import os
 import time
-import xcffib
-import xcffib.xproto
-from xcffib.xproto import ConfigWindow, CW, EventMask, GC
 
 import pytest
+
+xcffib = pytest.importorskip('xcffib')
+import xcffib.xproto
+from xcffib.xproto import ConfigWindow, CW, EventMask, GC
 
 from . import Context, XCBSurface, cairo_version
 
