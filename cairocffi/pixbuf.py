@@ -11,81 +11,20 @@
 """
 
 import sys
-import ctypes
 from io import BytesIO
 from functools import partial
 from array import array
 
-import cffi
-
-from . import ffi as cairo_ffi, dlopen, ImageSurface, Context, constants
+from . import dlopen, ImageSurface, Context, constants
 from .compat import xrange
 
+try:
+    from ._ffi_pixbuf import ffi
+except ImportError:
+    # PyPy < 2.6 compatibility
+    from .ffi_build import ffi_pixbuf as ffi
 
 __all__ = ['decode_to_image_surface']
-
-
-ffi = cffi.FFI()
-ffi.include(cairo_ffi)
-ffi.cdef('''
-
-    typedef unsigned long   gsize;
-    typedef unsigned int    guint32;
-    typedef unsigned int    guint;
-    typedef unsigned char   guchar;
-    typedef char            gchar;
-    typedef int             gint;
-    typedef gint            gboolean;
-    typedef guint32         GQuark;
-    typedef void*           gpointer;
-    typedef ...             GdkPixbufLoader;
-    typedef ...             GdkPixbufFormat;
-    typedef ...             GdkPixbuf;
-    typedef struct {
-        GQuark              domain;
-        gint                code;
-        gchar              *message;
-    } GError;
-    typedef enum {
-        GDK_COLORSPACE_RGB
-    } GdkColorspace;
-
-
-    GdkPixbufLoader * gdk_pixbuf_loader_new          (void);
-    GdkPixbufFormat * gdk_pixbuf_loader_get_format   (GdkPixbufLoader *loader);
-    GdkPixbuf *       gdk_pixbuf_loader_get_pixbuf   (GdkPixbufLoader *loader);
-    gboolean          gdk_pixbuf_loader_write        (
-        GdkPixbufLoader *loader, const guchar *buf, gsize count,
-        GError **error);
-    gboolean          gdk_pixbuf_loader_close        (
-        GdkPixbufLoader *loader, GError **error);
-
-    gchar *           gdk_pixbuf_format_get_name     (GdkPixbufFormat *format);
-
-    GdkColorspace     gdk_pixbuf_get_colorspace      (const GdkPixbuf *pixbuf);
-    int               gdk_pixbuf_get_n_channels      (const GdkPixbuf *pixbuf);
-    gboolean          gdk_pixbuf_get_has_alpha       (const GdkPixbuf *pixbuf);
-    int               gdk_pixbuf_get_bits_per_sample (const GdkPixbuf *pixbuf);
-    int               gdk_pixbuf_get_width           (const GdkPixbuf *pixbuf);
-    int               gdk_pixbuf_get_height          (const GdkPixbuf *pixbuf);
-    int               gdk_pixbuf_get_rowstride       (const GdkPixbuf *pixbuf);
-    guchar *          gdk_pixbuf_get_pixels          (const GdkPixbuf *pixbuf);
-    gsize             gdk_pixbuf_get_byte_length     (const GdkPixbuf *pixbuf);
-    gboolean          gdk_pixbuf_save_to_buffer      (
-        GdkPixbuf *pixbuf, gchar **buffer, gsize *buffer_size,
-        const char *type, GError **error, ...);
-
-    void              gdk_cairo_set_source_pixbuf    (
-        cairo_t *cr, const GdkPixbuf *pixbuf,
-        double pixbuf_x, double pixbuf_y);
-
-
-    void              g_object_ref                   (gpointer object);
-    void              g_object_unref                 (gpointer object);
-    void              g_error_free                   (GError *error);
-    void              g_type_init                    (void);
-
-''')
 
 gdk_pixbuf = dlopen(ffi, 'gdk_pixbuf-2.0', 'libgdk_pixbuf-2.0-0',
                     'libgdk_pixbuf-2.0.so')

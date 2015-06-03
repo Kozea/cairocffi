@@ -1,5 +1,6 @@
 *.pyc
 __pycache__
+cairocffi/_ffi*.py
 *.egg-info
 /dist
 /.tox

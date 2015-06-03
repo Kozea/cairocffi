@@ -13,11 +13,12 @@
 
 import os
 import time
-import xcffib
-import xcffib.xproto
-from xcffib.xproto import ConfigWindow, CW, EventMask, GC
 
 import pytest
+
+xcffib = pytest.importorskip('xcffib')
+import xcffib.xproto
+from xcffib.xproto import ConfigWindow, CW, EventMask, GC
 
 from . import Context, XCBSurface, cairo_version
 
@@ -104,7 +105,7 @@ def create_gc(conn):
 
 
 def test_xcb_pixmap(xcb_conn):
-    if cairo_version() < 12000:
+    if cairo_version() < 11200:
         pytest.xfail()
 
     width = 10
@@ -156,7 +157,7 @@ def test_xcb_pixmap(xcb_conn):
 
 
 def test_xcb_window(xcb_conn):
-    if cairo_version() < 12000:
+    if cairo_version() < 11200:
         pytest.xfail()
 
     width = 10
