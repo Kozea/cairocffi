@@ -16,7 +16,7 @@ from . import constants
 from .compat import FileNotFoundError
 
 try:
-    from ._ffi import ffi
+    from cairocffi._ffi import ffi
 except ImportError:
     # PyPy < 2.6 compatibility
     from .ffi_build import ffi

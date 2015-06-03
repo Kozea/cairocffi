@@ -19,7 +19,7 @@ from . import dlopen, ImageSurface, Context, constants
 from .compat import xrange
 
 try:
-    from ._ffi_pixbuf import ffi
+    from cairocffi._ffi_pixbuf import ffi
 except ImportError:
     # PyPy < 2.6 compatibility
     from .ffi_build import ffi_pixbuf as ffi
