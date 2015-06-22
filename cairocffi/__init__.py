@@ -21,7 +21,7 @@ except ImportError:
     # PyPy < 2.6 compatibility
     from .ffi_build import ffi
 
-VERSION = '0.7'
+VERSION = '0.7.1'
 # pycairo compat:
 version = '1.10.0'
 version_info = (1, 10, 0)
