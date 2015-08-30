@@ -81,7 +81,7 @@ and may not provide a ``.dll`` file that cairocffi can use.
 cairo versions
 --------------
 
-Cairo, pycairo, and cairocffi each have version numbers.   The same cairocffi version can 
+Cairo, pycairo, and cairocffi each have version numbers.   The same cairocffi version can
 be used with a variety of cairo versions.
 For example, the :meth:`Surface.set_mime_data` method is based on
 the :c:func:`cairo_surface_set_mime_data` C function,
@@ -92,17 +92,18 @@ There is no need for cairocffi’s versions to be tied to cairo’s versions.
 
 Use :func:`cairo_version` to test the version number for cairo::
 
-    if cairo.cairo_version() > 11000:
+    if cairocffi.cairo_version() > 11000:
         surface.set_mime_data('image/jpeg', jpeg_bytes)
-        
+
 Here are all the version numbers::
 
-      >>> c = str(cairo.cairo_version())
-      >>> print "The cairo version is", cairo.cairo_version(), " meaning ", c[0] + "." + c[1:3] + "." + c[3:]
-      The cairo version is 11402  meaning  1.14.02
-      >>> print "The pycairo verson is", cairo.version
-      The pycairo verson is 1.10.0
-      >>> print "The cairocffi version is", cairo.VERSION
+      >>> print("The cairo version is %s, meaning %s."
+      ...       % (cairocffi.cairo_version(), cairocffi.cairo_version_string())
+      The cairo version is 11402, meaning 1.14.02.
+      >>> print("The latest pycairo version this cairocffi version is compatible with is %s."
+      ...       % cairo.version)
+      The latest pycairo version this cairocffi version is compatible with is 1.10.0.
+      >>> print("The cairocffi version is %s." % cairo.VERSION)
       The cairocffi version is 0.7.2
 
 cairocffi is tested with both cairo 1.8.2 and the latest
