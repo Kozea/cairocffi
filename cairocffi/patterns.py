@@ -10,7 +10,7 @@
 
 """
 
-from . import ffi, cairo, _check_status, constants
+from . import ffi, cairo, _check_status, constants, _keepref
 from .matrix import Matrix
 from .surfaces import Surface
 from .compat import xrange
@@ -34,7 +34,8 @@ class Pattern(object):
 
     """
     def __init__(self, pointer):
-        self._pointer = ffi.gc(pointer, cairo.cairo_pattern_destroy)
+        self._pointer = ffi.gc(
+            pointer, _keepref(cairo, cairo.cairo_pattern_destroy))
         self._check_status()
 
     def _check_status(self):
