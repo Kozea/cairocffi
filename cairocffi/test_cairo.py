@@ -1064,8 +1064,8 @@ def test_glyphs():
     assert 5 == x1 < x2 < x3
     assert clusters == [(2, 1), (1, 1), (1, 1)]
     assert is_backwards == 0
-    assert font.glyph_extents(glyphs) == font.text_extents(text)
-    assert font.glyph_extents(glyphs) == context.glyph_extents(glyphs)
+    assert round_tuple(font.glyph_extents(glyphs)) == round_tuple(font.text_extents(text))
+    assert round_tuple(font.glyph_extents(glyphs)) == round_tuple(context.glyph_extents(glyphs))
 
     assert context.copy_path() == []
     context.glyph_path(glyphs)
