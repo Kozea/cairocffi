@@ -19,7 +19,7 @@ this_file = os.path.abspath(__file__)
 this_dir = os.path.split(this_file)[0]
 sys.path.append(this_dir)
 
-import constants
+from cairocffi import constants
 
 
 # Primary cffi definitions
