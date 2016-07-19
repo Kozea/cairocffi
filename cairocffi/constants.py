@@ -2023,6 +2023,31 @@ void
 cairo_win32_scaled_font_get_device_to_logical (cairo_scaled_font_t *scaled_font,
 					       cairo_matrix_t *device_to_logical);
 
+
+        typedef void* CGContextRef;
+        typedef void* CGFontRef;
+        typedef void* ATSUFontID;
+    
+
+cairo_surface_t *
+cairo_quartz_surface_create (cairo_format_t format,
+                             unsigned int width,
+                             unsigned int height);
+
+cairo_surface_t *
+cairo_quartz_surface_create_for_cg_context (CGContextRef cgContext,
+                                            unsigned int width,
+                                            unsigned int height);
+
+CGContextRef
+cairo_quartz_surface_get_cg_context (cairo_surface_t *surface);
+
+cairo_font_face_t *
+cairo_quartz_font_face_create_for_cgfont (CGFontRef font);
+
+cairo_font_face_t *
+cairo_quartz_font_face_create_for_atsu_font_id (ATSUFontID font_id);
+
 """
 _CAIRO_XCB_HEADERS = r"""
 
