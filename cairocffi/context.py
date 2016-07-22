@@ -100,8 +100,13 @@ class Context(object):
     def __init__(self, target):
         self._init_pointer(cairo.cairo_create(target._pointer))
 
+    def __del__(self):
+        cairo.cairo_destroy(self._pointer)
+
     def _init_pointer(self, pointer):
-        self._pointer = ffi.gc(pointer, cairo.cairo_destroy)
+        # let __del__ handle destroy so wrappers created with _from_pointer
+        # also manage the a ref
+        self._pointer = ffi.gc(pointer, lambda ptr: None)
         self._check_status()
 
     def _check_status(self):
