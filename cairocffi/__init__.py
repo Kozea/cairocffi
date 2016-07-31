@@ -31,6 +31,21 @@ version_info = (1, 10, 0)
 def dlopen(ffi, *names):
     """Try various names for the same library, for different platforms."""
     for name in names:
+<<<<<<< HEAD
+        try:
+            return ffi.dlopen(name)
+        except OSError:
+            pass
+    # Re-raise the exception.
+    return ffi.dlopen(names[0])  # pragma: no cover
+
+
+ffi = FFI()
+ffi.cdef(constants._CAIRO_HEADERS)
+CAIRO_NAMES = ['libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll',
+               'cairo.dll', 'cairo','libcairo-2']
+cairo = dlopen(ffi, *CAIRO_NAMES)
+=======
         for lib_name in [name, 'lib' + name]:
             try:
                 path = ctypes.util.find_library(lib_name)
@@ -44,6 +59,7 @@ def dlopen(ffi, *names):
 
 
 cairo = dlopen(ffi, 'cairo', 'cairo-2')
+>>>>>>> refs/remotes/origin/master
 
 
 class CairoError(Exception):
@@ -105,7 +121,8 @@ def install_as_pycairo():
 # Implementation is in submodules, but public API is all here.
 
 from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,
-                       SVGSurface, RecordingSurface, Win32PrintingSurface)
+                       SVGSurface, RecordingSurface, Win32Surface,
+                       Win32PrintingSurface)
 try:
     from .xcb import XCBSurface
 except ImportError:
