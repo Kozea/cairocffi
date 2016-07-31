@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 """
     cairocffi.xcb
     ~~~~~~~~~~~~~
@@ -8,14 +8,10 @@
     :copyright: Copyright 2014 by Simon Sapin
     :license: BSD, see LICENSE for details.
 """
-from xcffib import ffi as xcb_ffi, visualtype_to_c_struct
+from xcffib import visualtype_to_c_struct
 
-from . import ffi, dlopen, constants, CAIRO_NAMES
+from . import cairo, constants
 from .surfaces import Surface, SURFACE_TYPE_TO_CLASS
-
-ffi.include(xcb_ffi)
-ffi.cdef(constants._CAIRO_XCB_HEADERS)
-cairo_xcb = dlopen(ffi, *CAIRO_NAMES)
 
 
 class XCBSurface(Surface):
@@ -38,7 +34,7 @@ class XCBSurface(Surface):
     def __init__(self, conn, drawable, visual, width, height):
         c_visual = visualtype_to_c_struct(visual)
 
-        p = cairo_xcb.cairo_xcb_surface_create(
+        p = cairo.cairo_xcb_surface_create(
             conn._conn, drawable, c_visual, width, height)
         Surface.__init__(self, p)
 
@@ -57,7 +53,7 @@ class XCBSurface(Surface):
         :param width: integer
         :param height: integer
         """
-        cairo_xcb.cairo_xcb_surface_set_size(self._pointer, width, height)
+        cairo.cairo_xcb_surface_set_size(self._pointer, width, height)
         self._check_status()
 
 SURFACE_TYPE_TO_CLASS[constants.SURFACE_TYPE_XCB] = XCBSurface

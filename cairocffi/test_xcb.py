@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 """
 
     cairocffi.test_xcb
@@ -13,11 +13,12 @@
 
 import os
 import time
-import xcffib
-import xcffib.xproto
-from xcffib.xproto import ConfigWindow, CW, EventMask, GC
 
 import pytest
+
+xcffib = pytest.importorskip('xcffib')
+import xcffib.xproto
+from xcffib.xproto import ConfigWindow, CW, EventMask, GC
 
 from . import Context, XCBSurface, cairo_version
 
@@ -103,10 +104,9 @@ def create_gc(conn):
     return gc
 
 
+@pytest.mark.xfail(cairo_version() < 11200,
+                   reason="Cairo version too low")
 def test_xcb_pixmap(xcb_conn):
-    if cairo_version() < 12000:
-        pytest.xfail()
-
     width = 10
     height = 10
 
@@ -155,10 +155,9 @@ def test_xcb_pixmap(xcb_conn):
         event = xcb_conn.poll_for_event()
 
 
+@pytest.mark.xfail(cairo_version() < 11200,
+                   reason="Cairo version too low")
 def test_xcb_window(xcb_conn):
-    if cairo_version() < 12000:
-        pytest.xfail()
-
     width = 10
     height = 10
 

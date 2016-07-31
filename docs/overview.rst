@@ -3,6 +3,26 @@ Overview
 
 .. currentmodule:: cairocffi
 
+Installing CFFI
+---------------
+
+cairocffi requires CFFI,
+which can be installed with pip_ but has its own dependencies
+that can be tricky to install.
+
+* On Linux, install ``python-dev`` and ``libffi-dev`` from your system’s package manager.
+* On OS X, install ``pkg-config`` and ``libffi``, for example with `Homebrew`_.
+  You may need to `set the PKG_CONFIG_PATH environment variable`_.
+* On Windows, consider using `Christoph Gohlke’s unofficial binary builds`_.
+
+See `CFFI’s own documentation`_ for details.
+
+.. _Homebrew: http://brew.sh/
+.. _set the PKG_CONFIG_PATH environment variable: http://cffi.readthedocs.org/#macos-x
+.. _Christoph Gohlke’s unofficial binary builds: http://www.lfd.uci.edu/~gohlke/pythonlibs/#cffi
+.. _CFFI’s own documentation: http://cffi.readthedocs.org/
+
+
 Installing cairocffi
 --------------------
 
@@ -10,9 +30,7 @@ Install with pip_::
 
     pip install cairocffi
 
-This will automatically install CFFI,
-which on CPython requires ``python-dev`` and ``libffi-dev``.
-See the `CFFI documentation`_ for details.
+This will automatically install CFFI.
 
 cairocffi can also be setup to utizile XCB support via xcffib_.
 This can also be installed automatically with pip_::
@@ -20,6 +38,9 @@ This can also be installed automatically with pip_::
     pip install cairocffi[xcb]
 
 In addition to other dependencies, this will install xcffib.
+
+.. _pip: http://pip-installer.org/
+.. _xcffib: https://github.com/tych0/xcffib/
 
 
 Importing
@@ -41,9 +62,6 @@ usual mechanisms.
 On Linux, the ``LD_LIBRARY_PATH`` environment variable can be used to indicate
 where to find shared libraries.
 
-.. _pip: http://pip-installer.org/
-.. _CFFI documentation: http://cffi.readthedocs.org/
-.. _xcffib: https://github.com/tych0/xcffib/
 .. _Pycairo: http://cairographics.org/pycairo/
 
 
@@ -63,7 +81,8 @@ and may not provide a ``.dll`` file that cairocffi can use.
 cairo versions
 --------------
 
-The same cairocffi version can be used with a variety of cairo version.
+Cairo, pycairo, and cairocffi each have version numbers.   The same cairocffi version can
+be used with a variety of cairo versions.
 For example, the :meth:`Surface.set_mime_data` method is based on
 the :c:func:`cairo_surface_set_mime_data` C function,
 which is only available since cairo 1.10.
@@ -71,10 +90,21 @@ You will get a runtime exception if you try to use it with an older cairo.
 You can however still use the rest of the API.
 There is no need for cairocffi’s versions to be tied to cairo’s versions.
 
-Use :func:`cairo_version` to test the version number::
+Use :func:`cairo_version` to test the version number for cairo::
 
-    if cairo.cairo_version() > 11000:
+    if cairocffi.cairo_version() > 11000:
         surface.set_mime_data('image/jpeg', jpeg_bytes)
+
+Here are all the version numbers::
+
+      >>> print("The cairo version is %s, meaning %s."
+      ...       % (cairocffi.cairo_version(), cairocffi.cairo_version_string())
+      The cairo version is 11402, meaning 1.14.02.
+      >>> print("The latest pycairo version this cairocffi version is compatible with is %s."
+      ...       % cairo.version)
+      The latest pycairo version this cairocffi version is compatible with is 1.10.0.
+      >>> print("The cairocffi version is %s." % cairo.VERSION)
+      The cairocffi version is 0.7.2
 
 cairocffi is tested with both cairo 1.8.2 and the latest
 (1.12.8 as of this writing.)

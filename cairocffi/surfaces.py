@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 """
     cairocffi.surface
     ~~~~~~~~~~~~~~~~~
@@ -668,7 +668,7 @@ class ImageSurface(Surface):
         Typical usage will be of the form::
 
             from cairocffi import ImageSurface
-            stride = ImageSurface.stride_for_width(format, width)
+            stride = ImageSurface.format_stride_for_width(format, width)
             data = bytearray(stride * height)
             surface = ImageSurface(format, width, height, data, stride)
 
@@ -720,7 +720,7 @@ class ImageSurface(Surface):
         """
         return ffi.buffer(
             cairo.cairo_image_surface_get_data(self._pointer),
-            size=self.get_stride() * self.get_height())
+            self.get_stride() * self.get_height())
 
     def get_format(self):
         """Return the :ref:`FORMAT` string of the surface."""
