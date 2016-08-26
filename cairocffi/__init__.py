@@ -15,12 +15,7 @@ import ctypes.util
 
 from . import constants
 from .compat import FileNotFoundError
-
-try:
-    from ._ffi import ffi
-except ImportError:
-    # PyPy < 2.6 compatibility
-    from .ffi_build import ffi
+from ._ffi import ffi
 
 VERSION = '0.7.2'
 # pycairo compat:
