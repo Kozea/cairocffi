@@ -15,7 +15,6 @@ import ctypes.util
 
 from . import constants
 from .compat import FileNotFoundError
-
 from ._ffi import ffi
 
 VERSION = '0.7.2'

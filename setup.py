@@ -17,15 +17,6 @@ LONG_DESCRIPTION = io.open(
     encoding='utf-8',
 ).read()
 
-
-try:
-    import cffi
-    if cffi.__version__.startswith('0.'):
-        # https://github.com/SimonSapin/cairocffi/issues/64
-        cffi_args = dict()
-except ImportError:
-    pass
-
 setup(
     name='cairocffi',
     version=VERSION,
