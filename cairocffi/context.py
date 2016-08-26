@@ -10,7 +10,7 @@
 
 """
 
-from . import ffi, cairo, _check_status, constants
+from . import ffi, cairo, _check_status, constants, _keepref
 from .matrix import Matrix
 from .patterns import Pattern
 from .surfaces import Surface
@@ -101,7 +101,7 @@ class Context(object):
         self._init_pointer(cairo.cairo_create(target._pointer))
 
     def _init_pointer(self, pointer):
-        self._pointer = ffi.gc(pointer, cairo.cairo_destroy)
+        self._pointer = ffi.gc(pointer, _keepref(cairo, cairo.cairo_destroy))
         self._check_status()
 
     def _check_status(self):

@@ -10,7 +10,7 @@
 
 """
 
-from . import ffi, cairo, _check_status, constants
+from . import ffi, cairo, _check_status, constants, _keepref
 from .matrix import Matrix
 from .compat import xrange
 
@@ -31,7 +31,8 @@ class FontFace(object):
 
     """
     def __init__(self, pointer):
-        self._pointer = ffi.gc(pointer, cairo.cairo_font_face_destroy)
+        self._pointer = ffi.gc(
+            pointer, _keepref(cairo, cairo.cairo_font_face_destroy))
         self._check_status()
 
     def _check_status(self):
@@ -137,7 +138,8 @@ class ScaledFont(object):
             ctm._pointer, options._pointer))
 
     def _init_pointer(self, pointer):
-        self._pointer = ffi.gc(pointer, cairo.cairo_scaled_font_destroy)
+        self._pointer = ffi.gc(
+            pointer, _keepref(cairo, cairo.cairo_scaled_font_destroy))
         self._check_status()
 
     def _check_status(self):
@@ -347,9 +349,10 @@ class ScaledFont(object):
         status = cairo.cairo_scaled_font_text_to_glyphs(
             self._pointer, x, y, _encode_string(text), -1,
             glyphs, num_glyphs, clusters, num_clusters, cluster_flags)
-        glyphs = ffi.gc(glyphs[0], cairo.cairo_glyph_free)
+        glyphs = ffi.gc(glyphs[0], _keepref(cairo, cairo.cairo_glyph_free))
         if with_clusters:
-            clusters = ffi.gc(clusters[0], cairo.cairo_text_cluster_free)
+            clusters = ffi.gc(
+                clusters[0], _keepref(cairo, cairo.cairo_text_cluster_free))
         _check_status(status)
         glyphs = [
             (glyph.index, glyph.x, glyph.y)
@@ -393,7 +396,8 @@ class FontOptions(object):
             getattr(self, 'set_' + name)(value)
 
     def _init_pointer(self, pointer):
-        self._pointer = ffi.gc(pointer, cairo.cairo_font_options_destroy)
+        self._pointer = ffi.gc(
+            pointer, _keepref(cairo, cairo.cairo_font_options_destroy))
         self._check_status()
 
     def _check_status(self):

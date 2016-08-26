@@ -15,7 +15,7 @@ import sys
 import ctypes
 import weakref
 
-from . import ffi, cairo, _check_status, constants
+from . import ffi, cairo, _check_status, constants, _keepref
 from .fonts import FontOptions, _encode_string
 
 
@@ -128,7 +128,8 @@ class Surface(object):
 
     """
     def __init__(self, pointer, target_keep_alive=None):
-        self._pointer = ffi.gc(pointer, cairo.cairo_surface_destroy)
+        self._pointer = ffi.gc(
+            pointer, _keepref(cairo, cairo.cairo_surface_destroy))
         self._check_status()
         if target_keep_alive not in (None, ffi.NULL):
             keep_alive = KeepAlive(target_keep_alive)
