@@ -2,7 +2,6 @@ from setuptools import setup, find_packages
 from os import path
 import re
 import io
-import sys
 
 
 VERSION = re.search(
@@ -18,20 +17,6 @@ LONG_DESCRIPTION = io.open(
     encoding='utf-8',
 ).read()
 
-if '_cffi_backend' in sys.builtin_module_names:
-    import _cffi_backend
-    requires_cffi = "cffi==" + _cffi_backend.__version__
-else:
-    requires_cffi = "cffi>=1.1.0"
-
-# PyPy < 2.6 compatibility
-if requires_cffi.startswith("cffi==0."):
-    cffi_args = dict()
-else:
-    cffi_args = dict(cffi_modules=[
-        'cairocffi/ffi_build.py:ffi',
-        'cairocffi/ffi_build.py:ffi_pixbuf'
-    ])
 
 try:
     import cffi
@@ -59,8 +44,11 @@ setup(
         'Topic :: Multimedia :: Graphics',
     ],
     packages=find_packages(),
-    install_requires=[requires_cffi],
-    setup_requires=[requires_cffi],
+    install_requires=['cffi>=1.1.0'],
+    setup_requires=['cffi>=1.1.0'],
+    cffi_modules=[
+        'cairocffi/ffi_build.py:ffi',
+        'cairocffi/ffi_build.py:ffi_pixbuf'
+    ],
     extras_require={'xcb': ['xcffib>=0.3.2']},
-    **cffi_args
 )

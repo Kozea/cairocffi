@@ -24,9 +24,7 @@ from cairocffi import constants
 
 # Primary cffi definitions
 ffi = FFI()
-if hasattr(ffi, 'set_source'):
-    # PyPy < 2.6 compatibility
-    ffi.set_source('cairocffi._ffi', None)
+ffi.set_source('cairocffi._ffi', None)
 ffi.cdef(constants._CAIRO_HEADERS)
 
 # include xcffib cffi definitions for cairo xcb support
@@ -39,9 +37,7 @@ except ImportError:
 
 # gdk pixbuf cffi definitions
 ffi_pixbuf = FFI()
-if hasattr(ffi_pixbuf, 'set_source'):
-    # PyPy < 2.6 compatibility
-    ffi_pixbuf.set_source('cairocffi._ffi_pixbuf', None)
+ffi_pixbuf.set_source('cairocffi._ffi_pixbuf', None)
 ffi_pixbuf.include(ffi)
 ffi_pixbuf.cdef('''
     typedef unsigned long   gsize;

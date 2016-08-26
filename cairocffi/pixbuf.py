@@ -16,13 +16,9 @@ from functools import partial
 from array import array
 
 from . import dlopen, ImageSurface, Context, constants
+from ._ffi_pixbuf import ffi
 from .compat import xrange
 
-try:
-    from ._ffi_pixbuf import ffi
-except ImportError:
-    # PyPy < 2.6 compatibility
-    from .ffi_build import ffi_pixbuf as ffi
 
 __all__ = ['decode_to_image_surface']
 
