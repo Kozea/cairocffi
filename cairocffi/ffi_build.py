@@ -16,7 +16,7 @@ from cffi import FFI
 
 # Path hack to import constants when this file is exec'd by setuptools
 this_file = os.path.abspath(__file__)
-this_dir = os.path.split(this_file)[0]
+this_dir = os.path.dirname(this_file)
 sys.path.append(this_dir)
 
 import constants
