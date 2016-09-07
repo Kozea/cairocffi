@@ -12,6 +12,6 @@ before_install:
 install:
   - "pip install xcffib"
   - "pip install ."
-  - "python cairocffi/ffi_build.py"
-script: "py.test"
+  - "cd $HOME"
+script: "py.test --pyargs cairocffi"
 sudo: false
