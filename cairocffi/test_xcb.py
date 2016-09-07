@@ -87,6 +87,10 @@ def create_pixmap(conn, wid, width, height):
     return pixmap
 
 
+def remove_pixmap(conn, pixmap):
+    conn.core.FreePixmap(pixmap)
+
+
 def create_gc(conn):
     """Creates a simple graphics context"""
     gc = conn.generate_id()
@@ -104,8 +108,10 @@ def create_gc(conn):
     return gc
 
 
-@pytest.mark.xfail(cairo_version() < 11200,
-                   reason="Cairo version too low")
+def remove_gc(conn, gc):
+    conn.core.FreeGC(gc)
+
+
 def test_xcb_pixmap(xcb_conn):
     width = 10
     height = 10
@@ -148,6 +154,11 @@ def test_xcb_pixmap(xcb_conn):
         0, 0,    # dest x, dest y
         width, height
     )
+
+    ctx = None
+    surface = None
+    remove_gc(xcb_conn, gc)
+    remove_pixmap(xcb_conn, pixmap)
 
     # flush the connection, make sure no errors were thrown
     xcb_conn.flush()
@@ -219,6 +230,9 @@ def test_xcb_window(xcb_conn):
     ctx = Context(surface)
     ctx.set_source_rgb(1, 1, 1)
     ctx.paint()
+
+    ctx = None
+    surface = None
 
     # flush the connection, make sure no errors were thrown
     xcb_conn.flush()
