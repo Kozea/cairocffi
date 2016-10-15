@@ -142,6 +142,8 @@ Basic usage
 For doing something useful with cairo,
 you need at least a surface and a context::
 
+    import cairocffi as cairo
+
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 300, 200)
     context = cairo.Context(surface)
     with context:
