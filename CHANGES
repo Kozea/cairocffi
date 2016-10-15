@@ -1,6 +1,35 @@
 cairocffi changelog
 -------------------
 
+Version 0.7.2
+.............
+
+Released on 2015-08-04
+
+* Use ctypes.util.find_library with dlopen.
+
+
+Version 0.7.1
+.............
+
+Released on 2015-06-22
+
+* Allow installing cairocffi when cffi<1.0 is installed.
+
+
+Version 0.7
+...........
+
+Released on 2015-06-05
+
+* `#47 <https://github.com/SimonSapin/cairocffi/pull/47>`_:
+  Fix PyPy support.
+* `#60 <https://github.com/SimonSapin/cairocffi/pull/60>`_:
+  Use CFFI-1.0 methods.
+* `#61 <https://github.com/SimonSapin/cairocffi/pull/61>`_:
+  Allow ffi import when package is pip installed.
+
+
 Version 0.6
 ...........
 
