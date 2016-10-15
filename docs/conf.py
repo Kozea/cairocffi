@@ -1,7 +1,6 @@
 import re
 import os
 
-html_theme = 'classic'
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',
               'sphinx.ext.coverage']
 master_doc = 'index'
