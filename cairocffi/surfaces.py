@@ -441,7 +441,7 @@ class Surface(object):
         else:
             # TODO: avoid making a copy here if possible.
             length = len(data)
-            data = ffi.new('char[]', data)
+            data = ffi.new('unsigned char[]', data)
             keep_alive = KeepAlive(data, mime_type)
             _check_status(cairo.cairo_surface_set_mime_data(
                 self._pointer, mime_type, data, length,
