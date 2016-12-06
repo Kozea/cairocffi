@@ -649,7 +649,7 @@ class ImageSurface(Surface):
                 raise ValueError('Got a %d bytes buffer, needs at least %d.'
                                  % (length, stride * height))
             pointer = cairo.cairo_image_surface_create_for_data(
-                ffi.cast('char*', address), format, width, height, stride)
+                ffi.cast('unsigned char*', address), format, width, height, stride)
         Surface.__init__(self, pointer, target_keep_alive=data)
 
     @classmethod
