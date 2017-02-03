@@ -1,6 +1,24 @@
 cairocffi changelog
 -------------------
 
+Version 0.8.0
+.............
+
+Released on 2017-02-03
+
+* Follow semver
+* `#76 <https://github.com/Kozea/cairocffi/issues/76>`_:
+  Avoid implicit relative import
+* `#74 <https://github.com/Kozea/cairocffi/pull/74>`_:
+  Use utf-8 instead of utf8 in headers
+* `#73 <https://github.com/Kozea/cairocffi/issues/73>`_:
+  Keep cairo library loaded until all relevant objects are freed
+* `#86 <https://github.com/Kozea/cairocffi/pull/86>`_:
+  Add cairo_quartz_* functions for MacOS
+* Use the default ReadTheDocs theme
+* Fix implicit casts
+
+
 Version 0.7.2
 .............
 
