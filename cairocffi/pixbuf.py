@@ -69,7 +69,7 @@ class Pixbuf(object):
         return partial(function, self._pointer)
 
 
-def decode_to_pixbuf(image_data):
+def decode_to_pixbuf(image_data, width=None, height=None):
     """Decode an image from memory with GDK-PixBuf.
     The file format is detected automatically.
 
@@ -85,6 +85,8 @@ def decode_to_pixbuf(image_data):
     loader = ffi.gc(
         gdk_pixbuf.gdk_pixbuf_loader_new(), gobject.g_object_unref)
     error = ffi.new('GError **')
+    if width and height:
+        gdk_pixbuf.gdk_pixbuf_loader_set_size(loader, width, height)
     handle_g_error(error, gdk_pixbuf.gdk_pixbuf_loader_write(
         loader, ffi.new('guchar[]', image_data), len(image_data), error))
     handle_g_error(error, gdk_pixbuf.gdk_pixbuf_loader_close(loader, error))
@@ -101,7 +103,7 @@ def decode_to_pixbuf(image_data):
     return Pixbuf(pixbuf), format_name
 
 
-def decode_to_image_surface(image_data):
+def decode_to_image_surface(image_data, width=None, height=None):
     """Decode an image from memory into a cairo surface.
     The file format is detected automatically.
 
@@ -114,7 +116,7 @@ def decode_to_image_surface(image_data):
         or in an unsupported format.
 
     """
-    pixbuf, format_name = decode_to_pixbuf(image_data)
+    pixbuf, format_name = decode_to_pixbuf(image_data, width, height)
     surface = (
         pixbuf_to_cairo_gdk(pixbuf) if gdk is not None
         else pixbuf_to_cairo_slices(pixbuf) if not pixbuf.get_has_alpha()
