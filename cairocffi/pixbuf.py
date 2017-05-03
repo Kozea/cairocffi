@@ -74,6 +74,8 @@ def decode_to_pixbuf(image_data, width=None, height=None):
     The file format is detected automatically.
 
     :param image_data: A byte string
+    :param width: Integer width in pixels or None
+    :param height: Integer height in pixels or None
     :returns:
         A tuple of a new :class:`PixBuf` object
         and the name of the detected image format.
@@ -108,6 +110,8 @@ def decode_to_image_surface(image_data, width=None, height=None):
     The file format is detected automatically.
 
     :param image_data: A byte string
+    :param width: Integer width in pixels or None
+    :param height: Integer height in pixels or None
     :returns:
         A tuple of a new :class:`~cairocffi.ImageSurface` object
         and the name of the detected image format.
