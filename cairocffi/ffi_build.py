@@ -68,6 +68,8 @@ ffi_pixbuf.cdef('''
     gboolean          gdk_pixbuf_loader_write        (
         GdkPixbufLoader *loader, const guchar *buf, gsize count,
         GError **error);
+    void              gdk_pixbuf_loader_set_size (
+        GdkPixbufLoader *loader, int width, int height);
     gboolean          gdk_pixbuf_loader_close        (
         GdkPixbufLoader *loader, GError **error);
 
