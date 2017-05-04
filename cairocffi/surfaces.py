@@ -603,8 +603,12 @@ class Surface(object):
 class ImageSurface(Surface):
     """Creates an image surface of the specified format and dimensions.
 
-    If :obj:`data` is not :obj:`None`
-    its initial contents will be used as the initial image contents;
+    If :obj:`data` is not :obj:`None` it must either be an object
+    that supports the Python *buffer* protocol,
+    or a :class:`ctypes.c_void_p` pointing at a writable area in memory
+    of at least *height×stride* bytes in size.
+    
+    The buffer's initial contents will be used as the initial image contents;
     you must explicitly clear the buffer,
     using, for example, :meth:`Context.rectangle` and :meth:`Context.fill`
     if you want it cleared.
@@ -623,7 +627,8 @@ class ImageSurface(Surface):
     :param width: Width of the surface, in pixels.
     :param height: Height of the surface, in pixels.
     :param data:
-        Buffer supplied in which to write contents,
+        Buffer supplied in which to write contents as an object that
+        supports the *buffer* protocol, or as a :class:`ctypes.c_void_p`,
         or :obj:`None` to create a new buffer.
     :param stride:
         The number of bytes between the start of rows
@@ -644,10 +649,13 @@ class ImageSurface(Surface):
         else:
             if stride is None:
                 stride = self.format_stride_for_width(format, width)
-            address, length = from_buffer(data)
-            if length < stride * height:
-                raise ValueError('Got a %d bytes buffer, needs at least %d.'
-                                 % (length, stride * height))
+            if isinstance(data, ctypes.c_voidp):
+                address = data.value
+            else:
+                address, length = from_buffer(data)
+                if length < stride * height:
+                    raise ValueError('Got a %d bytes buffer, needs at least %d.'
+                                     % (length, stride * height))
             pointer = cairo.cairo_image_surface_create_for_data(
                 ffi.cast('unsigned char*', address), format, width, height, stride)
         Surface.__init__(self, pointer, target_keep_alive=data)
