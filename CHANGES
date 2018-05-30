@@ -1,6 +1,17 @@
 cairocffi changelog
 -------------------
 
+Version 0.8.1
+.............
+
+Released on 2018-05-30
+
+* `#98 <https://github.com/Kozea/cairocffi/pull/98>`_:
+  Add width and height options to pixbuf.decode_to_image_surface
+* `#112 <https://github.com/Kozea/cairocffi/pull/112>`_:
+  Add cairo library name from PyGObject for Windows
+
+
 Version 0.8.0
 .............
 
