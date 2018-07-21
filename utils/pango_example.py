@@ -4,9 +4,9 @@ import cffi
 
 
 ffi = cffi.FFI()
-ffi.include(cairocffi.ffi)
 ffi.cdef('''
     /* GLib */
+    typedef void cairo_t;
     typedef void* gpointer;
     void g_object_unref (gpointer object);
 
