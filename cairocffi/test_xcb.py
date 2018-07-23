@@ -24,22 +24,18 @@ from . import Context, XCBSurface, cairo_version
 
 
 @pytest.fixture
-def xcb_conn(request):
+def xcb_conn():
     """
     Fixture that will setup and take down a xcffib.Connection object running on
     a display spawned by xvfb
     """
     display = os.environ.get('DISPLAY')
-    if display:
-        conn = xcffib.connect(display)
-
-        def teardown_conn():
-            conn.disconnect()
-    else:
+    if display is None:
         pytest.skip('DISPLAY environment variable not set')
 
-    request.addfinalizer(teardown_conn)
-    return conn
+    conn = xcffib.connect(display)
+    yield conn
+    conn.disconnect()
 
 
 def find_root_visual(conn):
@@ -148,6 +144,11 @@ def test_xcb_pixmap(xcb_conn):
         0, 0,    # dest x, dest y
         width, height
     )
+
+    ctx = None
+    surface = None
+    xcb_conn.core.FreeGC(gc)
+    xcb_conn.core.FreePixmap(pixmap)
 
     # flush the connection, make sure no errors were thrown
     xcb_conn.flush()
