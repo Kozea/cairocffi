@@ -1,7 +1,8 @@
-from setuptools import setup, find_packages
 from os import path
-import re
+from setuptools import setup, find_packages
 import io
+import re
+import sys
 
 
 VERSION = re.search(
@@ -16,6 +17,9 @@ LONG_DESCRIPTION = io.open(
     path.join(path.dirname(__file__), 'README.rst'),
     encoding='utf-8',
 ).read()
+
+needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
+pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 setup(
     name='cairocffi',
@@ -36,10 +40,14 @@ setup(
     ],
     packages=find_packages(),
     install_requires=['cffi>=1.1.0'],
-    setup_requires=['cffi>=1.1.0'],
+    setup_requires=['cffi>=1.1.0'] + pytest_runner,
     cffi_modules=[
         'cairocffi/ffi_build.py:ffi',
         'cairocffi/ffi_build.py:ffi_pixbuf'
     ],
-    extras_require={'xcb': ['xcffib>=0.3.2']},
+    tests_require=['pytest-runner', 'pytest-cov'],
+    extras_require={
+        'xcb': ['xcffib>=0.3.2'],
+        'test': ['pytest-runner', 'pytest-cov'],
+    },
 )
