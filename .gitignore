@@ -5,7 +5,6 @@ cairocffi/_ffi*.py
 *.egg-info
 /.eggs
 /dist
-/.tox
+/.cache
 /.coverage
-/htmlcov
 /docs/_build
