@@ -31,7 +31,7 @@ class PrintEnumsVisitor(pycparser.c_ast.NodeVisitor):
 
 def read_cairo_header(cairo_git_dir, suffix):
     filename = os.path.join(cairo_git_dir, 'src', 'cairo%s.h' % suffix)
-    source = open(filename).read()
+    source = open(filename, encoding='iso-8859-1').read()
     source = re.sub(
         '/\*.*?\*/'
         '|CAIRO_(BEGIN|END)_DECLS'
