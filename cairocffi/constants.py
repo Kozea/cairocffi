@@ -40,7 +40,11 @@ STATUS_DEVICE_ERROR = 35
 STATUS_INVALID_MESH_CONSTRUCTION = 36
 STATUS_DEVICE_FINISHED = 37
 STATUS_JBIG2_GLOBAL_MISSING = 38
-STATUS_LAST_STATUS = 39
+STATUS_PNG_ERROR = 39
+STATUS_FREETYPE_ERROR = 40
+STATUS_WIN32_GDI_ERROR = 41
+STATUS_TAG_ERROR = 42
+STATUS_LAST_STATUS = 43
 
 CONTENT_COLOR = 0x1000
 CONTENT_ALPHA = 0x2000
@@ -201,14 +205,39 @@ REGION_OVERLAP_IN = 0
 REGION_OVERLAP_OUT = 1
 REGION_OVERLAP_PART = 2
 
+PDF_OUTLINE_ROOT = 0
+
 PDF_VERSION_1_4 = 0
 PDF_VERSION_1_5 = 1
+
+PDF_OUTLINE_FLAG_OPEN = 0x1
+PDF_OUTLINE_FLAG_BOLD = 0x2
+PDF_OUTLINE_FLAG_ITALIC = 0x4
+
+PDF_METADATA_TITLE = 0
+PDF_METADATA_AUTHOR = 1
+PDF_METADATA_SUBJECT = 2
+PDF_METADATA_KEYWORDS = 3
+PDF_METADATA_CREATOR = 4
+PDF_METADATA_CREATE_DATE = 5
+PDF_METADATA_MOD_DATE = 6
 
 PS_LEVEL_2 = 0
 PS_LEVEL_3 = 1
 
 SVG_VERSION_1_1 = 0
 SVG_VERSION_1_2 = 1
+
+SVG_UNIT_USER = 0
+SVG_UNIT_EM = 1
+SVG_UNIT_EX = 2
+SVG_UNIT_PX = 3
+SVG_UNIT_IN = 4
+SVG_UNIT_CM = 5
+SVG_UNIT_MM = 6
+SVG_UNIT_PT = 7
+SVG_UNIT_PC = 8
+SVG_UNIT_PERCENT = 9
 
 _CAIRO_HEADERS = r"""
 
@@ -281,6 +310,10 @@ typedef enum _cairo_status {
     CAIRO_STATUS_INVALID_MESH_CONSTRUCTION,
     CAIRO_STATUS_DEVICE_FINISHED,
     CAIRO_STATUS_JBIG2_GLOBAL_MISSING,
+    CAIRO_STATUS_PNG_ERROR,
+    CAIRO_STATUS_FREETYPE_ERROR,
+    CAIRO_STATUS_WIN32_GDI_ERROR,
+    CAIRO_STATUS_TAG_ERROR,
 
     CAIRO_STATUS_LAST_STATUS
 } cairo_status_t;
@@ -639,6 +672,12 @@ cairo_copy_clip_rectangle_list (cairo_t *cr);
 void
 cairo_rectangle_list_destroy (cairo_rectangle_list_t *rectangle_list);
 
+void
+cairo_tag_begin (cairo_t *cr, const char *tag_name, const char *attributes);
+
+void
+cairo_tag_end (cairo_t *cr, const char *tag_name);
+
 typedef struct _cairo_scaled_font cairo_scaled_font_t;
 
 typedef struct _cairo_font_face cairo_font_face_t;
@@ -767,6 +806,13 @@ cairo_font_options_set_hint_metrics (cairo_font_options_t *options,
 				     cairo_hint_metrics_t  hint_metrics);
 cairo_hint_metrics_t
 cairo_font_options_get_hint_metrics (const cairo_font_options_t *options);
+
+const char *
+cairo_font_options_get_variations (cairo_font_options_t *options);
+
+void
+cairo_font_options_set_variations (cairo_font_options_t *options,
+                                   const char           *variations);
 
 void
 cairo_select_font_face (cairo_t              *cr,
@@ -1854,6 +1900,10 @@ void
 cairo_debug_reset_static_data (void);
 
 
+        typedef enum _cairo_pdf_outline_root {
+           CAIRO_PDF_OUTLINE_ROOT = 0
+        } cairo_pdf_outline_root_t;
+    
 
 typedef enum _cairo_pdf_version {
     CAIRO_PDF_VERSION_1_4,
@@ -1886,6 +1936,43 @@ void
 cairo_pdf_surface_set_size (cairo_surface_t	*surface,
 			    double		 width_in_points,
 			    double		 height_in_points);
+
+typedef enum _cairo_pdf_outline_flags {
+    CAIRO_PDF_OUTLINE_FLAG_OPEN   = 0x1,
+    CAIRO_PDF_OUTLINE_FLAG_BOLD   = 0x2,
+    CAIRO_PDF_OUTLINE_FLAG_ITALIC = 0x4,
+} cairo_pdf_outline_flags_t;
+
+int
+cairo_pdf_surface_add_outline (cairo_surface_t	          *surface,
+			       int                         parent_id,
+			       const char                 *utf8,
+			       const char                 *link_attribs,
+			       cairo_pdf_outline_flags_t  flags);
+
+typedef enum _cairo_pdf_metadata {
+    CAIRO_PDF_METADATA_TITLE,
+    CAIRO_PDF_METADATA_AUTHOR,
+    CAIRO_PDF_METADATA_SUBJECT,
+    CAIRO_PDF_METADATA_KEYWORDS,
+    CAIRO_PDF_METADATA_CREATOR,
+    CAIRO_PDF_METADATA_CREATE_DATE,
+    CAIRO_PDF_METADATA_MOD_DATE,
+} cairo_pdf_metadata_t;
+
+void
+cairo_pdf_surface_set_metadata (cairo_surface_t	     *surface,
+				cairo_pdf_metadata_t  metadata,
+                                const char           *utf8);
+
+void
+cairo_pdf_surface_set_page_label (cairo_surface_t *surface,
+                                  const char      *utf8);
+
+void
+cairo_pdf_surface_set_thumbnail_size (cairo_surface_t *surface,
+				      int              width,
+				      int              height);
 
 
 
@@ -1945,6 +2032,19 @@ typedef enum _cairo_svg_version {
     CAIRO_SVG_VERSION_1_2
 } cairo_svg_version_t;
 
+typedef enum _cairo_svg_unit {
+    CAIRO_SVG_UNIT_USER = 0,
+    CAIRO_SVG_UNIT_EM,
+    CAIRO_SVG_UNIT_EX,
+    CAIRO_SVG_UNIT_PX,
+    CAIRO_SVG_UNIT_IN,
+    CAIRO_SVG_UNIT_CM,
+    CAIRO_SVG_UNIT_MM,
+    CAIRO_SVG_UNIT_PT,
+    CAIRO_SVG_UNIT_PC,
+    CAIRO_SVG_UNIT_PERCENT
+} cairo_svg_unit_t;
+
 cairo_surface_t *
 cairo_svg_surface_create (const char   *filename,
 			  double	width_in_points,
@@ -1967,6 +2067,13 @@ cairo_svg_get_versions (cairo_svg_version_t const	**versions,
 const char *
 cairo_svg_version_to_string (cairo_svg_version_t version);
 
+void
+cairo_svg_surface_set_document_unit (cairo_surface_t	*surface,
+				     cairo_svg_unit_t	 unit);
+
+cairo_svg_unit_t
+cairo_svg_surface_get_document_unit (cairo_surface_t	*surface);
+
 
         typedef void* HDC;
         typedef void* HFONT;
@@ -1975,6 +2082,10 @@ cairo_svg_version_to_string (cairo_svg_version_t version);
 
 cairo_surface_t *
 cairo_win32_surface_create (HDC hdc);
+
+cairo_surface_t *
+cairo_win32_surface_create_with_format (HDC hdc,
+                                        cairo_format_t format);
 
 cairo_surface_t *
 cairo_win32_printing_surface_create (HDC hdc);

@@ -47,7 +47,14 @@ def read_cairo_header(cairo_git_dir, suffix):
 def generate(cairo_git_dir):
     # Remove comments, preprocessor instructions and macros.
     source = read_cairo_header(cairo_git_dir, '')
+
+    source += '''
+        typedef enum _cairo_pdf_outline_root {
+           CAIRO_PDF_OUTLINE_ROOT = 0
+        } cairo_pdf_outline_root_t;
+    '''
     source += read_cairo_header(cairo_git_dir, '-pdf')
+
     source += read_cairo_header(cairo_git_dir, '-ps')
     source += read_cairo_header(cairo_git_dir, '-svg')
 

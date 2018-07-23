@@ -378,7 +378,7 @@ class Surface(object):
         return tuple(ppi)
 
     def get_font_options(self):
-        """ Retrieves the default font rendering options for the surface.
+        """Retrieves the default font rendering options for the surface.
 
         This allows display surfaces to report the correct subpixel order
         for rendering on them,
@@ -392,6 +392,42 @@ class Surface(object):
         cairo.cairo_surface_get_font_options(
             self._pointer, font_options._pointer)
         return font_options
+
+    def set_device_scale(self, x_scale, y_scale):
+        """Sets a scale that is multiplied to the device coordinates determined
+        by the CTM when drawing to surface.
+
+        One common use for this is to render to very high resolution display
+        devices at a scale factor, so that code that assumes 1 pixel will be a
+        certain size will still work.  Setting a transformation via
+        cairo_translate() isn't sufficient to do this, since functions like
+        cairo_device_to_user() will expose the hidden scale.
+
+        Note that the scale affects drawing to the surface as well as using the
+        surface in a source pattern.
+
+        :param x_scale: the scale in the X direction, in device units.
+        :param y_scale: the scale in the Y direction, in device units.
+
+        *New in cairo 1.14.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        cairo.cairo_surface_set_device_scale(self._pointer, x_scale, y_scale)
+        self._check_status()
+
+    def get_device_scale(self):
+        """Returns the previous device offset set by :meth:`set_device_scale`.
+
+        *New in cairo 1.14.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        size = ffi.new('double[2]')
+        cairo.cairo_surface_get_device_scale(self._pointer, size + 0, size + 1)
+        return tuple(size)
 
     def set_mime_data(self, mime_type, data):
         """
@@ -816,6 +852,87 @@ class PDFSurface(Surface):
             self._pointer, width_in_points, height_in_points)
         self._check_status()
 
+    def add_outline(self, parent_id, utf8, link_attribs, flags):
+        """Add an item to the document outline hierarchy.
+
+        The outline has the ``utf8`` name and links to the location specified
+        by ``link_attribs``. Link attributes have the same keys and values as
+        the Link Tag, excluding the ``rect`` attribute. The item will be a
+        child of the item with id ``parent_id``. Use :ref:`PDF_OUTLINE_ROOT` as
+        the parent id of top level items.
+
+        :param parent_id:
+            the id of the parent item or :ref:`PDF_OUTLINE_ROOT` if this is a
+            top level item.
+        :param utf8: the name of the outline.
+        :param link_attribs:
+            the link attributes specifying where this outline links to.
+        :param flags: outline item flags.
+
+        Return value: the id for the added item.
+
+        *New in cairo 1.16.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        value = cairo.cairo_pdf_surface_add_outline(
+            self._pointer, parent_id, _encode_string(utf8), link_attribs,
+            flags)
+        self._check_status()
+        return value
+
+    def set_metadata(self, metadata, utf8):
+        """Sets document metadata.
+
+        The :ref:`METADATA_CREATE_DATE` and :ref:`METADATA_MOD_DATE` values
+        must be in ISO-8601 format: YYYY-MM-DDThh:mm:ss. An optional timezone
+        of the form "[+/-]hh:mm" or "Z" for UTC time can be appended. All other
+        metadata values can be any UTF-8 string.
+
+        :param metadata: the metadata item to set.
+        :param utf8: metadata value.
+
+        *New in cairo 1.16.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        cairo.cairo_pdf_surface_set_metadata(
+            self._pointer, metadata, _encode_string(utf8))
+        self._check_status()
+
+    def set_page_label(self, utf8):
+        """Set page label for the current page.
+
+        :param utf8: the page label.
+
+        *New in cairo 1.16.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        cairo.cairo_pdf_surface_set_page_label(self._pointer, _encode_string(utf8))
+        self._check_status()
+
+    def set_thumbnail_size(self, width, height):
+        """Set thumbnail image size for the current and all subsequent pages.
+
+        Setting a width or height of 0 disables thumbnails for the current and
+        subsequent pages.
+
+        :param width: thumbnail width.
+        :param height: thumbnail height.
+
+        *New in cairo 1.16.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        cairo.cairo_pdf_surface_set_thumbnail_size(
+            self._pointer, width, height)
+        self._check_status()
+
     def restrict_to_version(self, version):
         """Restricts the generated PDF file to :obj:`version`.
 
@@ -1169,6 +1286,51 @@ class SVGSurface(Surface):
         """
         cairo.cairo_svg_surface_restrict_to_version(self._pointer, version)
         self._check_status()
+
+    def set_document_unit(self, unit):
+        """Use specified unit for width and height of generated SVG file.
+
+        See ``SVG_UNIT_*`` enumerated values for a list of available unit
+        values that can be used here.
+
+        This function can be called at any time before generating the SVG file.
+
+        However to minimize the risk of ambiguities it's recommended to call it
+        before any drawing operations have been performed on the given surface,
+        to make it clearer what the unit used in the drawing operations is.
+
+        The simplest way to do this is to call this function immediately after
+        creating the SVG surface.
+
+        Note if this function is never called, the default unit for SVG
+        documents generated by cairo will be "pt". This is for historical
+        reasons.
+
+        :param unit: SVG unit.
+
+        *New in cairo 1.16.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        cairo.cairo_svg_surface_set_document_unit(self._pointer, unit)
+        self._check_status()
+
+    def get_document_unit(self):
+        """Get the unit of the SVG surface.
+
+        If the surface passed as an argument is not a SVG surface, the function
+        sets the error status to ``STATUS_SURFACE_TYPE_MISMATCH`` and
+        returns :ref:`SVG_UNIT_USER`.
+
+        Return value: the SVG unit of the SVG surface.
+
+        *New in cairo 1.16.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        return cairo.cairo_svg_surface_get_document_unit(self._pointer)
 
     @staticmethod
     def get_versions():

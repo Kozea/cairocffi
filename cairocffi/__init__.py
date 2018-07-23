@@ -18,9 +18,9 @@ from .compat import FileNotFoundError
 from ._ffi import ffi
 
 VERSION = '0.8.1'
-# pycairo compat:
-version = '1.10.0'
-version_info = (1, 10, 0)
+# supported version of cairo, used to be pycairo version too:
+version = '1.16.0'
+version_info = (1, 16, 0)
 
 
 def dlopen(ffi, *names):

@@ -492,3 +492,43 @@ class FontOptions(object):
 
         """
         return cairo.cairo_font_options_get_hint_metrics(self._pointer)
+
+    def set_variations(self, variations):
+        """Sets the OpenType font variations for the font options object.
+
+        Font variations are specified as a string with a format that is similar
+        to the CSS font-variation-settings. The string contains a
+        comma-separated list of axis assignments, which each assignment
+        consists of a 4-character axis name and a value, separated by
+        whitespace and optional equals sign.
+
+        :param variations: the new font variations, or ``None``.
+
+        *New in cairo 1.16.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        cairo.cairo_font_options_set_variations(
+            self._pointer, _encode_string(variations))
+        self._check_status()
+
+    def get_variations(self):
+        """Gets the OpenType font variations for the font options object.
+
+        See :meth:`set_variations` for details about the
+        string format.
+
+        Return value: the font variations for the font options object. The
+        returned string belongs to the ``options`` and must not be modified.
+        It is valid until either the font options object is destroyed or the
+        font variations in this object is modified with :meth:`set_variations`.
+
+        *New in cairo 1.16.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        return ffi.string(
+            cairo.cairo_font_options_get_variations(self._pointer)).decode(
+                'utf8', 'replace')

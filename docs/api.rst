@@ -802,6 +802,77 @@ that a generated PDF file will conform to.
     The version 1.5 of the PDF specification.
 
 
+.. _PDF_OUTLINE:
+
+PDF outline
+-----------
+
+Used to specify the attributes of an outline item. These flags may be
+bitwise-or'd to produce any combination of flags.
+
+*New in cairo 1.16.*
+
+*New in cairocffi 0.9.*
+
+.. data:: OUTLINE_FLAG_OPEN
+
+    The outline item defaults to open in the PDF viewer.
+
+.. data:: OUTLINE_FLAG_BOLD
+
+    The outline item is displayed by the viewer in bold text.
+
+.. data:: OUTLINE_FLAG_ITALIC
+
+    The outline item is displayed by the viewer in italic text.
+
+There's also a constant used to specify the root level for outlines.
+
+.. data:: OUTLINE_ROOT
+
+    Root level for outlines.
+
+
+.. _PDF_METADATA:
+
+PDF metadata
+------------
+
+Used to specify the metadata to set.
+
+*New in cairo 1.16.*
+
+*New in cairocffi 0.9.*
+
+.. data:: PDF_METADATA_TITLE
+
+    The document title.
+
+.. data:: PDF_METADATA_AUTHOR
+
+    The document author.
+
+.. data:: PDF_METADATA_SUBJECT
+
+    The document subject.
+
+.. data:: PDF_METADATA_KEYWORDS
+
+    The document keywords.
+
+.. data:: PDF_METADATA_CREATOR
+
+    The document creator.
+
+.. data:: PDF_METADATA_CREATE_DATE
+
+    The document creation date.
+
+.. data:: PDF_METADATA_MOD_DATE
+
+    The document modification date.
+
+
 .. _PS_LEVEL:
 
 PostScript level
@@ -834,6 +905,66 @@ that a generated SVG file will conform to.
 .. data:: SVG_VERSION_1_2
 
     The version 1.2 of the SVG specification.
+
+
+.. _SVG_UNIT:
+
+SVG unit
+--------
+
+Used to describe the units valid for coordinates and lengths in the SVG
+specification.
+
+See also:
+
+- https://www.w3.org/TR/SVG/coords.html#Units
+- https://www.w3.org/TR/SVG/types.html#DataTypeLength
+- https://www.w3.org/TR/css-values-3/#lengths
+
+*New in cairo 1.16.*
+
+*New in cairocffi 0.9.*
+
+.. data:: SVG_UNIT_USER
+
+    User unit, a value in the current coordinate system. If used in the root
+    element for the initial coordinate systems it corresponds to pixels.
+
+.. data:: SVG_UNIT_EM
+
+    The size of the element's font.
+
+.. data:: SVG_UNIT_EX
+
+    The x-height of the element’s font.
+
+.. data:: SVG_UNIT_PX
+
+    Pixels (1px = 1/96th of 1in).
+
+.. data:: SVG_UNIT_IN
+
+    Inches (1in = 2.54cm = 96px).
+
+.. data:: SVG_UNIT_CM
+
+    Centimeters (1cm = 96px/2.54).
+
+.. data:: SVG_UNIT_MM
+
+    Millimeters (1mm = 1/10th of 1cm).
+
+.. data:: SVG_UNIT_PT
+
+    Points (1pt = 1/72th of 1in).
+
+.. data:: SVG_UNIT_PC
+
+    Picas (1pc = 1/6th of 1in).
+
+.. data:: SVG_UNIT_PERCENT
+
+    Percent, a value that is some fraction of another reference value.
 
 
 .. _cluster-flags:
