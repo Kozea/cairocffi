@@ -7,4 +7,5 @@ cairocffi/_ffi*.py
 /dist
 /.cache
 /.coverage
+/.pytest_cache
 /docs/_build
