@@ -10,14 +10,14 @@ Additionally, the :mod:`cairocffi.pixbuf` module uses GDK-PixBuf_
 to decode various image formats for use in cairo.
 
 .. _CFFI: https://cffi.readthedocs.org/
-.. _Pycairo: http://cairographics.org/pycairo/
+.. _Pycairo: https://pycairo.readthedocs.io/
 .. _cairo: http://cairographics.org/
-.. _GDK-PixBuf: https://live.gnome.org/GdkPixbuf
+.. _GDK-PixBuf: https://gitlab.gnome.org/GNOME/gdk-pixbuf
 
-* `Latest documentation <http://packages.python.org/cairocffi/>`_
-* `Source code and issue tracker <https://github.com/SimonSapin/cairocffi>`_
+* `Latest documentation <http://cairocffi.readthedocs.io/en/latest/>`_
+* `Source code and issue tracker <https://github.com/Kozea/cairocffi>`_
   on GitHub.
 * Install with ``pip install cairocffi``
-* Python 2.6, 2.7 and 3.2+. Tested with CPython and Pypy.
-* API compatible with Pycairo.
+* Python 2.6, 2.7 and 3.2+.
+* API partially compatible with Pycairo.
 * Works with any version of cairo.
