@@ -100,7 +100,7 @@ def decode_to_pixbuf(image_data, width=None, height=None):
         if format_ != ffi.NULL else None)
 
     pixbuf = gdk_pixbuf.gdk_pixbuf_loader_get_pixbuf(loader)
-    if pixbuf == ffi.NULL:
+    if pixbuf == ffi.NULL:  # pragma: no cover
         raise ImageLoadingError('Not enough image data (got a NULL pixbuf.)')
     return Pixbuf(pixbuf), format_name
 

@@ -1,5 +1,6 @@
 [run]
 include = cairocffi/*
+omit = cairocffi/compat.py
 
 [report]
 show_missing = True

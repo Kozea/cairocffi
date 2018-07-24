@@ -1437,8 +1437,8 @@ class RecordingSurface(Surface):
         return tuple(extents)
 
 
-class Win32Surface(Surface):
-    """ Creates a cairo surface that targets the given DC.
+class Win32Surface(Surface):  # pragma: no cover
+    """Creates a cairo surface that targets the given DC.
 
     The DC will be queried for its initial clip extents, and this
     will be used as the size of the cairo surface. The resulting
@@ -1457,13 +1457,12 @@ class Win32Surface(Surface):
 
     """
     def __init__(self, hdc):
-        pointer = cairo.cairo_win32_surface_create(
-            ffi.cast('void*', hdc))
+        pointer = cairo.cairo_win32_surface_create(ffi.cast('void*', hdc))
         Surface.__init__(self, pointer)
 
 
-class Win32PrintingSurface(Surface):
-    """ Creates a cairo surface that targets the given DC.
+class Win32PrintingSurface(Surface):  # pragma: no cover
+    """Creates a cairo surface that targets the given DC.
 
     The DC will be queried for its initial clip extents,
     and this will be used as the size of the cairo surface.
