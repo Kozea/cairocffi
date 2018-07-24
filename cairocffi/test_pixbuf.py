@@ -54,6 +54,15 @@ def test_slices():
     assert_decoded(pixbuf.pixbuf_to_cairo_png(pixbuf_obj))
 
 
+def test_size():
+    pixbuf_obj, format_name = pixbuf.decode_to_pixbuf(PNG_BYTES, 10, 10)
+    assert format_name == 'png'
+    surface = pixbuf.pixbuf_to_cairo_png(pixbuf_obj)
+    assert surface.get_width() == 10
+    assert surface.get_height() == 10
+    assert surface.get_format() == constants.FORMAT_ARGB32
+
+
 def test_png():
     pixbuf_obj, format_name = pixbuf.decode_to_pixbuf(JPEG_BYTES)
     assert format_name == 'jpeg'

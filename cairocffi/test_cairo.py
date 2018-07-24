@@ -211,6 +211,107 @@ def test_supports_mime_type():
     assert surface.supports_mime_type('image/jpeg') is False
 
 
+@pytest.mark.xfail(cairo_version() < 11400,
+                   reason='Cairo version too low')
+def test_device_scale():
+    surface = PDFSurface(None, 1, 1)
+    assert surface.get_device_scale() == (1, 1)
+    surface.set_device_scale(2, 3)
+    assert surface.get_device_scale() == (2, 3)
+
+
+@pytest.mark.xfail(cairo_version() < 11504,
+                   reason='Cairo version too low')
+def test_metadata():
+    file_obj = io.BytesIO()
+    surface = PDFSurface(file_obj, 1, 1)
+    surface.set_metadata(PDF_METADATA_TITLE, 'title')
+    surface.set_metadata(PDF_METADATA_SUBJECT, 'subject')
+    surface.set_metadata(PDF_METADATA_CREATOR, 'creator')
+    surface.set_metadata(PDF_METADATA_AUTHOR, 'author')
+    surface.set_metadata(PDF_METADATA_KEYWORDS, 'keywords')
+    surface.set_metadata(PDF_METADATA_CREATE_DATE, '2013-07-21T23:46:00+01:00')
+    surface.set_metadata(PDF_METADATA_MOD_DATE, '2013-07-21T23:46:00Z')
+    surface.finish()
+    pdf_bytes = file_obj.getvalue()
+    assert b'/Title (title)' in pdf_bytes
+    assert b'/Subject (subject)' in pdf_bytes
+    assert b'/Creator (creator)' in pdf_bytes
+    assert b'/Author (author)' in pdf_bytes
+    assert b'/Keywords (keywords)' in pdf_bytes
+    assert b"/CreationDate (20130721234600+01'00)" in pdf_bytes
+    assert b'/ModDate (20130721234600Z)' in pdf_bytes
+
+
+@pytest.mark.xfail(cairo_version() < 11504,
+                   reason='Cairo version too low')
+def test_outline():
+    file_obj = io.BytesIO()
+    surface = PDFSurface(file_obj, 1, 1)
+    outline = surface.add_outline(
+        PDF_OUTLINE_ROOT, 'title 1', 'page=1 pos=[1 1]',
+        PDF_OUTLINE_FLAG_OPEN & PDF_OUTLINE_FLAG_BOLD)
+    surface.add_outline(outline, 'title 2', 'page=1 pos=[1 1]')
+    surface.finish()
+    pdf_bytes = file_obj.getvalue()
+    assert b'/Title (title 1)' in pdf_bytes
+    assert b'/Title (title 2)' in pdf_bytes
+
+
+@pytest.mark.xfail(cairo_version() < 11504,
+                   reason='Cairo version too low')
+def test_page_label():
+    file_obj = io.BytesIO()
+    surface = PDFSurface(file_obj, 1, 1)
+    surface.set_page_label('abc')
+    surface.finish()
+    pdf_bytes = file_obj.getvalue()
+    assert b'/P (abc)' in pdf_bytes
+
+
+@pytest.mark.xfail(cairo_version() < 11504,
+                   reason='Cairo version too low')
+def test_thumbnail_size():
+    file_obj = io.BytesIO()
+    surface = PDFSurface(file_obj, 1, 1)
+    surface.set_thumbnail_size(1, 1)
+    surface.finish()
+    pdf_bytes1 = file_obj.getvalue()
+
+    file_obj = io.BytesIO()
+    surface = PDFSurface(file_obj, 1, 1)
+    surface.set_thumbnail_size(9, 9)
+    surface.finish()
+    pdf_bytes2 = file_obj.getvalue()
+
+    assert len(pdf_bytes1) < len(pdf_bytes2)
+
+
+@pytest.mark.xfail(cairo_version() < 11510,
+                   reason='Cairo version too low')
+def test_document_unit():
+    surface = SVGSurface(None, 1, 2)
+    assert surface.get_document_unit() == SVG_UNIT_PT
+
+    file_obj = io.BytesIO()
+    surface = SVGSurface(file_obj, 1, 2)
+    surface.set_document_unit(SVG_UNIT_PX)
+    assert surface.get_document_unit() == SVG_UNIT_PX
+    surface.finish()
+    pdf_bytes = file_obj.getvalue()
+    assert b'width="1px"' in pdf_bytes
+    assert b'height="2px"' in pdf_bytes
+
+    file_obj = io.BytesIO()
+    surface = SVGSurface(file_obj, 1, 2)
+    surface.set_document_unit(SVG_UNIT_PC)
+    assert surface.get_document_unit() == SVG_UNIT_PC
+    surface.finish()
+    pdf_bytes = file_obj.getvalue()
+    assert b'width="1pc"' in pdf_bytes
+    assert b'height="2pc"' in pdf_bytes
+
+
 def test_png():
     png_bytes = base64.b64decode(
         b'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQI12O'
