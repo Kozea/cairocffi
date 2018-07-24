@@ -509,8 +509,11 @@ class FontOptions(object):
         *New in cairocffi 0.9.*
 
         """
-        cairo.cairo_font_options_set_variations(
-            self._pointer, _encode_string(variations))
+        if variations is None:
+            variations = ffi.NULL
+        else:
+            variations = _encode_string(variations)
+        cairo.cairo_font_options_set_variations(self._pointer, variations)
         self._check_status()
 
     def get_variations(self):
