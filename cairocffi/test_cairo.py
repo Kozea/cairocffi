@@ -97,9 +97,9 @@ def test_image_bytearray_buffer():
     assert data == pixel(b'\x80\x00\x00\x00') * 200
 
 
+@pytest.mark.xfail(cairo_version() < 11200,
+                   reason="Cairo version too low")
 def test_surface_create_similar_image():
-    if cairo_version() < 11200:
-        pytest.xfail()
     surface = ImageSurface(cairocffi.FORMAT_ARGB32, 20, 30)
     similar = surface.create_similar_image(cairocffi.FORMAT_A8, 4, 100)
     assert isinstance(similar, ImageSurface)
@@ -109,9 +109,9 @@ def test_surface_create_similar_image():
     assert similar.get_height() == 100
 
 
+@pytest.mark.xfail(cairo_version() < 11000,
+                   reason="Cairo version too low")
 def test_surface_create_for_rectangle():
-    if cairo_version() < 11000:
-        pytest.xfail()
     surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
     data = surface.get_data()
     assert data[:] == b'\x00' * 16
@@ -183,9 +183,9 @@ def test_target_lifetime():
     assert sys.getrefcount(target) == initial_refcount
 
 
+@pytest.mark.xfail(cairo_version() < 11000,
+                   reason="Cairo version too low")
 def test_mime_data():
-    if cairo_version() < 11000:
-        pytest.xfail()
     surface = PDFSurface(None, 1, 1)
     assert surface.get_mime_data('image/jpeg') is None
     gc.collect()  # Clean up KeepAlive stuff from other tests
@@ -203,9 +203,9 @@ def test_mime_data():
     assert_raise_finished(surface.set_mime_data, 'image/jpeg', None)
 
 
+@pytest.mark.xfail(cairo_version() < 11200,
+                   reason="Cairo version too low")
 def test_supports_mime_type():
-    if cairo_version() < 11200:
-        pytest.xfail()
     # Also test we get actual booleans:
     assert PDFSurface(None, 1, 1).supports_mime_type('image/jpeg') is True
     surface = ImageSurface(cairocffi.FORMAT_A8, 1, 1)
@@ -255,9 +255,9 @@ def test_png():
         surface = ImageSurface.create_from_png(io.BytesIO(b''))
 
 
+@pytest.mark.xfail(cairo_version() < 11000,
+                   reason="Cairo version too low")
 def test_pdf_versions():
-    if cairo_version() < 11000:
-        pytest.xfail()
     assert set(PDFSurface.get_versions()) >= set([
         cairocffi.PDF_VERSION_1_4, cairocffi.PDF_VERSION_1_5])
     assert PDFSurface.version_to_string(cairocffi.PDF_VERSION_1_4) == 'PDF 1.4'
@@ -381,9 +381,9 @@ def test_ps_surface():
     assert b'%%dolor' in ps_bytes
 
 
+@pytest.mark.xfail(cairo_version() < 11000,
+                   reason="Cairo version too low")
 def _recording_surface_common(extents):
-    if cairo_version() < 11000:
-        pytest.xfail()
     surface = ImageSurface(cairocffi.FORMAT_ARGB32, 100, 100)
     empty_pixels = surface.get_data()[:]
     assert empty_pixels == b'\x00' * 40000
@@ -417,17 +417,16 @@ def test_recording_surface():
     assert recorded_pixels == text_pixels
 
 
+@pytest.mark.xfail(cairo_version() < 11200,
+                   reason="Cairo version too low")
 def test_unbounded_recording_surface():
-    if cairo_version() < 11200:
-        # Unbounded recording surfaces do not seem to record anything on 1.10.
-        pytest.xfail()
     text_pixels, recorded_pixels = _recording_surface_common(None)
     assert recorded_pixels == text_pixels
 
 
+@pytest.mark.xfail(cairo_version() < 11200,
+                   reason="Cairo version too low")
 def test_recording_surface_get_extents():
-    if cairo_version() < 11200:
-        pytest.xfail()
     for extents in [None, (0, 0, 140, 80)]:
         surface = RecordingSurface(cairocffi.CONTENT_COLOR_ALPHA, extents)
         assert surface.get_extents() == extents
@@ -867,9 +866,9 @@ def test_context_clip():
     assert context.clip_extents() == (1, 1, 3, 4)
 
 
+@pytest.mark.xfail(cairo_version() < 11000,
+                   reason="Cairo version too low")
 def test_context_in_clip():
-    if cairo_version() < 11000:
-        pytest.xfail()
     surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
     context = Context(surface)
     context.rectangle(1, 1, 2, 2)
@@ -1039,12 +1038,6 @@ def test_font_options():
     options.set_hint_metrics(cairocffi.HINT_METRICS_OFF)
     assert options.get_hint_metrics() == cairocffi.HINT_METRICS_OFF
 
-    assert options.get_variations() is None
-    options.set_variations('wght 400, wdth 300')
-    assert options.get_variations() == 'wght 400, wdth 300'
-    options.set_variations(None)
-    assert options.get_variations() is None
-
     options_1 = FontOptions(hint_metrics=cairocffi.HINT_METRICS_ON)
     assert options_1.get_hint_metrics() == cairocffi.HINT_METRICS_ON
     assert options_1.get_antialias() == cairocffi.HINT_METRICS_DEFAULT
@@ -1056,6 +1049,19 @@ def test_font_options():
     assert len(set([options_1, options_2])) == 2
     options_1.merge(options_2)
     assert options_2 == options_1
+
+
+@pytest.mark.xfail(cairo_version() < 11512,
+                   reason="Cairo version too low")
+def test_font_options_variations():
+    options = FontOptions()
+
+    assert options.get_variations() is None
+    options.set_variations('wght 400, wdth 300')
+    assert options.get_variations() == 'wght 400, wdth 300'
+    options.set_variations(None)
+    assert options.get_variations() is None
+
 
 
 def test_glyphs():
