@@ -852,7 +852,7 @@ class PDFSurface(Surface):
             self._pointer, width_in_points, height_in_points)
         self._check_status()
 
-    def add_outline(self, parent_id, utf8, link_attribs, flags):
+    def add_outline(self, parent_id, utf8, link_attribs, flags=None):
         """Add an item to the document outline hierarchy.
 
         The outline has the ``utf8`` name and links to the location specified
@@ -876,9 +876,11 @@ class PDFSurface(Surface):
         *New in cairocffi 0.9.*
 
         """
+        if flags is None:
+            flags = 0
         value = cairo.cairo_pdf_surface_add_outline(
-            self._pointer, parent_id, _encode_string(utf8), link_attribs,
-            flags)
+            self._pointer, parent_id, _encode_string(utf8),
+            _encode_string(link_attribs), flags)
         self._check_status()
         return value
 
