@@ -1039,6 +1039,12 @@ def test_font_options():
     options.set_hint_metrics(cairocffi.HINT_METRICS_OFF)
     assert options.get_hint_metrics() == cairocffi.HINT_METRICS_OFF
 
+    assert options.get_variations() is None
+    options.set_variations('wght 400, wdth 300')
+    assert options.get_variations() == 'wght 400, wdth 300'
+    options.set_variations(None)
+    assert options.get_variations() is None
+
     options_1 = FontOptions(hint_metrics=cairocffi.HINT_METRICS_ON)
     assert options_1.get_hint_metrics() == cairocffi.HINT_METRICS_ON
     assert options_1.get_antialias() == cairocffi.HINT_METRICS_DEFAULT
