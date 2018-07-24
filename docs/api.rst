@@ -18,7 +18,7 @@ Meta
 Surfaces
 ========
 
-.. autoclass:: Surface()
+.. autoclass:: Surface
 
 ImageSurface
 ------------
@@ -814,21 +814,21 @@ bitwise-or'd to produce any combination of flags.
 
 *New in cairocffi 0.9.*
 
-.. data:: OUTLINE_FLAG_OPEN
+.. data:: PDF_OUTLINE_FLAG_OPEN
 
     The outline item defaults to open in the PDF viewer.
 
-.. data:: OUTLINE_FLAG_BOLD
+.. data:: PDF_OUTLINE_FLAG_BOLD
 
     The outline item is displayed by the viewer in bold text.
 
-.. data:: OUTLINE_FLAG_ITALIC
+.. data:: PDF_OUTLINE_FLAG_ITALIC
 
     The outline item is displayed by the viewer in italic text.
 
 There's also a constant used to specify the root level for outlines.
 
-.. data:: OUTLINE_ROOT
+.. data:: PDF_OUTLINE_ROOT
 
     Root level for outlines.
 

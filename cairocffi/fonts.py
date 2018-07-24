@@ -522,7 +522,7 @@ class FontOptions(object):
         See :meth:`set_variations` for details about the
         string format.
 
-        Return value: the font variations for the font options object. The
+        :return: the font variations for the font options object. The
         returned string belongs to the ``options`` and must not be modified.
         It is valid until either the font options object is destroyed or the
         font variations in this object is modified with :meth:`set_variations`.

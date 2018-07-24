@@ -841,9 +841,9 @@ class PDFSurface(Surface):
         :meth:`~Surface.show_page` or :meth:`~Surface.copy_page`.
 
         :param width_in_points:
-            New width of the page, in points (1 point == 1/72.0 inch)
+            New width of the page, in points (1 point = 1/72.0 inch)
         :param height_in_points:
-            New height of the page, in points (1 point == 1/72.0 inch)
+            New height of the page, in points (1 point = 1/72.0 inch)
         :type width_in_points: float
         :type height_in_points: float
 
@@ -869,7 +869,7 @@ class PDFSurface(Surface):
             the link attributes specifying where this outline links to.
         :param flags: outline item flags.
 
-        Return value: the id for the added item.
+        :return: the id for the added item.
 
         *New in cairo 1.16.*
 
@@ -887,10 +887,10 @@ class PDFSurface(Surface):
     def set_metadata(self, metadata, utf8):
         """Sets document metadata.
 
-        The :ref:`METADATA_CREATE_DATE` and :ref:`METADATA_MOD_DATE` values
-        must be in ISO-8601 format: YYYY-MM-DDThh:mm:ss. An optional timezone
-        of the form "[+/-]hh:mm" or "Z" for UTC time can be appended. All other
-        metadata values can be any UTF-8 string.
+        The :ref:`PDF_METADATA_CREATE_DATE` and :ref:`PDF_METADATA_MOD_DATE`
+        values must be in ISO-8601 format: YYYY-MM-DDThh:mm:ss. An optional
+        timezone of the form "[+/-]hh:mm" or "Z" for UTC time can be appended.
+        All other metadata values can be any UTF-8 string.
 
         :param metadata: the metadata item to set.
         :param utf8: metadata value.
@@ -1326,7 +1326,7 @@ class SVGSurface(Surface):
         sets the error status to ``STATUS_SURFACE_TYPE_MISMATCH`` and
         returns :ref:`SVG_UNIT_USER`.
 
-        Return value: the SVG unit of the SVG surface.
+        :return: The SVG unit of the SVG surface.
 
         *New in cairo 1.16.*
 
