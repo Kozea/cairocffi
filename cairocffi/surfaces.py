@@ -858,11 +858,11 @@ class PDFSurface(Surface):
         The outline has the ``utf8`` name and links to the location specified
         by ``link_attribs``. Link attributes have the same keys and values as
         the Link Tag, excluding the ``rect`` attribute. The item will be a
-        child of the item with id ``parent_id``. Use :ref:`PDF_OUTLINE_ROOT` as
+        child of the item with id ``parent_id``. Use ``PDF_OUTLINE_ROOT`` as
         the parent id of top level items.
 
         :param parent_id:
-            the id of the parent item or :ref:`PDF_OUTLINE_ROOT` if this is a
+            the id of the parent item or ``PDF_OUTLINE_ROOT`` if this is a
             top level item.
         :param utf8: the name of the outline.
         :param link_attribs:
@@ -887,7 +887,7 @@ class PDFSurface(Surface):
     def set_metadata(self, metadata, utf8):
         """Sets document metadata.
 
-        The :ref:`PDF_METADATA_CREATE_DATE` and :ref:`PDF_METADATA_MOD_DATE`
+        The ``PDF_METADATA_CREATE_DATE`` and ``PDF_METADATA_MOD_DATE``
         values must be in ISO-8601 format: YYYY-MM-DDThh:mm:ss. An optional
         timezone of the form "[+/-]hh:mm" or "Z" for UTC time can be appended.
         All other metadata values can be any UTF-8 string.
