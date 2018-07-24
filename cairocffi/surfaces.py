@@ -914,7 +914,8 @@ class PDFSurface(Surface):
         *New in cairocffi 0.9.*
 
         """
-        cairo.cairo_pdf_surface_set_page_label(self._pointer, _encode_string(utf8))
+        cairo.cairo_pdf_surface_set_page_label(
+            self._pointer, _encode_string(utf8))
         self._check_status()
 
     def set_thumbnail_size(self, width, height):

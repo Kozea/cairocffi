@@ -98,7 +98,7 @@ def test_image_bytearray_buffer():
 
 
 @pytest.mark.xfail(cairo_version() < 11200,
-                   reason="Cairo version too low")
+                   reason='Cairo version too low')
 def test_surface_create_similar_image():
     surface = ImageSurface(cairocffi.FORMAT_ARGB32, 20, 30)
     similar = surface.create_similar_image(cairocffi.FORMAT_A8, 4, 100)
@@ -110,7 +110,7 @@ def test_surface_create_similar_image():
 
 
 @pytest.mark.xfail(cairo_version() < 11000,
-                   reason="Cairo version too low")
+                   reason='Cairo version too low')
 def test_surface_create_for_rectangle():
     surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
     data = surface.get_data()
@@ -184,7 +184,7 @@ def test_target_lifetime():
 
 
 @pytest.mark.xfail(cairo_version() < 11000,
-                   reason="Cairo version too low")
+                   reason='Cairo version too low')
 def test_mime_data():
     surface = PDFSurface(None, 1, 1)
     assert surface.get_mime_data('image/jpeg') is None
@@ -202,9 +202,8 @@ def test_mime_data():
     surface.finish()
     assert_raise_finished(surface.set_mime_data, 'image/jpeg', None)
 
-
 @pytest.mark.xfail(cairo_version() < 11200,
-                   reason="Cairo version too low")
+                   reason='Cairo version too low')
 def test_supports_mime_type():
     # Also test we get actual booleans:
     assert PDFSurface(None, 1, 1).supports_mime_type('image/jpeg') is True
@@ -256,7 +255,7 @@ def test_png():
 
 
 @pytest.mark.xfail(cairo_version() < 11000,
-                   reason="Cairo version too low")
+                   reason='Cairo version too low')
 def test_pdf_versions():
     assert set(PDFSurface.get_versions()) >= set([
         cairocffi.PDF_VERSION_1_4, cairocffi.PDF_VERSION_1_5])
@@ -382,7 +381,7 @@ def test_ps_surface():
 
 
 @pytest.mark.xfail(cairo_version() < 11000,
-                   reason="Cairo version too low")
+                   reason='Cairo version too low')
 def _recording_surface_common(extents):
     surface = ImageSurface(cairocffi.FORMAT_ARGB32, 100, 100)
     empty_pixels = surface.get_data()[:]
@@ -418,14 +417,14 @@ def test_recording_surface():
 
 
 @pytest.mark.xfail(cairo_version() < 11200,
-                   reason="Cairo version too low")
+                   reason='Cairo version too low')
 def test_unbounded_recording_surface():
     text_pixels, recorded_pixels = _recording_surface_common(None)
     assert recorded_pixels == text_pixels
 
 
 @pytest.mark.xfail(cairo_version() < 11200,
-                   reason="Cairo version too low")
+                   reason='Cairo version too low')
 def test_recording_surface_get_extents():
     for extents in [None, (0, 0, 140, 80)]:
         surface = RecordingSurface(cairocffi.CONTENT_COLOR_ALPHA, extents)
@@ -867,7 +866,7 @@ def test_context_clip():
 
 
 @pytest.mark.xfail(cairo_version() < 11000,
-                   reason="Cairo version too low")
+                   reason='Cairo version too low')
 def test_context_in_clip():
     surface = ImageSurface(cairocffi.FORMAT_A8, 4, 4)
     context = Context(surface)
@@ -1052,7 +1051,7 @@ def test_font_options():
 
 
 @pytest.mark.xfail(cairo_version() < 11512,
-                   reason="Cairo version too low")
+                   reason='Cairo version too low')
 def test_font_options_variations():
     options = FontOptions()
 
