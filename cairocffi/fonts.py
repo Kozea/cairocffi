@@ -532,6 +532,6 @@ class FontOptions(object):
         *New in cairocffi 0.9.*
 
         """
-        return ffi.string(
-            cairo.cairo_font_options_get_variations(self._pointer)).decode(
-                'utf8', 'replace')
+        variations = cairo.cairo_font_options_get_variations(self._pointer)
+        if variations != ffi.NULL:
+            return ffi.string(variations).decode('utf8', 'replace')
