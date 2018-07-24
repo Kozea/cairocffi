@@ -30,7 +30,7 @@ def xcb_conn():
     a display spawned by xvfb
     """
     display = os.environ.get('DISPLAY')
-    if display is None:
+    if display is None:  # pragma: no cover
         pytest.skip('DISPLAY environment variable not set')
 
     conn = xcffib.connect(display)

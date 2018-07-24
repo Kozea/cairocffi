@@ -1,16 +1,12 @@
 [run]
-omit =
-	cairocffi/compat.py
-	cairocffi/mkconstants.py
-branch = True
+include = cairocffi/*
 
 [report]
 show_missing = True
 exclude_lines =
 	pragma: no cover
 	pytest.xfail()
+	pytest.fail()
 	except OSError:
-partial_branches =
-    pragma: no branch
-    assert
-    fd.write\(
+	except ImportError:
+    raise OSError

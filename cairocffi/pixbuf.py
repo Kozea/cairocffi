@@ -52,7 +52,7 @@ def handle_g_error(error, return_value):
         if error.message != ffi.NULL:
             message = ('Pixbuf error: ' +
                        ffi.string(error.message).decode('utf8', 'replace'))
-        else:
+        else:  # pragma: no cover
             message = 'Pixbuf error'
         glib.g_error_free(error)
         raise ImageLoadingError(message)
