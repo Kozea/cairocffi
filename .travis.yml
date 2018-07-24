@@ -18,6 +18,8 @@ before_install:
 
 install:
   - pip install --upgrade setuptools
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install --upgrade 'setuptools==29.0.1'; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then pip install --upgrade 'setuptools==39.2.0'; fi
   - pip install -e .[test,xcb]
 
 script:
