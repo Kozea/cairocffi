@@ -1,6 +1,25 @@
 cairocffi changelog
 -------------------
 
+Version 0.9.0
+.............
+
+Released on 2018-07-30
+
+* Drop Python 3.2 and 3.3 support
+* Test with PyPy and PyPy3
+* `#114 <https://github.com/Kozea/cairocffi/pull/114>`_:
+  Fix test compatibility with Cairo 1.15.12
+* `#112 <https://github.com/Kozea/cairocffi/pull/112>`_:
+  Add cairo library name from PyGObject for Windows
+* `#112 <https://github.com/Kozea/cairocffi/pull/112>`_:
+  Add cairo library name from PyGObject for Windows
+* Fix ``pango_example.py``
+* Fix crash with xbc tests
+* Clean documentation
+* Support Cairo features up to 1.15.12
+
+
 Version 0.8.1
 .............
 
