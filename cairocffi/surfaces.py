@@ -916,7 +916,6 @@ class PDFSurface(Surface):
         """
         cairo.cairo_pdf_surface_set_page_label(
             self._pointer, _encode_string(utf8))
-        self._check_status()
 
     def set_thumbnail_size(self, width, height):
         """Set thumbnail image size for the current and all subsequent pages.
@@ -934,7 +933,6 @@ class PDFSurface(Surface):
         """
         cairo.cairo_pdf_surface_set_thumbnail_size(
             self._pointer, width, height)
-        self._check_status()
 
     def restrict_to_version(self, version):
         """Restricts the generated PDF file to :obj:`version`.
@@ -1333,7 +1331,9 @@ class SVGSurface(Surface):
         *New in cairocffi 0.9.*
 
         """
-        return cairo.cairo_svg_surface_get_document_unit(self._pointer)
+        unit = cairo.cairo_svg_surface_get_document_unit(self._pointer)
+        self._check_status()
+        return unit
 
     @staticmethod
     def get_versions():
