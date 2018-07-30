@@ -81,14 +81,13 @@ and may not provide a ``.dll`` file that cairocffi can use.
 cairo versions
 --------------
 
-Cairo, pycairo, and cairocffi each have version numbers.   The same cairocffi version can
-be used with a variety of cairo versions.
-For example, the :meth:`Surface.set_mime_data` method is based on
-the :c:func:`cairo_surface_set_mime_data` C function,
-which is only available since cairo 1.10.
-You will get a runtime exception if you try to use it with an older cairo.
-You can however still use the rest of the API.
-There is no need for cairocffi’s versions to be tied to cairo’s versions.
+Cairo, pycairo, and cairocffi each have version numbers. The same cairocffi
+version can be used with a variety of cairo versions. For example, the
+:meth:`Surface.set_mime_data` method is based on the
+:c:func:`cairo_surface_set_mime_data` C function, which is only available since
+cairo 1.10. You will get a runtime exception if you try to use it with an older
+cairo. You can however still use the rest of the API. There is no need for
+cairocffi’s versions to be tied to cairo’s versions.
 
 Use :func:`cairo_version` to test the version number for cairo::
 
@@ -106,8 +105,9 @@ Here are all the version numbers::
       >>> print("The cairocffi version is %s." % cairo.VERSION)
       The cairocffi version is 0.7.2
 
-cairocffi is tested with both cairo 1.8.2 and the latest
-(1.12.8 as of this writing.)
+cairocffi is automatically tested with both cairo 1.13.0 (Ubuntu Trusty's
+default version) and manually tested with the latest (1.15.12 as of this
+writing.)
 
 
 Compatibility with Pycairo
