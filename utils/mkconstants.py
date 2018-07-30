@@ -15,6 +15,14 @@ def parse_constant(node):
 
 
 class PrintEnumsVisitor(pycparser.c_ast.NodeVisitor):
+    def visit_Decl(self, node):
+        if node.name and node.name.startswith('CAIRO_'):  # len('CAIRO_') == 6
+            if node.init.type == 'string':
+                print('%s = b%s' % (node.name[6:], node.init.value))
+            else:
+                print('%s = %s' % (node.name[6:], node.init.value))
+            print('')
+
     def visit_Enum(self, node):
         value = 0
         for enumerator in node.values.enumerators:
@@ -46,12 +54,14 @@ def read_cairo_header(cairo_git_dir, suffix):
 
 def generate(cairo_git_dir):
     # Remove comments, preprocessor instructions and macros.
-    source = read_cairo_header(cairo_git_dir, '')
+    source = '''
+        const char* CAIRO_TAG_DEST = "cairo.dest";
+        const char* CAIRO_TAG_LINK = "Link";
+    '''
+    source += read_cairo_header(cairo_git_dir, '')
 
     source += '''
-        typedef enum _cairo_pdf_outline_root {
-           CAIRO_PDF_OUTLINE_ROOT = 0
-        } cairo_pdf_outline_root_t;
+        const int CAIRO_PDF_OUTLINE_ROOT = 0;
     '''
     source += read_cairo_header(cairo_git_dir, '-pdf')
 
