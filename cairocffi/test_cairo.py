@@ -271,6 +271,28 @@ def test_page_label():
 
 @pytest.mark.xfail(cairo_version() < 11504,
                    reason='Cairo version too low')
+def test_tag():
+    file_obj = io.BytesIO()
+    surface = PDFSurface(file_obj, 10, 10)
+    context = Context(surface)
+    context.tag_begin('Document')
+    context.tag_begin(
+        TAG_LINK,
+        attributes='rect=[1 2 4 5] uri=\'https://cairocffi.readthedocs.io/\'')
+    context.set_source_rgba(1, 0, .5, 1)
+    context.rectangle(2, 3, 4, 5)
+    context.fill()
+    context.tag_end(TAG_LINK)
+    context.tag_end('Document')
+    context.show_page()
+    surface.finish()
+    pdf_bytes = file_obj.getvalue()
+    assert b'/URI (https://cairocffi.readthedocs.io/)' in pdf_bytes
+    assert b'/S /Document' in pdf_bytes
+
+
+@pytest.mark.xfail(cairo_version() < 11504,
+                   reason='Cairo version too low')
 def test_thumbnail_size():
     file_obj = io.BytesIO()
     surface = PDFSurface(file_obj, 1, 1)

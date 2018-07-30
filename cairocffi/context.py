@@ -2191,3 +2191,69 @@ class Context(object):
         """
         cairo.cairo_copy_page(self._pointer)
         self._check_status()
+
+    #
+    #  Tags
+    #
+
+    def tag_begin(self, tag_name, attributes=None):
+        """Marks the beginning of the ``tag_name`` structure.
+
+        Call :meth:`tag_end` with the same ``tag_name`` to mark the end of the
+        structure.
+
+        The attributes string is of the form "key1=value2 key2=value2 ...".
+        Values may be boolean (true/false or 1/0), integer, float, string, or
+        an array.
+
+        String values are enclosed in single quotes ('). Single quotes and
+        backslashes inside the string should be escaped with a backslash.
+
+        Boolean values may be set to true by only specifying the key. eg the
+        attribute string "key" is the equivalent to "key=true".
+
+        Arrays are enclosed in '[]'. eg "rect=[1.2 4.3 2.0 3.0]".
+
+        If no attributes are required, ``attributes`` can be omitted, an empty
+        string or None.
+
+        See cairo's Tags and Links Description for the list of tags and
+        attributes.
+
+        Invalid nesting of tags or invalid attributes will cause the context to
+        shutdown with a status of ``CAIRO_STATUS_TAG_ERROR``.
+
+        See :meth:`tag_end`.
+
+        :param tag_name: tag name
+        :param attributes: tag attributes
+
+        *New in cairo 1.16.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        if attributes is None:
+            attributes = ''
+        cairo.cairo_tag_begin(
+            self._pointer, _encode_string(tag_name),
+            _encode_string(attributes))
+        self._check_status()
+
+    def tag_end(self, tag_name):
+        """Marks the end of the ``tag_name`` structure.
+
+        Invalid nesting of tags will cause @cr to shutdown with a status of
+        ``CAIRO_STATUS_TAG_ERROR``.
+
+        See :meth:`tag_begin`.
+
+        :param tag_name: tag name
+
+        *New in cairo 1.16.*
+
+        *New in cairocffi 0.9.*
+
+        """
+        cairo.cairo_tag_end(self._pointer, _encode_string(tag_name))
+        self._check_status()
