@@ -11,6 +11,7 @@
 """
 
 import io
+import os
 import sys
 import ctypes
 import weakref
@@ -46,10 +47,28 @@ def _make_write_func(file_obj):
     return write_func
 
 
-def _encode_filename(filename):
-    """Return a byte string, encoding Unicode with the filesystem encoding."""
+def _encode_filename(filename):  # pragma: no cover
+    """Return a byte string suitable for a filename.
+
+    Unicode is encoded using an encoding adapted to what both cairo and the
+    filesystem want.
+
+    """
+    # Don't replace unknown characters as '?' is forbidden in Windows filenames
+    errors = 'ignore' if os.name == 'nt' else 'replace'
+
     if not isinstance(filename, bytes):
-        filename = filename.encode(sys.getfilesystemencoding())
+        if os.name == 'nt' and cairo.cairo_version() >= 11510:
+            # Since 1.15.10, cairo uses utf-8 filenames on Windows
+            filename = filename.encode('utf-8', errors=errors)
+        else:
+            try:
+                filename = filename.encode(sys.getfilesystemencoding())
+            except UnicodeEncodeError:
+                # Use plain ASCII filenames as fallback
+                filename = filename.encode('ascii', errors=errors)
+
+    # TODO: avoid characters forbidden in filenames?
     return ffi.new('char[]', filename)
 
 
