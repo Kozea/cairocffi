@@ -4,7 +4,7 @@ cairocffi changelog
 Version 0.9.0
 .............
 
-Released on 2018-07-30
+Released on 2018-08-06
 
 * Drop Python 3.2 and 3.3 support
 * Test with PyPy and PyPy3
