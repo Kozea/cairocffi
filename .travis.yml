@@ -12,9 +12,8 @@ matrix:
     - dist: xenial
       python: 3.7
 
-before_install:
-  - export DISPLAY=:99.0
-  - start xvfb
+services:
+  - xvfb
 
 install:
   - pip install --upgrade setuptools
