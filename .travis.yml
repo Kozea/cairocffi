@@ -15,6 +15,9 @@ matrix:
 services:
   - xvfb
 
+before_install:
+  - export DISPLAY=:99.0
+
 install:
   - pip install --upgrade setuptools
   - pip install -e .[test,xcb]
