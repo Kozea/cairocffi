@@ -1,37 +1,53 @@
-# coding: utf-8
 """
     cairocffi.tests
     ~~~~~~~~~~~~~~~
 
     Test suite for cairocffi.
 
-    :copyright: Copyright 2013 by Simon Sapin
+    :copyright: Copyright 2013-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
 
-import io
-import gc
-import os
-import sys
-import math
 import array
 import base64
-import shutil
-import tempfile
 import contextlib
-
-import pytest
+import gc
+import io
+import math
+import os
+import shutil
+import sys
+import tempfile
 
 import cairocffi
-from . import *
-from .compat import u, pixel
+import pytest
+
+from . import (PDF_METADATA_AUTHOR, PDF_METADATA_CREATE_DATE,
+               PDF_METADATA_CREATOR, PDF_METADATA_KEYWORDS,
+               PDF_METADATA_MOD_DATE, PDF_METADATA_SUBJECT, PDF_METADATA_TITLE,
+               PDF_OUTLINE_FLAG_BOLD, PDF_OUTLINE_FLAG_OPEN, PDF_OUTLINE_ROOT,
+               SVG_UNIT_PC, SVG_UNIT_PT, SVG_UNIT_PX, TAG_LINK, Context,
+               FontFace, FontOptions, ImageSurface, LinearGradient, Matrix,
+               Pattern, PDFSurface, PSSurface, RadialGradient,
+               RecordingSurface, ScaledFont, SolidPattern, Surface,
+               SurfacePattern, SVGSurface, ToyFontFace, cairo_version,
+               cairo_version_string)
+
+if sys.byteorder == 'little':
+    def pixel(argb):  # pragma: no cover
+        """Convert a 4-byte ARGB string to native-endian."""
+        return argb[::-1]
+else:
+    def pixel(argb):  # pragma: no cover
+        """Convert a 4-byte ARGB string to native-endian."""
+        return argb
 
 
 @contextlib.contextmanager
 def temp_directory():
-    tempdir = tempfile.mkdtemp(u('é'))
-    assert u('é') in tempdir  # Test non-ASCII filenames
+    tempdir = tempfile.mkdtemp('é')
+    assert 'é' in tempdir  # Test non-ASCII filenames
     try:
         yield tempdir
     finally:
@@ -82,7 +98,7 @@ def test_image_surface():
     # The default source is opaque black:
     assert context.get_source().get_rgba() == (0, 0, 0, 1)
     context.paint_with_alpha(0.5)
-    assert data.tostring() == pixel(b'\x80\x00\x00\x00') * 200
+    assert data.tobytes() == pixel(b'\x80\x00\x00\x00') * 200
 
 
 def test_image_bytearray_buffer():
@@ -201,6 +217,7 @@ def test_mime_data():
         assert surface.get_mime_data('image/jpeg') is None
     surface.finish()
     assert_raise_finished(surface.set_mime_data, 'image/jpeg', None)
+
 
 @pytest.mark.xfail(cairo_version() < 11200,
                    reason='Cairo version too low')
@@ -491,7 +508,7 @@ def test_ps_surface():
     surface.set_eps('')
     assert surface.get_eps() is False
     surface.set_size(10, 12)
-    surface.dsc_comment(u('%%Lorem'))
+    surface.dsc_comment('%%Lorem')
     surface.dsc_begin_setup()
     surface.dsc_comment('%%ipsum')
     surface.dsc_begin_page_setup()
@@ -1074,7 +1091,7 @@ def test_context_font():
     _, _, _, _, x_advance, y_advance = context.text_extents('i' * 10)
     assert x_advance > 0
     assert y_advance == 0
-    context.set_font_face(ToyFontFace(u('monospace'),
+    context.set_font_face(ToyFontFace('monospace',
                           weight=cairocffi.FONT_WEIGHT_BOLD))
     _, _, _, _, x_advance_mono, y_advance = context.text_extents('i' * 10)
     assert x_advance_mono > x_advance
@@ -1185,12 +1202,11 @@ def test_font_options_variations():
     assert options.get_variations() is None
 
 
-
 def test_glyphs():
     surface = ImageSurface(cairocffi.FORMAT_ARGB32, 100, 20)
     context = Context(surface)
     font = context.get_scaled_font()
-    text = u('Étt')
+    text = 'Étt'
     glyphs, clusters, is_backwards = font.text_to_glyphs(
         5, 15, text, with_clusters=True)
     assert font.text_to_glyphs(5, 15, text, with_clusters=False) == glyphs
@@ -1200,8 +1216,10 @@ def test_glyphs():
     assert 5 == x1 < x2 < x3
     assert clusters == [(2, 1), (1, 1), (1, 1)]
     assert is_backwards == 0
-    assert round_tuple(font.glyph_extents(glyphs)) == round_tuple(font.text_extents(text))
-    assert round_tuple(font.glyph_extents(glyphs)) == round_tuple(context.glyph_extents(glyphs))
+    assert round_tuple(font.glyph_extents(glyphs)) == (
+        round_tuple(font.text_extents(text)))
+    assert round_tuple(font.glyph_extents(glyphs)) == (
+        round_tuple(context.glyph_extents(glyphs)))
 
     assert context.copy_path() == []
     context.glyph_path(glyphs)

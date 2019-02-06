@@ -1,22 +1,19 @@
-# coding: utf-8
 """
     cairocffi.context
     ~~~~~~~~~~~~~~~~~
 
     Bindings for Context objects.
 
-    :copyright: Copyright 2013 by Simon Sapin
+    :copyright: Copyright 2013-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
 
-from . import ffi, cairo, _check_status, constants, _keepref
+from . import _check_status, _keepref, cairo, constants, ffi
+from .fonts import FontFace, FontOptions, ScaledFont, _encode_string
 from .matrix import Matrix
 from .patterns import Pattern
 from .surfaces import Surface
-from .fonts import FontFace, ScaledFont, FontOptions, _encode_string
-from .compat import xrange
-
 
 PATH_POINTS_PER_TYPE = {
     constants.PATH_MOVE_TO: 1,
@@ -52,12 +49,14 @@ def _encode_path(path_items):
         header.type = path_type
         header.length = 1 + len(coordinates) // 2
         position += 1
-        for i in xrange(0, len(coordinates), 2):
+        for i in range(0, len(coordinates), 2):
             point = data[position].point
             point.x = coordinates[i]
             point.y = coordinates[i + 1]
             position += 1
-    path = ffi.new('cairo_path_t *', {'status': constants.STATUS_SUCCESS, 'data': data, 'num_data': length})
+    path = ffi.new(
+        'cairo_path_t *',
+        {'status': constants.STATUS_SUCCESS, 'data': data, 'num_data': length})
     return path, data
 
 
@@ -77,7 +76,7 @@ def _iter_path(pointer):
         path_data = data[position]
         path_type = path_data.header.type
         points = ()
-        for i in xrange(points_per_type[path_type]):
+        for i in range(points_per_type[path_type]):
             point = data[position + i + 1].point
             points += (point.x, point.y)
         yield (path_type, points)
@@ -1660,7 +1659,7 @@ class Context(object):
         _check_status(rectangle_list.status)
         rectangles = rectangle_list.rectangles
         result = []
-        for i in xrange(rectangle_list.num_rectangles):
+        for i in range(rectangle_list.num_rectangles):
             rect = rectangles[i]
             result.append((rect.x, rect.y, rect.width, rect.height))
         cairo.cairo_rectangle_list_destroy(rectangle_list)

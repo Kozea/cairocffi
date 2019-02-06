@@ -1,12 +1,10 @@
-# coding: utf-8
-
 import io
-import cairo  # pycairo
-import cairocffi
 
-from pycairo_to_cairocffi import _UNSAFE_pycairo_context_to_cairocffi
-from cairocffi_to_pycairo import _UNSAFE_cairocffi_context_to_pycairo
+import cairo  # noqa, pycairo
+import cairocffi
 import pango_example
+from cairocffi_to_pycairo import _UNSAFE_cairocffi_context_to_pycairo
+from pycairo_to_cairocffi import _UNSAFE_pycairo_context_to_cairocffi
 
 
 def test():

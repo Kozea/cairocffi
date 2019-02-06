@@ -1,4 +1,3 @@
-# coding: utf-8
 """
 
     cairocffi.test_xcb
@@ -6,7 +5,7 @@
 
     Test suite for cairocffi.xcb.
 
-    :copyright: Copyright 2014 by Simon Sapin
+    :copyright: Copyright 2014-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
@@ -16,7 +15,7 @@ import time
 
 import pytest
 
-xcffib = pytest.importorskip('xcffib')
+xcffib = pytest.importorskip('xcffib')  # noqa
 import xcffib.xproto
 from xcffib.xproto import ConfigWindow, CW, EventMask, GC
 

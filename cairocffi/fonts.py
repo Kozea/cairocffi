@@ -1,18 +1,16 @@
-# coding: utf-8
 """
     cairocffi.fonts
     ~~~~~~~~~~~~~~~
 
     Bindings for font-related objects.
 
-    :copyright: Copyright 2013 by Simon Sapin
+    :copyright: Copyright 2013-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
 
-from . import ffi, cairo, _check_status, constants, _keepref
+from . import _check_status, _keepref, cairo, constants, ffi
 from .matrix import Matrix
-from .compat import xrange
 
 
 def _encode_string(string):
@@ -356,12 +354,12 @@ class ScaledFont(object):
         _check_status(status)
         glyphs = [
             (glyph.index, glyph.x, glyph.y)
-            for i in xrange(num_glyphs[0])
+            for i in range(num_glyphs[0])
             for glyph in [glyphs[i]]]
         if with_clusters:
             clusters = [
                 (cluster.num_bytes, cluster.num_glyphs)
-                for i in xrange(num_clusters[0])
+                for i in range(num_clusters[0])
                 for cluster in [clusters[i]]]
             return glyphs, clusters, cluster_flags[0]
         else:

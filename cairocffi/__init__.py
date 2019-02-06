@@ -1,23 +1,22 @@
-# coding: utf-8
 """
     cairocffi
     ~~~~~~~~~
 
     CFFI-based cairo bindings for Python. See README for details.
 
-    :copyright: Copyright 2013 by Simon Sapin
+    :copyright: Copyright 2013-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
 
-import sys
 import ctypes.util
+import sys
+from pathlib import Path
 
 from . import constants
-from .compat import FileNotFoundError
-from ._ffi import ffi
+from ._generated.ffi import ffi
 
-VERSION = '0.9.0'
+VERSION = __version__ = (Path(__file__).parent / 'VERSION').read_text().strip()
 # supported version of cairo, used to be pycairo version too:
 version = '1.16.0'
 version_info = (1, 16, 0)
@@ -108,17 +107,17 @@ def install_as_pycairo():
 
 # Implementation is in submodules, but public API is all here.
 
-from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,
+from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,  # noqa
                        SVGSurface, RecordingSurface, Win32Surface,
                        Win32PrintingSurface)
 try:
-    from .xcb import XCBSurface
+    from .xcb import XCBSurface  # noqa
 except ImportError:
     pass
-from .patterns import (Pattern, SolidPattern, SurfacePattern,
+from .patterns import (Pattern, SolidPattern, SurfacePattern,  # noqa
                        Gradient, LinearGradient, RadialGradient)
-from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions
-from .context import Context
-from .matrix import Matrix
+from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions  # noqa
+from .context import Context  # noqa
+from .matrix import Matrix  # noqa
 
-from .constants import *
+from .constants import *  # noqa

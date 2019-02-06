@@ -1,24 +1,21 @@
-# coding: utf-8
 """
     cairocffi.pixbuf
     ~~~~~~~~~~~~~~~~
 
     Loading various image formats with GDK-PixBuf
 
-    :copyright: Copyright 2013 by Simon Sapin
+    :copyright: Copyright 2013-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
 
 import sys
-from io import BytesIO
-from functools import partial
 from array import array
+from functools import partial
+from io import BytesIO
 
-from . import dlopen, ImageSurface, Context, constants
-from ._ffi_pixbuf import ffi
-from .compat import xrange
-
+from . import Context, ImageSurface, constants, dlopen
+from ._generated.ffi_pixbuf import ffi
 
 __all__ = ['decode_to_image_surface']
 
@@ -165,7 +162,7 @@ def pixbuf_to_cairo_slices(pixbuf):
     pixbuf_row_length = width * 3  # stride == row_length + padding
     cairo_row_length = width * 4  # stride == row_length + padding
     alpha = b'\xff' * width  # opaque
-    for y in xrange(height):
+    for y in range(height):
         offset = rowstride * y
         end = offset + pixbuf_row_length
         red = pixels[offset:end:3]

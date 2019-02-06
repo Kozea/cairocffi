@@ -1,30 +1,33 @@
-# coding: utf-8
 """
     cairocffi.ffi_build
     ~~~~~~~~~~~~~~~~~~~
 
     Build the cffi bindings
 
-    :copyright: Copyright 2013 by Simon Sapin
+    :copyright: Copyright 2013-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
 
-import os
+import shutil
 import sys
+from pathlib import Path
+
 from cffi import FFI
 
 # Path hack to import constants when this file is exec'd by setuptools
-this_file = os.path.abspath(__file__)
-this_dir = os.path.dirname(this_file)
-sys.path.append(this_dir)
+sys.path.append(str(Path(__file__).parent))
 
-import constants
+import constants  # noqa
+
+# Create an empty _generated folder if needed
+shutil.rmtree((Path(__file__).parent / '_generated'), ignore_errors=True)
+(Path(__file__).parent / '_generated').mkdir(exist_ok=True)
 
 
 # Primary cffi definitions
 ffi = FFI()
-ffi.set_source('cairocffi._ffi', None)
+ffi.set_source('cairocffi._generated.ffi', None)
 ffi.cdef(constants._CAIRO_HEADERS)
 
 # include xcffib cffi definitions for cairo xcb support
@@ -37,7 +40,7 @@ except ImportError:
 
 # gdk pixbuf cffi definitions
 ffi_pixbuf = FFI()
-ffi_pixbuf.set_source('cairocffi._ffi_pixbuf', None)
+ffi_pixbuf.set_source('cairocffi._generated.ffi_pixbuf', None)
 ffi_pixbuf.include(ffi)
 ffi_pixbuf.cdef('''
     typedef unsigned long   gsize;

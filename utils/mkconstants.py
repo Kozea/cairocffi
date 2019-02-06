@@ -1,7 +1,7 @@
-# coding: utf-8
 import os
-import sys
 import re
+import sys
+
 import pycparser.c_generator
 
 
@@ -41,7 +41,7 @@ def read_cairo_header(cairo_git_dir, suffix):
     filename = os.path.join(cairo_git_dir, 'src', 'cairo%s.h' % suffix)
     source = open(filename, encoding='iso-8859-1').read()
     source = re.sub(
-        '/\*.*?\*/'
+        '/\\*.*?\\*/'
         '|CAIRO_(BEGIN|END)_DECLS'
         '|cairo_public '
         r'|^\s*#.*?[^\\]\n',
@@ -90,7 +90,7 @@ def generate(cairo_git_dir):
     print('_CAIRO_HEADERS = r"""%s"""' % source)
 
     source = read_cairo_header(cairo_git_dir, '-xcb')
-    print('_CAIRO_XCB_HEADERS = r"""%s"""\n' % source)
+    print('_CAIRO_XCB_HEADERS = r"""%s"""' % source)
 
 
 if __name__ == '__main__':

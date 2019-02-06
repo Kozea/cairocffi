@@ -2221,4 +2221,3 @@ int
 cairo_xcb_device_debug_get_precision (cairo_device_t *device);
 
 """
-

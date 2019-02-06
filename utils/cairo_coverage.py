@@ -1,8 +1,7 @@
-# coding: utf-8
-
 import inspect
-import pycparser
+
 import cairocffi
+import pycparser
 
 ALL_THE_CODE = ''.join(
     line
@@ -20,6 +19,7 @@ class Visitor(pycparser.c_ast.NodeVisitor):
                         node.name.endswith('user_data')):
                     print(node.name)
                 break
+
 
 print('cairo functions never used in cairocffi:\n')
 Visitor().visit(pycparser.CParser().parse(cairocffi.constants._CAIRO_HEADERS))

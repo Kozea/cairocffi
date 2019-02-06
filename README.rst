@@ -6,7 +6,7 @@ a set of Python bindings and object-oriented API for cairo_.
 Cairo is a 2D vector graphics library with support for multiple backends
 including image buffers, PNG, PostScript, PDF, and SVG file output.
 
-Additionally, the :mod:`cairocffi.pixbuf` module uses GDK-PixBuf_
+Additionally, the ``cairocffi.pixbuf`` module uses GDK-PixBuf_
 to decode various image formats for use in cairo.
 
 .. _CFFI: https://cffi.readthedocs.org/
@@ -18,7 +18,7 @@ to decode various image formats for use in cairo.
 * `Source code and issue tracker <https://github.com/Kozea/cairocffi>`_
   on GitHub.
 * Install with ``pip install cairocffi``
-* Python 2.6, 2.7 and 3.4+. `Tested with CPython, PyPy and PyPy3
+* Python 3.5+. `Tested with CPython and PyPy3
   <https://travis-ci.org/Kozea/cairocffi>`_.
 * API partially compatible with Pycairo.
 * Works with any version of cairo.

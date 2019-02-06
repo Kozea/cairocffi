@@ -1,23 +1,21 @@
-# coding: utf-8
 """
     cairocffi.test_pixbuf
     ~~~~~~~~~~~~~~~~~~~~~
 
     Test suite for cairocffi.pixbuf.
 
-    :copyright: Copyright 2013 by Simon Sapin
+    :copyright: Copyright 2013-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
 
 import base64
+import sys
 import zlib
 
 import pytest
 
-from . import pixbuf, constants
-from .compat import pixel
-
+from . import constants, pixbuf
 
 PNG_BYTES = base64.b64decode(
     b'iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAE0lEQV'
@@ -75,4 +73,6 @@ def assert_decoded(surface, format_=constants.FORMAT_ARGB32,
     assert surface.get_width() == 3
     assert surface.get_height() == 2
     assert surface.get_format() == format_
-    assert surface.get_data()[:] == pixel(rgba) * 6
+    if sys.byteorder == 'little':  # pragma: no cover
+        rgba = rgba[::-1]
+    assert surface.get_data()[:] == rgba * 6

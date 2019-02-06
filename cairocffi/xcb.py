@@ -1,17 +1,17 @@
-# coding: utf-8
 """
     cairocffi.xcb
     ~~~~~~~~~~~~~
 
     Bindings for XCB surface objects using xcffib.
 
-    :copyright: Copyright 2014 by Simon Sapin
+    :copyright: Copyright 2014-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 """
+
 from xcffib import visualtype_to_c_struct
 
 from . import cairo, constants
-from .surfaces import Surface, SURFACE_TYPE_TO_CLASS
+from .surfaces import SURFACE_TYPE_TO_CLASS, Surface
 
 
 class XCBSurface(Surface):
@@ -55,5 +55,6 @@ class XCBSurface(Surface):
         """
         cairo.cairo_xcb_surface_set_size(self._pointer, width, height)
         self._check_status()
+
 
 SURFACE_TYPE_TO_CLASS[constants.SURFACE_TYPE_XCB] = XCBSurface

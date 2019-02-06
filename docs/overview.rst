@@ -153,7 +153,7 @@ you need at least a surface and a context::
     context.move_to(90, 140)
     context.rotate(-0.5)
     context.set_font_size(20)
-    context.show_text(u'Hi from cairo!')
+    context.show_text('Hi from cairo!')
     surface.write_to_png('example.png')
 
 The :class:`Surface` represents the target.

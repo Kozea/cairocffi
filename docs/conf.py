@@ -1,15 +1,11 @@
-import re
-import os
+from pathlib import Path
 
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',
-              'sphinx.ext.coverage']
+extensions = [
+    'sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.coverage']
 master_doc = 'index'
 project = 'cairocffi'
-copyright = '2013, Simon Sapin'
-release = re.search(
-    "VERSION = '([^']+)'",
-    open(os.path.join(os.path.dirname(__file__), os.pardir,
-         'cairocffi', '__init__.py')).read().strip()).group(1)
+copyright = '2013-2019, Simon Sapin'
+release = (Path(__file__).parent / 'cairocffi' / 'VERSION').read_text.strip()
 version = '.'.join(release.split('.')[:2])
 exclude_patterns = ['_build']
 autodoc_member_order = 'bysource'

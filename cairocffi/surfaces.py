@@ -1,24 +1,22 @@
-# coding: utf-8
 """
     cairocffi.surface
     ~~~~~~~~~~~~~~~~~
 
     Bindings for the various types of surface objects.
 
-    :copyright: Copyright 2013 by Simon Sapin
+    :copyright: Copyright 2013-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
 
+import ctypes
 import io
 import os
 import sys
-import ctypes
 import weakref
 
-from . import ffi, cairo, _check_status, constants, _keepref
+from . import _check_status, _keepref, cairo, constants, ffi
 from .fonts import FontOptions, _encode_string
-
 
 SURFACE_TARGET_KEY = ffi.new('cairo_user_data_key_t *')
 
@@ -704,7 +702,8 @@ class ImageSurface(Surface):
                 raise ValueError('Got a %d bytes buffer, needs at least %d.'
                                  % (length, stride * height))
             pointer = cairo.cairo_image_surface_create_for_data(
-                ffi.cast('unsigned char*', address), format, width, height, stride)
+                ffi.cast('unsigned char*', address), format, width, height,
+                stride)
         Surface.__init__(self, pointer, target_keep_alive=data)
 
     @classmethod

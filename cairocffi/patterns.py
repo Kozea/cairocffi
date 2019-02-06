@@ -1,19 +1,17 @@
-# coding: utf-8
 """
     cairocffi.patterns
     ~~~~~~~~~~~~~~~~~~
 
     Bindings for the various types of pattern objects.
 
-    :copyright: Copyright 2013 by Simon Sapin
+    :copyright: Copyright 2013-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
 
-from . import ffi, cairo, _check_status, constants, _keepref
+from . import _check_status, _keepref, cairo, constants, ffi
 from .matrix import Matrix
 from .surfaces import Surface
-from .compat import xrange
 
 
 class Pattern(object):
@@ -277,7 +275,7 @@ class Gradient(Pattern):
             self._pointer, count))
         stops = []
         stop = ffi.new('double[5]')
-        for i in xrange(count[0]):
+        for i in range(count[0]):
             _check_status(cairo.cairo_pattern_get_color_stop_rgba(
                 self._pointer, i,
                 stop + 0, stop + 1, stop + 2, stop + 3, stop + 4))

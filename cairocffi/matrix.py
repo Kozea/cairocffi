@@ -1,16 +1,15 @@
-# coding: utf-8
 """
     cairocffi.matrix
     ~~~~~~~~~~~~~~~~
 
     Transformation matrices.
 
-    :copyright: Copyright 2013 by Simon Sapin
+    :copyright: Copyright 2013-2019 by Simon Sapin
     :license: BSD, see LICENSE for details.
 
 """
 
-from . import ffi, cairo, _check_status
+from . import _check_status, cairo, ffi
 
 
 class Matrix(object):

@@ -1,7 +1,5 @@
-# coding: utf-8
 import cairocffi
 import cffi
-
 
 ffi = cffi.FFI()
 ffi.cdef('''
@@ -30,7 +28,11 @@ gobject = ffi.dlopen('gobject-2.0')
 pango = ffi.dlopen('pango-1.0')
 pangocairo = ffi.dlopen('pangocairo-1.0')
 
-gobject_ref = lambda pointer: ffi.gc(pointer, gobject.g_object_unref)
+
+def gobject_ref(pointer):
+    return ffi.gc(pointer, gobject.g_object_unref)
+
+
 units_from_double = pango.pango_units_from_double
 
 
@@ -46,7 +48,7 @@ def write_example_pdf(target):
         pangocairo.pango_cairo_create_layout(context._pointer))
     pango.pango_layout_set_width(layout, units_from_double(width))
     pango.pango_layout_set_alignment(layout, pango.PANGO_ALIGN_CENTER)
-    markup = u'<span font="italic 30">Hi from Παν語!</span>'
+    markup = '<span font="italic 30">Hi from Παν語!</span>'
     markup = ffi.new('char[]', markup.encode('utf8'))
     pango.pango_layout_set_markup(layout, markup, -1)
     pangocairo.pango_cairo_show_layout(context._pointer, layout)
