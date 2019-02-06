@@ -29,7 +29,7 @@ def dlopen(ffi, *names):
         for lib_name in (name, 'lib' + name):
             try:
                 path = ctypes.util.find_library(lib_name)
-                lib = ffi.dlopen(path or name)
+                lib = ffi.dlopen(path or lib_name)
                 if lib:
                     return lib
             except OSError:
