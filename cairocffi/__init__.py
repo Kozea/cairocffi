@@ -26,19 +26,18 @@ version_info = (1, 16, 0)
 def dlopen(ffi, *names):
     """Try various names for the same library, for different platforms."""
     for name in names:
-        for lib_name in [name, 'lib' + name]:
+        for lib_name in (name, 'lib' + name):
             try:
                 path = ctypes.util.find_library(lib_name)
-                if path:
-                    lib = ffi.dlopen(path)
-                    if lib:
-                        return lib
+                lib = ffi.dlopen(path or name)
+                if lib:
+                    return lib
             except OSError:
                 pass
     raise OSError("dlopen() failed to load a library: %s" % ' / '.join(names))
 
 
-cairo = dlopen(ffi, 'cairo', 'cairo-2', 'cairo-gobject-2')
+cairo = dlopen(ffi, 'cairo', 'cairo-2', 'cairo-gobject-2', 'cairo.so.2')
 
 
 class _keepref(object):
