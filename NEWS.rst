@@ -1,6 +1,18 @@
 cairocffi changelog
 -------------------
 
+Version 1.0.0
+.............
+
+Released on 2019-02-08
+
+6 years after its first release, cairocffi can now be considered as stable.
+
+* Drop Python 2.6, 2.7 and 3.4 support
+* Test with Python 3.7
+* Clean code, tests and packaging
+
+
 Version 0.9.0
 .............
 
