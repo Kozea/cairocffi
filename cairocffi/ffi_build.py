@@ -9,7 +9,6 @@
 
 """
 
-import shutil
 import sys
 from pathlib import Path
 
@@ -21,9 +20,7 @@ sys.path.append(str(Path(__file__).parent))
 import constants  # noqa
 
 # Create an empty _generated folder if needed
-shutil.rmtree((Path(__file__).parent / '_generated'), ignore_errors=True)
 (Path(__file__).parent / '_generated').mkdir(exist_ok=True)
-
 
 # Primary cffi definitions
 ffi = FFI()
