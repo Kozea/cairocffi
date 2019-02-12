@@ -1,6 +1,16 @@
 cairocffi changelog
 -------------------
 
+
+Version 1.0.1
+.............
+
+Released on 2019-02-12
+
+* `#120 <https://github.com/Kozea/cairocffi/issues/120>`_:
+  Don't delete _generated modules on ffi_build import
+
+
 Version 1.0.0
 .............
 
