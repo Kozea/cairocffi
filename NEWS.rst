@@ -2,6 +2,15 @@ cairocffi changelog
 -------------------
 
 
+Version 1.0.2
+.............
+
+Released on 2019-02-15
+
+* `#123 <https://github.com/Kozea/cairocffi/issues/123>`_:
+  Rely on a recent version of setuptools to handle VERSION
+
+
 Version 1.0.1
 .............
 
