@@ -107,17 +107,19 @@ def install_as_pycairo():
 
 # Implementation is in submodules, but public API is all here.
 
-from .surfaces import (Surface, ImageSurface, PDFSurface, PSSurface,  # noqa
-                       SVGSurface, RecordingSurface, Win32Surface,
+from .surfaces import (Surface, ImageSurface, PDFSurface,  # noqa isort:skip
+                       PSSurface, SVGSurface, RecordingSurface, Win32Surface,
                        Win32PrintingSurface)
 try:
-    from .xcb import XCBSurface  # noqa
+    from .xcb import XCBSurface  # noqa isort:skip
 except ImportError:
     pass
-from .patterns import (Pattern, SolidPattern, SurfacePattern,  # noqa
-                       Gradient, LinearGradient, RadialGradient)
-from .fonts import FontFace, ToyFontFace, ScaledFont, FontOptions  # noqa
-from .context import Context  # noqa
-from .matrix import Matrix  # noqa
+from .patterns import (Pattern, SolidPattern,  # noqa isort:skip
+                       SurfacePattern, Gradient, LinearGradient,
+                       RadialGradient)
+from .fonts import (FontFace, ToyFontFace, ScaledFont,  # noqa isort:skip
+                    FontOptions)
+from .context import Context  # noqa isort:skip
+from .matrix import Matrix  # noqa isort:skip
 
-from .constants import *  # noqa
+from .constants import *  # noqa isort:skip
