@@ -61,6 +61,8 @@ FORMAT_A8 = 2
 FORMAT_A1 = 3
 FORMAT_RGB16_565 = 4
 FORMAT_RGB30 = 5
+FORMAT_RGB96F = 6
+FORMAT_RGBA128F = 7
 
 OPERATOR_CLEAR = 0
 OPERATOR_SOURCE = 1
@@ -244,9 +246,6 @@ SVG_UNIT_PC = 8
 SVG_UNIT_PERCENT = 9
 
 _CAIRO_HEADERS = r"""
-        const char* CAIRO_TAG_DEST = "cairo.dest";
-        const char* CAIRO_TAG_LINK = "Link";
-    
 
 int
 cairo_version (void);
@@ -338,7 +337,9 @@ typedef enum _cairo_format {
     CAIRO_FORMAT_A8        = 2,
     CAIRO_FORMAT_A1        = 3,
     CAIRO_FORMAT_RGB16_565 = 4,
-    CAIRO_FORMAT_RGB30     = 5
+    CAIRO_FORMAT_RGB30     = 5,
+    CAIRO_FORMAT_RGB96F    = 6,
+    CAIRO_FORMAT_RGBA128F  = 7
 } cairo_format_t;
 
 typedef cairo_status_t (*cairo_write_func_t) (void		  *closure,
@@ -1907,8 +1908,8 @@ void
 cairo_debug_reset_static_data (void);
 
 
-        const int CAIRO_PDF_OUTLINE_ROOT = 0;
-    
+const int CAIRO_PDF_OUTLINE_ROOT = 0;
+
 
 typedef enum _cairo_pdf_version {
     CAIRO_PDF_VERSION_1_4,
