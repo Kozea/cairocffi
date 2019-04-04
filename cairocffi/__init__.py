@@ -19,7 +19,7 @@ from ._generated.ffi import ffi
 VERSION = __version__ = (Path(__file__).parent / 'VERSION').read_text().strip()
 # supported version of cairo, used to be pycairo version too:
 version = '1.17.2'
-version_info = (1, 16, 0)
+version_info = (1, 17, 2)
 
 
 def dlopen(ffi, *names):
