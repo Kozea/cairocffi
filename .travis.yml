@@ -37,7 +37,8 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install cairo gdk-pixbuf; fi
 
   - $PYTHON -m pip install --upgrade setuptools
-  - $PYTHON -m pip install -e .[test,xcb]
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then $PYTHON -m pip install -e .[test,xcb]; fi
+  - if [[ "$TRAVIS_OS_NAME" != "linux" ]]; then $PYTHON -m pip install -e .[test]; fi
 
 script:
   - $PYTHON setup.py test
