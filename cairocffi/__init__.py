@@ -36,7 +36,7 @@ def dlopen(ffi, *names):
     raise OSError("dlopen() failed to load a library: %s" % ' / '.join(names))
 
 
-cairo = dlopen(ffi, 'cairo', 'cairo-2', 'cairo-gobject-2', 'cairo.so.2')
+cairo = dlopen(ffi, 'cairo', 'cairo-2', 'cairo.so.2')
 
 
 class _keepref(object):
