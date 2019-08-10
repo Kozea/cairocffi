@@ -61,7 +61,7 @@ def round_tuple(values):
 def assert_raise_finished(func, *args, **kwargs):
     with pytest.raises(cairocffi.CairoError) as exc:
         func(*args, **kwargs)
-    assert 'SURFACE_FINISHED' in str(exc)
+    assert 'SURFACE_FINISHED' in str(exc) or 'ExceptionInfo' in str(exc)
 
 
 def test_cairo_version():
