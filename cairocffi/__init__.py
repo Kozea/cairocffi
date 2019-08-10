@@ -9,7 +9,6 @@
 
 """
 
-import ctypes.util
 import sys
 from pathlib import Path
 
@@ -25,15 +24,12 @@ version_info = (1, 17, 2)
 def dlopen(ffi, *names):
     """Try various names for the same library, for different platforms."""
     for name in names:
-        for lib_name in (name, 'lib' + name):
-            try:
-                path = ctypes.util.find_library(lib_name)
-                lib = ffi.dlopen(path or lib_name)
-                if lib:
-                    return lib
-            except OSError:
-                pass
-    raise OSError("dlopen() failed to load a library: %s" % ' / '.join(names))
+        try:
+            return ffi.dlopen(name)
+        except OSError:
+            pass
+    # Re-raise the exception.
+    return ffi.dlopen(names[0])  # pragma: no cover
 
 
 cairo = dlopen(ffi, 'cairo', 'cairo-2', 'cairo.so.2')
