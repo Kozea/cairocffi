@@ -32,7 +32,7 @@ def dlopen(ffi, *names):
     return ffi.dlopen(names[0])  # pragma: no cover
 
 
-cairo = dlopen(ffi, 'cairo', 'cairo-2', 'libcairo.so.2')
+cairo = dlopen(ffi, 'cairo', 'cairo-2', 'libcairo.so')
 
 
 class _keepref(object):

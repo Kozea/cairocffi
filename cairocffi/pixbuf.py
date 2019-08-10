@@ -19,11 +19,16 @@ from ._generated.ffi_pixbuf import ffi
 
 __all__ = ['decode_to_image_surface']
 
-gdk_pixbuf = dlopen(ffi, 'gdk_pixbuf-2.0', 'gdk_pixbuf-2.0-0')
-gobject = dlopen(ffi, 'gobject-2.0', 'gobject-2.0-0')
-glib = dlopen(ffi, 'glib-2.0', 'glib-2.0-0', 'glib-2.0.so')
+gdk_pixbuf = dlopen(
+    ffi, 'gdk_pixbuf-2.0', 'gdk_pixbuf-2.0-0', 'libgdk_pixbuf-2.0.so')
+gobject = dlopen(
+    ffi, 'gobject-2.0', 'gobject-2.0-0', 'libgobject-2.0.so')
+glib = dlopen(
+    ffi, 'glib-2.0', 'glib-2.0-0', 'libglib-2.0.so')
 try:
-    gdk = dlopen(ffi, 'gdk-3', 'gdk-x11-2.0', 'gdk-win32-2.0-0')
+    gdk = dlopen(
+        ffi, 'gdk-3', 'gdk-2', 'gdk-x11-2.0', 'gdk-win32-2.0-0', 'libgdk-3.so',
+        'libgdk-x11-2.0.so')
 except OSError:
     gdk = None
 
