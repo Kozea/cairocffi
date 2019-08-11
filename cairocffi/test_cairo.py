@@ -1065,10 +1065,10 @@ def test_context_font():
     assert context.get_font_matrix().as_tuple() == (14, 0, 0, 14, 0, 0)
 
     context.set_font_size(10)
-    context.select_font_face(b'serif', cairocffi.FONT_SLANT_ITALIC)
+    context.select_font_face(b'@cairo:serif', cairocffi.FONT_SLANT_ITALIC)
     font_face = context.get_font_face()
     assert isinstance(font_face, ToyFontFace)
-    assert font_face.get_family() == 'serif'
+    assert font_face.get_family() == '@cairo:serif'
     assert font_face.get_slant() == cairocffi.FONT_SLANT_ITALIC
     assert font_face.get_weight() == cairocffi.FONT_WEIGHT_NORMAL
 
@@ -1085,14 +1085,13 @@ def test_context_font():
     ascent, descent, height, max_x_advance, max_y_advance = (
         context.font_extents())
     # That’s about all we can assume for a default font.
-#    assert height > ascent + descent  # Not even this is true on all fonts
     assert max_x_advance > 0
     assert max_y_advance == 0
     _, _, _, _, x_advance, y_advance = context.text_extents('i' * 10)
     assert x_advance > 0
     assert y_advance == 0
-    context.set_font_face(ToyFontFace('monospace',
-                          weight=cairocffi.FONT_WEIGHT_BOLD))
+    context.set_font_face(
+        ToyFontFace('@cairo:monospace', weight=cairocffi.FONT_WEIGHT_BOLD))
     _, _, _, _, x_advance_mono, y_advance = context.text_extents('i' * 10)
     assert x_advance_mono > x_advance
     assert y_advance == 0
@@ -1129,14 +1128,16 @@ def test_scaled_font():
     font = ScaledFont(ToyFontFace())
     font_extents = font.extents()
     ascent, descent, height, max_x_advance, max_y_advance = font_extents
-#    assert height > ascent + descent  # Not even this is true on all fonts
     assert max_x_advance > 0
     assert max_y_advance == 0
     _, _, _, _, x_advance, y_advance = font.text_extents('i' * 10)
     assert x_advance > 0
     assert y_advance == 0
 
-    font = ScaledFont(ToyFontFace('monospace'))
+    font = ScaledFont(ToyFontFace('@cairo:serif'))
+    _, _, _, _, x_advance, y_advance = font.text_extents('i' * 10)
+
+    font = ScaledFont(ToyFontFace('@cairo:monospace'))
     _, _, _, _, x_advance_mono, y_advance = font.text_extents('i' * 10)
     assert x_advance_mono > x_advance
     assert y_advance == 0
@@ -1145,7 +1146,8 @@ def test_scaled_font():
     assert isinstance(font.get_font_face(), FontFace)
 
     font = ScaledFont(
-        ToyFontFace('monospace'), Matrix(xx=20, yy=20), Matrix(xx=3, yy=.5),
+        ToyFontFace('@cairo:monospace'),
+        Matrix(xx=20, yy=20), Matrix(xx=3, yy=.5),
         FontOptions(antialias=cairocffi.ANTIALIAS_BEST))
     assert font.get_font_options().get_antialias() == cairocffi.ANTIALIAS_BEST
     assert font.get_font_matrix().as_tuple() == (20, 0, 0, 20, 0, 0)
