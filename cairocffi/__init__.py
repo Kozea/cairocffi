@@ -10,6 +10,7 @@
 """
 
 import sys
+from ctypes.util import find_library
 from pathlib import Path
 
 from . import constants
@@ -21,15 +22,25 @@ version = '1.17.2'
 version_info = (1, 17, 2)
 
 
-def dlopen(ffi, *names):
+def dlopen(ffi, name, *filenames):
     """Try various names for the same library, for different platforms."""
-    for name in names:
+    exceptions = []
+
+    library_filename = find_library(name)
+    if library_filename:
+        filenames = (library_filename,) + filenames
+    else:
+        exceptions.append('no library called "{}" was found'.format(name))
+
+    for filename in filenames:
         try:
-            return ffi.dlopen(name)
-        except OSError:
-            pass
-    # Re-raise the exception.
-    return ffi.dlopen(names[0])  # pragma: no cover
+            return ffi.dlopen(filename)
+        except OSError as exception:  # pragma: no cover
+            exceptions.append(exception)
+
+    error_message = '\n'.join(  # pragma: no cover
+        str(exception) for exception in exceptions)
+    raise OSError(error_message)  # pragma: no cover
 
 
 cairo = dlopen(
