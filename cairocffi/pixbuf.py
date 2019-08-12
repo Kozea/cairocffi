@@ -20,17 +20,19 @@ from ._generated.ffi_pixbuf import ffi
 __all__ = ['decode_to_image_surface']
 
 gdk_pixbuf = dlopen(
-    ffi, 'gdk_pixbuf-2.0', 'libgdk_pixbuf-2.0.so', 'libgdk_pixbuf-2.0.0.dylib',
-    'libgdk_pixbuf-2.0-0.dll')
+    ffi, ('gdk_pixbuf-2.0', 'libgdk_pixbuf-2.0-0'),
+    ('libgdk_pixbuf-2.0.so', 'libgdk_pixbuf-2.0.0.dylib',
+     'libgdk_pixbuf-2.0-0.dll'))
 gobject = dlopen(
-    ffi, 'gobject-2.0', 'libgobject-2.0.so', 'libgobject-2.0.dylib',
-    'libgobject-2.0-0.dll')
+    ffi, ('gobject-2.0', 'libgobject-2.0-0'),
+    ('libgobject-2.0.so', 'libgobject-2.0.dylib', 'libgobject-2.0-0.dll'))
 glib = dlopen(
-    ffi, 'glib-2.0', 'libglib-2.0.so', 'libglib-2.0.dylib',
-    'libglib-2.0-0.dll')
+    ffi, ('glib-2.0', 'libglib-2.0-0'),
+    ('libglib-2.0.so', 'libglib-2.0.dylib', 'libglib-2.0-0.dll'))
 try:
     gdk = dlopen(
-        ffi, 'gdk-3', 'libgdk-3.so', 'libgdk-3.0.dylib', 'libgdk-3-0.dll')
+        ffi, ('gdk-3', 'libgdk-3-0'),
+        ('libgdk-3.so', 'libgdk-3.0.dylib', 'libgdk-3-0.dll'))
 except OSError:
     gdk = None
 

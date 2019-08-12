@@ -22,15 +22,17 @@ version = '1.17.2'
 version_info = (1, 17, 2)
 
 
-def dlopen(ffi, name, *filenames):
+def dlopen(ffi, library_names, filenames):
     """Try various names for the same library, for different platforms."""
     exceptions = []
 
-    library_filename = find_library(name)
-    if library_filename:
-        filenames = (library_filename,) + filenames
-    else:
-        exceptions.append('no library called "{}" was found'.format(name))
+    for library_name in library_names:
+        library_filename = find_library(library_name)
+        if library_filename:
+            filenames = (library_filename,) + filenames
+        else:
+            exceptions.append(
+                'no library called "{}" was found'.format(library_name))
 
     for filename in filenames:
         try:
@@ -44,7 +46,8 @@ def dlopen(ffi, name, *filenames):
 
 
 cairo = dlopen(
-    ffi, 'cairo', 'libcairo.so', 'libcairo.2.dylib', 'libcairo-2.dll')
+    ffi, ('cairo', 'libcairo-2'),
+    ('libcairo.so', 'libcairo.2.dylib', 'libcairo-2.dll'))
 
 
 class _keepref(object):
