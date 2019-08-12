@@ -1,5 +1,4 @@
 """
-
     cairocffi.test_xcb
     ~~~~~~~~~~~~~~~~~~
 
@@ -16,10 +15,11 @@ import time
 import pytest
 
 xcffib = pytest.importorskip('xcffib')  # noqa
-import xcffib.xproto
-from xcffib.xproto import ConfigWindow, CW, EventMask, GC
 
-from . import Context, XCBSurface, cairo_version
+import xcffib.xproto  # noqa isort:skip
+from xcffib.xproto import ConfigWindow, CW, EventMask, GC  # noqa isort:skip
+
+from . import Context, XCBSurface, cairo_version  # noqa isort:skip
 
 
 @pytest.fixture

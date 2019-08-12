@@ -9,8 +9,8 @@
 
 """
 
-import ctypes.util
 import sys
+from ctypes.util import find_library
 from pathlib import Path
 
 from . import constants
@@ -22,21 +22,32 @@ version = '1.17.2'
 version_info = (1, 17, 2)
 
 
-def dlopen(ffi, *names):
+def dlopen(ffi, library_names, filenames):
     """Try various names for the same library, for different platforms."""
-    for name in names:
-        for lib_name in (name, 'lib' + name):
-            try:
-                path = ctypes.util.find_library(lib_name)
-                lib = ffi.dlopen(path or lib_name)
-                if lib:
-                    return lib
-            except OSError:
-                pass
-    raise OSError("dlopen() failed to load a library: %s" % ' / '.join(names))
+    exceptions = []
+
+    for library_name in library_names:
+        library_filename = find_library(library_name)
+        if library_filename:
+            filenames = (library_filename,) + filenames
+        else:
+            exceptions.append(
+                'no library called "{}" was found'.format(library_name))
+
+    for filename in filenames:
+        try:
+            return ffi.dlopen(filename)
+        except OSError as exception:  # pragma: no cover
+            exceptions.append(exception)
+
+    error_message = '\n'.join(  # pragma: no cover
+        str(exception) for exception in exceptions)
+    raise OSError(error_message)  # pragma: no cover
 
 
-cairo = dlopen(ffi, 'cairo', 'cairo-2', 'cairo-gobject-2', 'cairo.so.2')
+cairo = dlopen(
+    ffi, ('cairo', 'libcairo-2'),
+    ('libcairo.so', 'libcairo.2.dylib', 'libcairo-2.dll'))
 
 
 class _keepref(object):
@@ -107,18 +118,18 @@ def install_as_pycairo():
 
 # Implementation is in submodules, but public API is all here.
 
-from .surfaces import (Surface, ImageSurface, PDFSurface,  # noqa isort:skip
-                       PSSurface, SVGSurface, RecordingSurface, Win32Surface,
-                       Win32PrintingSurface)
+from .surfaces import (  # noqa isort:skip
+    Surface, ImageSurface, PDFSurface, PSSurface, SVGSurface, RecordingSurface,
+    Win32Surface, Win32PrintingSurface)
 try:
     from .xcb import XCBSurface  # noqa isort:skip
 except ImportError:
     pass
-from .patterns import (Pattern, SolidPattern,  # noqa isort:skip
-                       SurfacePattern, Gradient, LinearGradient,
-                       RadialGradient)
-from .fonts import (FontFace, ToyFontFace, ScaledFont,  # noqa isort:skip
-                    FontOptions)
+from .patterns import (  # noqa isort:skip
+    Pattern, SolidPattern, SurfacePattern, Gradient, LinearGradient,
+    RadialGradient)
+from .fonts import (  # noqa isort:skip
+    FontFace, ToyFontFace, ScaledFont, FontOptions)
 from .context import Context  # noqa isort:skip
 from .matrix import Matrix  # noqa isort:skip
 

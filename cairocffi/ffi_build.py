@@ -17,7 +17,7 @@ from cffi import FFI
 # Path hack to import constants when this file is exec'd by setuptools
 sys.path.append(str(Path(__file__).parent))
 
-import constants  # noqa
+import constants  # noqa isort:skip
 
 # Create an empty _generated folder if needed
 (Path(__file__).parent / '_generated').mkdir(exist_ok=True)
