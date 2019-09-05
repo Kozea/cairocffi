@@ -2,6 +2,21 @@ cairocffi changelog
 -------------------
 
 
+Version 1.1.0
+.............
+
+Released on 2019-09-05
+
+* `#135 <https://github.com/Kozea/cairocffi/pull/135>`_,
+  `#127 <https://github.com/Kozea/cairocffi/pull/127>`_,
+  `#119 <https://github.com/Kozea/cairocffi/pull/119>`_:
+  Clean the way external libraries are found
+* `#126 <https://github.com/Kozea/cairocffi/pull/126>`_:
+  Remove const char* elements from cdef
+* Support Cairo features up to 1.17.2
+* Fix documentation generation
+
+
 Version 1.0.2
 .............
 
