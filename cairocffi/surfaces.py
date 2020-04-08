@@ -11,11 +11,12 @@
 
 import ctypes
 import io
+import operator
 import os
 import sys
 import weakref
-
 from functools import reduce
+
 from . import _check_status, _keepref, cairo, constants, ffi
 from .fonts import FontOptions, _encode_string
 
@@ -77,9 +78,9 @@ def from_buffer(obj):
         # Looks like a array.array object.
         address, length = obj.buffer_info()
         return address, length * obj.itemsize
-    if hasattr(obj, '__array_interface__'):
+    elif hasattr(obj, '__array_interface__'):
         # Looks like a numpy.ndarray object
-        length = reduce(lambda x, y: x*y , obj.shape)
+        length = reduce(operator.mul, obj.shape)
         return ctypes.addressof(ctypes.c_char.from_buffer(obj)), length
     else:
         # Other buffers.
@@ -156,7 +157,7 @@ class Surface(object):
         if hasattr(target_keep_alive, '__array_interface__'):
             is_empty = target_keep_alive.size == 0
         else:
-            is_empty = target_keep_alive in (None, ffi.NULL)       
+            is_empty = target_keep_alive in (None, ffi.NULL)
         if not is_empty:
             keep_alive = KeepAlive(target_keep_alive)
             _check_status(cairo.cairo_surface_set_user_data(
