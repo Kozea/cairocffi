@@ -16,6 +16,8 @@ import os
 import sys
 import weakref
 from functools import reduce
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 from . import _check_status, _keepref, cairo, constants, ffi
 from .fonts import FontOptions, _encode_string
@@ -653,9 +655,25 @@ class Surface(object):
         if return_bytes:
             target = io.BytesIO()
         if hasattr(target, 'write'):
-            write_func = _make_write_func(target)
-            _check_status(cairo.cairo_surface_write_to_png_stream(
-                self._pointer, write_func, ffi.NULL))
+            try:
+                write_func = _make_write_func(target)
+                _check_status(cairo.cairo_surface_write_to_png_stream(
+                    self._pointer, write_func, ffi.NULL))
+            except SystemError:  # noqa
+                # Callback creation has failed
+                if hasattr(target, 'name'):
+                    # File-like object has a name, write here
+                    _check_status(cairo.cairo_surface_write_to_png(
+                        self._pointer, _encode_filename(target.name)))
+                else:
+                    # Use a fallback temporary file
+                    with NamedTemporaryFile('wb', delete=False) as fd:
+                        filename = fd.name
+                        _check_status(cairo.cairo_surface_write_to_png(
+                            self._pointer, _encode_filename(filename)))
+                    png_file = Path(filename)
+                    target.write(png_file.read_bytes())
+                    png_file.unlink()
         else:
             _check_status(cairo.cairo_surface_write_to_png(
                 self._pointer, _encode_filename(target)))
