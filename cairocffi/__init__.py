@@ -47,7 +47,7 @@ def dlopen(ffi, library_names, filenames):
 
 cairo = dlopen(
     ffi, ('cairo', 'libcairo-2'),
-    ('libcairo.so', 'libcairo.2.dylib', 'libcairo-2.dll'))
+    ('libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll'))
 
 
 class _keepref(object):
