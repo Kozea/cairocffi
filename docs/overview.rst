@@ -32,10 +32,11 @@ Install with pip_::
 
 This will automatically install CFFI.
 
-cairocffi can also be setup to utizile XCB support via xcffib_.
-This can also be installed automatically with pip_::
+cairocffi can also be setup to utizile XCB support via xcffib_, that has to be
+installed before cairocffi::
 
-    pip install cairocffi[xcb]
+    pip install xcffib
+    pip install cairocffi
 
 In addition to other dependencies, this will install xcffib.
 
