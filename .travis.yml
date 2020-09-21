@@ -4,14 +4,14 @@ env: PYTHON=python3
 
 matrix:
   include:
-    - os: linux
-      python: 3.5
-    - os: linux
+    - os: bionic
       python: 3.6
-    - os: linux
+    - os: focal
       python: pypy3
-    - dist: xenial
+    - dist: bionic
       python: 3.7
+    - dist: focal
+      python: 3.8
     - os: osx
       language: generic
     - os: windows

@@ -18,7 +18,7 @@ to decode various image formats for use in cairo.
 * `Source code and issue tracker <https://github.com/Kozea/cairocffi>`_
   on GitHub.
 * Install with ``pip install cairocffi``
-* Python 3.5+. `Tested with CPython and PyPy3
+* Python 3.6+. `Tested with CPython and PyPy3
   <https://travis-ci.org/Kozea/cairocffi>`_.
 * API partially compatible with Pycairo.
 * Works with any version of cairo.
