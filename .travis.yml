@@ -17,7 +17,7 @@ matrix:
     - os: windows
       # Windows doesn't support python or even generic language
       language: cpp
-      env: PYTHON=/c/Python37/python
+      env: PYTHON=/c/Python38/python
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16; fi
