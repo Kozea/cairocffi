@@ -95,9 +95,8 @@ def decode_to_pixbuf(image_data, width=None, height=None):
     error = ffi.new('GError **')
     if width and height:
         gdk_pixbuf.gdk_pixbuf_loader_set_size(loader, width, height)
-    data = ffi.new('guchar[]', image_data)
     handle_g_error(error, gdk_pixbuf.gdk_pixbuf_loader_write(
-        loader, data, len(data), error))
+        loader, image_data, len(image_data), error))
     handle_g_error(error, gdk_pixbuf.gdk_pixbuf_loader_close(loader, error))
 
     format_ = gdk_pixbuf.gdk_pixbuf_loader_get_format(loader)
