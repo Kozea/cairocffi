@@ -1,0 +1,41 @@
+name: cairocffi's tests
+on: [push]
+
+jobs:
+  tests:
+    name: ${{ matrix.os }} - ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.6, 3.7, 3.8, pypy3]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: xvfb daemon (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16
+      - name: Pip installs (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          python -m pip install -e .[test,xcb]
+          python -m pip install -e .[test]
+      - name: Install cairo gdk-pixbuf (MacOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew update
+          brew pin numpy gdal postgis
+          brew install cairo gdk-pixbuf
+      - name: Install msys2 and DejaVu (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install -y --no-progress msys2
+          powershell "C:\tools\msys64\usr\bin\bash -lc 'pacman -S mingw-w64-x86_64-ttf-dejavu mingw-w64-x86_64-gtk3 --noconfirm'"
+          xcopy "C:\tools\msys64\mingw64\share\fonts\TTF" "C:\Users\runneradmin\.fonts" /e /i
+          $env:PATH += ";C:\tools\msys64\mingw64\bin"
+          echo "::set-env name=PATH::$env:PATH"
+      - name: Launch tests
+        run: python setup.py test
