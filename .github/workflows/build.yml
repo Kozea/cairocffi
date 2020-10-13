@@ -1,0 +1,43 @@
+name: Build Cairocffi
+on: [push]
+
+jobs:
+  tests:
+    name: Build Windows wheel
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        architecture: ['x64','x86']
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+          architecture: ${{ matrix.architecture }}
+
+      - name: Get Cairo
+        run: |
+          #TODO: Change below URL on new cairo release
+          curl -L https://github.com/preshing/cairo-windows/releases/download/with-tee/cairo-windows-1.17.2.zip -o cairocomplied.zip
+          7z x cairocomplied.zip
+          Move-Item 'cairo-windows-*' "cairocomplied"
+
+      - name: Build Wheel
+        env:
+            arch: ${{ matrix.architecture }}
+            BUILD_WHEEL_WINDOWS: 1
+        run: |
+          Copy-Item "$PWD\cairocomplied\lib\$($env:arch)\cairo.dll" "cairocffi\cairo.dll"
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools wheel
+          python setup.py bdist_wheel
+          cd dist
+          $wheelPath=(Resolve-Path cairocffi*.whl).Path
+          pip install $wheelPath
+          python -c "import cairocffi"
+
+      - uses: actions/upload-artifact@v2
+        with:
+         name: cairocffi-${{ matrix.architecture }}
+         path: dist/cairocffi*.whl

@@ -9,3 +9,5 @@ cairocffi/_ffi*.py
 /.coverage
 /.pytest_cache
 /docs/_build
+dist
+build
