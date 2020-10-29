@@ -2,6 +2,21 @@ cairocffi changelog
 -------------------
 
 
+Version 1.2.0
+.............
+
+Released on 2020-10-29
+
+* `#152 <https://github.com/Kozea/cairocffi/pull/152>`_:
+  Add NumPy support
+* `#143 <https://github.com/Kozea/cairocffi/issues/143>`_:
+  Make write_to_png function work on hardened systems
+* `#156 <https://github.com/Kozea/cairocffi/pull/156>`_:
+  Use major version name to open shared libraries
+* `#165 <https://github.com/Kozea/cairocffi/pull/165>`_:
+  Don’t list setuptools as required for installation
+
+
 Version 1.1.0
 .............
 
