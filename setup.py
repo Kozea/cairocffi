@@ -9,31 +9,25 @@ if sys.version_info.major < 3:
         "cairocffi does not support Python 2.x anymore. "
         "Please use Python 3 or install an older version of cairocffi."
     )
-has_cairo =os.path.isfile(os.path.join("cairocffi", "cairo.dll"))
-is_build_wheel = ("bdist_wheel" in sys.argv)
-
-if is_build_wheel:
-    if has_cairo:
-        pos_bdist_wheel = sys.argv.index("bdist_wheel")
-        # we also need to make sure that this version of bdist_wheel supports
-        # the --plat-name argument
-        try:
-            import wheel
-            from distutils.version import StrictVersion
-            if not StrictVersion(wheel.__version__) >= StrictVersion("0.27"):
-                msg = "Including pandoc in wheel needs wheel >=0.27 but found %s.\nPlease update wheel!"
-                raise RuntimeError(msg % wheel.__version__)
-        except ImportError:
-            print("No wheel installed, please install 'wheel'...")
-        from distutils.util import get_platform
-        sys.argv.insert(pos_bdist_wheel + 1, '--plat-name')
-        sys.argv.insert(pos_bdist_wheel + 2, get_platform())
-    else:
-        print("no cairo found, building platform unspecific wheel...")
+    
+# from: https://stackoverflow.com/questions/45150304/how-to-force-a-python-wheel-to-be-platform-specific-when-building-it
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+    class bdist_wheel(_bdist_wheel):
+        def finalize_options(self):
+            _bdist_wheel.finalize_options(self)
+            self.root_is_pure = False
+        def get_tag(self):
+            python, abi, plat = _bdist_wheel.get_tag(self)
+            python, abi = 'py3', 'none'
+            return python, abi, plat
+except ImportError:
+    bdist_wheel = None
 
 setup(
     cffi_modules=[
          "cairocffi/ffi_build.py:ffi",
          "cairocffi/ffi_build.py:ffi_pixbuf"
          ],
+    cmdclass={'bdist_wheel': bdist_wheel},
 )
