@@ -1,4 +1,3 @@
-import os
 import sys
 
 from setuptools import setup
@@ -8,14 +7,15 @@ if sys.version_info.major < 3:
         "cairocffi does not support Python 2.x anymore. "
         "Please use Python 3 or install an older version of cairocffi."
     )
-    
-# from: https://stackoverflow.com/questions/45150304/how-to-force-a-python-wheel-to-be-platform-specific-when-building-it
+
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
     class bdist_wheel(_bdist_wheel):
         def finalize_options(self):
             _bdist_wheel.finalize_options(self)
             self.root_is_pure = False
+
         def get_tag(self):
             python, abi, plat = _bdist_wheel.get_tag(self)
             python, abi = 'py3', 'none'
