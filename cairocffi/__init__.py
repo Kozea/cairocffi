@@ -11,6 +11,7 @@
 
 import os
 import sys
+import warnings
 from ctypes.util import find_library
 from pathlib import Path
 
@@ -52,6 +53,7 @@ if CAIRO_LOCATION:
     try:
         cairo = ffi.dlopen(CAIRO_LOCATION)
     except OSError:
+        warnings.warn(f'Error loading {CAIRO_LOCATION}.Falling back.')
         cairo = None
 if cairo is None:
     cairo = dlopen(
