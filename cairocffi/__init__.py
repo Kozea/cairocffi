@@ -9,6 +9,7 @@
 
 """
 
+import os
 import sys
 from ctypes.util import find_library
 from pathlib import Path
@@ -20,6 +21,8 @@ VERSION = __version__ = (Path(__file__).parent / 'VERSION').read_text().strip()
 # supported version of cairo, used to be pycairo version too:
 version = '1.17.2'
 version_info = (1, 17, 2)
+CAIRO_LOCATION = os.getenv('CAIRO_LOCATION')
+cairo = None
 
 
 def dlopen(ffi, library_names, filenames):
@@ -45,9 +48,17 @@ def dlopen(ffi, library_names, filenames):
     raise OSError(error_message)  # pragma: no cover
 
 
-cairo = dlopen(
-    ffi, ('cairo-2', 'cairo', 'libcairo-2'),
-    ('libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll'))
+if CAIRO_LOCATION:
+    try:
+        cairo = ffi.dlopen(CAIRO_LOCATION)
+    except OSError:
+        cairo = None
+if cairo is None:
+    cairo = dlopen(
+        ffi,
+        ("cairo-2", "cairo", "libcairo-2"),
+        ("libcairo.so.2", "libcairo.2.dylib", "libcairo-2.dll"),
+    )
 
 
 class _keepref(object):
