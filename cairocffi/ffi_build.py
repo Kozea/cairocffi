@@ -21,6 +21,7 @@ import constants  # noqa isort:skip
 
 # Create an empty _generated folder if needed
 (Path(__file__).parent / '_generated').mkdir(exist_ok=True)
+open(Path(__file__).parent.joinpath('_generated','__init__.py'), 'a').close()
 
 # Primary cffi definitions
 ffi = FFI()
