@@ -255,12 +255,8 @@ def test_metadata():
     assert b'/Creator (creator)' in pdf_bytes
     assert b'/Author (author)' in pdf_bytes
     assert b'/Keywords (keywords)' in pdf_bytes
-    # According to PDF 32000-1:2008, section 7.9.4 ("Dates") PDF date strings
-    # do not end with a apostrophe even though that format was described in
-    # the "PDF reference, Sixth Edition".
-    #   See also: https://stackoverflow.com/q/41661477/138526
-    # cairo 1.17.4 contains a commit which adds the apostrophe unconditionally:
-    #   https://gitlab.freedesktop.org/cairo/cairo/-/issues/392#note_742384
+    # cairo 1.17.4 adds an apostrophe at the end of dates:
+    # https://gitlab.freedesktop.org/cairo/cairo/-/issues/392
     assert b"/CreationDate (20130721234600+01'00" in pdf_bytes
     assert b'/ModDate (20130721234600Z)' in pdf_bytes
 
