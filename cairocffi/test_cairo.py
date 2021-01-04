@@ -261,11 +261,7 @@ def test_metadata():
     #   See also: https://stackoverflow.com/q/41661477/138526
     # cairo 1.17.4 contains a commit which adds the apostrophe unconditionally:
     #   https://gitlab.freedesktop.org/cairo/cairo/-/issues/392#note_742384
-    if cairo_version() == 11704:
-        expected_date_string = b"/CreationDate (20130721234600+01'00')"
-    else:
-        expected_date_string = b"/CreationDate (20130721234600+01'00)"
-    assert expected_date_string in pdf_bytes
+    assert b"/CreationDate (20130721234600+01'00" in pdf_bytes
     assert b'/ModDate (20130721234600Z)' in pdf_bytes
 
 
