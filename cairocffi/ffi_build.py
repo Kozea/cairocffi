@@ -17,6 +17,7 @@ from cffi import FFI
 # Path hack to import constants when this file is exec'd by setuptools
 sys.path.append(str(Path(__file__).parent))
 
+# Pytype does not like this for some reason:
 # pytype: disable=import-error
 import constants  # noqa isort:skip
 # pytype: enable=import-error

@@ -12,6 +12,7 @@
 import sys
 from ctypes.util import find_library
 from pathlib import Path
+from typing import Tuple
 
 from . import constants
 from ._generated.ffi import ffi
@@ -22,7 +23,7 @@ version = '1.17.2'
 version_info = (1, 17, 2)
 
 
-def dlopen(ffi, library_names, filenames):
+def dlopen(ffi, library_names: Tuple[str, ...], filenames: Tuple[str, ...]):
     """Try various names for the same library, for different platforms."""
     exceptions = []
 
@@ -88,7 +89,7 @@ def _check_status(status):
         raise exception(message, status)
 
 
-def cairo_version():
+def cairo_version() -> int:
     """Return the cairo version number as a single integer,
     such as 11208 for ``1.12.8``.
     Major, minor and micro versions are "worth" 10000, 100 and 1 respectively.
@@ -102,7 +103,7 @@ def cairo_version():
     return cairo.cairo_version()
 
 
-def cairo_version_string():
+def cairo_version_string() -> str:
     """Return the cairo version number as a string, such as ``1.12.8``."""
     return ffi.string(cairo.cairo_version_string()).decode('ascii')
 
