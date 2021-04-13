@@ -143,7 +143,8 @@ def pixbuf_to_cairo_gdk(pixbuf):
     dummy_context = Context(ImageSurface(constants.FORMAT_ARGB32, 1, 1))
     gdk.gdk_cairo_set_source_pixbuf(
         dummy_context._pointer, pixbuf._pointer, 0, 0)
-    return dummy_context.get_source().get_surface()
+    # Pytype confuses Surface with SurfacePattern.
+    return dummy_context.get_source().get_surface()  # pytype: disable=attribute-error
 
 
 def pixbuf_to_cairo_slices(pixbuf):

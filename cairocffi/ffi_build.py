@@ -17,7 +17,9 @@ from cffi import FFI
 # Path hack to import constants when this file is exec'd by setuptools
 sys.path.append(str(Path(__file__).parent))
 
+# pytype: disable=import-error
 import constants  # noqa isort:skip
+# pytype: enable=import-error
 
 # Create an empty _generated folder if needed
 (Path(__file__).parent / '_generated').mkdir(exist_ok=True)
