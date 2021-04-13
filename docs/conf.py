@@ -1,7 +1,10 @@
 from pathlib import Path
 
 extensions = [
-    'sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.coverage']
+    'sphinx.ext.autodoc',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.coverage',
+    'sphinx_autodoc_typehints']
 master_doc = 'index'
 project = 'cairocffi'
 copyright = '2013-2019, Simon Sapin'
