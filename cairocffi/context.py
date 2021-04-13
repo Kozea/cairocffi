@@ -107,10 +107,9 @@ class Context(object):
         _check_status(cairo.cairo_status(self._pointer))
 
     @classmethod
-    def _from_pointer(cls, pointer, incref):
+    def _from_pointer(cls, pointer, incref: bool):
         """Wrap an existing :c:type:`cairo_t *` cdata pointer.
 
-        :type incref: bool
         :param incref:
             Whether increase the :ref:`reference count <refcounting>` now.
         :return:
@@ -303,7 +302,8 @@ class Context(object):
     #  Sources
     #
 
-    def set_source_rgba(self, red, green, blue, alpha=1):
+    def set_source_rgba(self, red: float, green: float, blue: float,
+                        alpha: float = 1):
         """Sets the source pattern within this context to a solid color.
         This color will then be used for any subsequent drawing operation
         until a new source pattern is set.
@@ -321,11 +321,6 @@ class Context(object):
         :param alpha:
             Alpha component of the color.
             1 (the default) is opaque, 0 fully transparent.
-        :type red: float
-        :type green: float
-        :type blue: float
-        :type alpha: float
-
         """
         cairo.cairo_set_source_rgba(self._pointer, red, green, blue, alpha)
         self._check_status()
@@ -338,7 +333,7 @@ class Context(object):
         cairo.cairo_set_source_rgb(self._pointer, red, green, blue)
         self._check_status()
 
-    def set_source_surface(self, surface, x=0, y=0):
+    def set_source_surface(self, surface, x: float = 0, y: float = 0):
         """This is a convenience method for creating a pattern from surface
         and setting it as the source in this context with :meth:`set_source`.
 
@@ -360,8 +355,6 @@ class Context(object):
             A :class:`Surface` to be used to set the source pattern.
         :param x: User-space X coordinate for surface origin.
         :param y: User-space Y coordinate for surface origin.
-        :type x: float
-        :type y: float
 
         """
         cairo.cairo_set_source_surface(self._pointer, surface._pointer, x, y)
@@ -428,7 +421,7 @@ class Context(object):
         """Return the :ref:`ANTIALIAS` string."""
         return cairo.cairo_get_antialias(self._pointer)
 
-    def set_dash(self, dashes, offset=0):
+    def set_dash(self, dashes, offset: float = 0):
         """Sets the dash pattern to be used by :meth:`stroke`.
         A dash pattern is specified by dashes, a list of positive values.
         Each value provides the length of alternate "on" and "off"
@@ -455,7 +448,6 @@ class Context(object):
         :param dashes:
             A list of floats specifying alternate lengths
             of on and off stroke portions.
-        :type offset: float
         :param offset:
             An offset into the dash pattern at which the stroke should start.
         :raises:
@@ -546,7 +538,7 @@ class Context(object):
         """Return the current :ref:`LINE_JOIN` string."""
         return cairo.cairo_get_line_join(self._pointer)
 
-    def set_line_width(self, width):
+    def set_line_width(self, width: float):
         """Sets the current line width within the cairo context.
         The line width value specifies the diameter of a pen
         that is circular in user space,
@@ -573,7 +565,6 @@ class Context(object):
 
         The default line width value is 2.0.
 
-        :type width: float
         :param width: The new line width.
 
         """
@@ -584,7 +575,7 @@ class Context(object):
         """Return the current line width as a float."""
         return cairo.cairo_get_line_width(self._pointer)
 
-    def set_miter_limit(self, limit):
+    def set_miter_limit(self, limit: float):
         """Sets the current miter limit within the cairo context.
 
         If the current line join style is set to :obj:`MITER <LINE_JOIN_MITER>`
@@ -611,7 +602,6 @@ class Context(object):
         ``miter_limit = 1. / sin(angle / 2.)``
 
         :param limit: The miter limit to set.
-        :type limit: float
 
         """
         cairo.cairo_set_miter_limit(self._pointer, limit)
@@ -637,7 +627,7 @@ class Context(object):
         """Return the current :ref:`OPERATOR` string."""
         return cairo.cairo_get_operator(self._pointer)
 
-    def set_tolerance(self, tolerance):
+    def set_tolerance(self, tolerance: float):
         """Sets the tolerance used when converting paths into trapezoids.
         Curved segments of the path will be subdivided
         until the maximum deviation between the original path
@@ -652,7 +642,6 @@ class Context(object):
         and the prescribed tolerance is restricted
         to the smallest representable internal value.
 
-        :type tolerance: float
         :param tolerance: The tolerance, in device units (typically pixels)
 
         """
@@ -667,7 +656,7 @@ class Context(object):
     #  CTM: Current transformation matrix
     #
 
-    def translate(self, tx, ty):
+    def translate(self, tx: float, ty: float):
         """Modifies the current transformation matrix (CTM)
         by translating the user-space origin by ``(tx, ty)``.
         This offset is interpreted as a user-space coordinate
@@ -677,14 +666,12 @@ class Context(object):
 
         :param tx: Amount to translate in the X direction
         :param ty: Amount to translate in the Y direction
-        :type tx: float
-        :type ty: float
 
         """
         cairo.cairo_translate(self._pointer, tx, ty)
         self._check_status()
 
-    def scale(self, sx, sy=None):
+    def scale(self, sx: float, sy: float = None):
         """Modifies the current transformation matrix (CTM)
         by scaling the X and Y user-space axes
         by :obj:`sx` and :obj:`sy` respectively.
@@ -696,8 +683,6 @@ class Context(object):
 
         :param sx: Scale factor in the X direction.
         :param sy: Scale factor in the Y direction.
-        :type sx: float
-        :type sy: float
 
         """
         if sy is None:
@@ -705,13 +690,12 @@ class Context(object):
         cairo.cairo_scale(self._pointer, sx, sy)
         self._check_status()
 
-    def rotate(self, radians):
+    def rotate(self, radians: float):
         """Modifies the current transformation matrix (CTM)
         by rotating the user-space axes by angle :obj:`radians`.
         The rotation of the axes takes places
         after any existing transformation of user space.
 
-        :type radians: float
         :param radians:
             Angle of rotation, in radians.
             The direction of rotation is defined such that positive angles
@@ -766,15 +750,13 @@ class Context(object):
         cairo.cairo_identity_matrix(self._pointer)
         self._check_status()
 
-    def user_to_device(self, x, y):
+    def user_to_device(self, x: float, y: float):
         """Transform a coordinate from user space to device space
         by multiplying the given point
         by the current transformation matrix (CTM).
 
         :param x: X position.
         :param y: Y position.
-        :type x: float
-        :type y: float
         :returns: A ``(device_x, device_y)`` tuple of floats.
 
         """
@@ -783,7 +765,7 @@ class Context(object):
         self._check_status()
         return tuple(xy)
 
-    def user_to_device_distance(self, dx, dy):
+    def user_to_device_distance(self, dx: float, dy: float):
         """Transform a distance vector from user space to device space.
         This method is similar to :meth:`Context.user_to_device`
         except that the translation components of the CTM
@@ -791,8 +773,6 @@ class Context(object):
 
         :param dx: X component of a distance vector.
         :param dy: Y component of a distance vector.
-        :type x: float
-        :type y: float
         :returns: A ``(device_dx, device_dy)`` tuple of floats.
 
         """
@@ -801,15 +781,13 @@ class Context(object):
         self._check_status()
         return tuple(xy)
 
-    def device_to_user(self, x, y):
+    def device_to_user(self, x: float, y: float):
         """Transform a coordinate from device space to user space
         by multiplying the given point
         by the inverse of the current transformation matrix (CTM).
 
         :param x: X position.
         :param y: Y position.
-        :type x: float
-        :type y: float
         :returns: A ``(user_x, user_y)`` tuple of floats.
 
         """
@@ -818,7 +796,7 @@ class Context(object):
         self._check_status()
         return tuple(xy)
 
-    def device_to_user_distance(self, dx, dy):
+    def device_to_user_distance(self, dx: float, dy: float):
         """Transform a distance vector from device space to user space.
         This method is similar to :meth:`Context.device_to_user`
         except that the translation components of the inverse CTM
@@ -826,8 +804,6 @@ class Context(object):
 
         :param dx: X component of a distance vector.
         :param dy: Y component of a distance vector.
-        :type x: float
-        :type y: float
         :returns: A ``(user_dx, user_dy)`` tuple of floats.
 
         """
@@ -923,20 +899,18 @@ class Context(object):
         cairo.cairo_new_sub_path(self._pointer)
         self._check_status()
 
-    def move_to(self, x, y):
+    def move_to(self, x: float, y: float):
         """Begin a new sub-path.
         After this call the current point will be ``(x, y)``.
 
         :param x: X position of the new point.
         :param y: Y position of the new point.
-        :type float: x
-        :type float: y
 
         """
         cairo.cairo_move_to(self._pointer, x, y)
         self._check_status()
 
-    def rel_move_to(self, dx, dy):
+    def rel_move_to(self, dx: float, dy: float):
         """Begin a new sub-path.
         After this call the current point will be offset by ``(dx, dy)``.
 
@@ -946,8 +920,6 @@ class Context(object):
 
         :param dx: The X offset.
         :param dy: The Y offset.
-        :type float: dx
-        :type float: dy
         :raises:
             :exc:`CairoError` if there is no current point.
             Doing so will cause leave the context in an error state.
@@ -956,7 +928,7 @@ class Context(object):
         cairo.cairo_rel_move_to(self._pointer, dx, dy)
         self._check_status()
 
-    def line_to(self, x, y):
+    def line_to(self, x: float, y: float):
         """Adds a line to the path from the current point
         to position ``(x, y)`` in user-space coordinates.
         After this call the current point will be ``(x, y)``.
@@ -966,14 +938,12 @@ class Context(object):
 
         :param x: X coordinate of the end of the new line.
         :param y: Y coordinate of the end of the new line.
-        :type float: x
-        :type float: y
 
         """
         cairo.cairo_line_to(self._pointer, x, y)
         self._check_status()
 
-    def rel_line_to(self, dx, dy):
+    def rel_line_to(self, dx: float, dy: float):
         """ Relative-coordinate version of :meth:`line_to`.
         Adds a line to the path from the current point
         to a point that is offset from the current point
@@ -986,8 +956,6 @@ class Context(object):
 
         :param dx: The X offset to the end of the new line.
         :param dy: The Y offset to the end of the new line.
-        :type float: dx
-        :type float: dy
         :raises:
             :exc:`CairoError` if there is no current point.
             Doing so will cause leave the context in an error state.
@@ -996,7 +964,7 @@ class Context(object):
         cairo.cairo_rel_line_to(self._pointer, dx, dy)
         self._check_status()
 
-    def rectangle(self, x, y, width, height):
+    def rectangle(self, x: float, y: float, width: float, height: float):
         """Adds a closed sub-path rectangle
         of the given size to the current path
         at position ``(x, y)`` in user-space coordinates.
@@ -1013,16 +981,13 @@ class Context(object):
         :param y: The Y coordinate of the top left corner of the rectangle.
         :param width: Width of the rectangle.
         :param height: Height of the rectangle.
-        :type float: x
-        :type float: y
-        :type float: width
-        :type float: heigth
 
         """
         cairo.cairo_rectangle(self._pointer, x, y, width, height)
         self._check_status()
 
-    def arc(self, xc, yc, radius, angle1, angle2):
+    def arc(self, xc: float, yc: float, radius: float, angle1: float,
+            angle2: float):
         """Adds a circular arc of the given radius to the current path.
         The arc is centered at ``(xc, yc)``,
         begins at :obj:`angle1`
@@ -1073,17 +1038,13 @@ class Context(object):
         :param radius: The radius of the arc.
         :param angle1: The start angle, in radians.
         :param angle2: The end angle, in radians.
-        :type xc: float
-        :type yc: float
-        :type radius: float
-        :type angle1: float
-        :type angle2: float
 
         """
         cairo.cairo_arc(self._pointer, xc, yc, radius, angle1, angle2)
         self._check_status()
 
-    def arc_negative(self, xc, yc, radius, angle1, angle2):
+    def arc_negative(self, xc: float, yc: float, radius: float, angle1: float,
+                     angle2: float):
         """Adds a circular arc of the given radius to the current path.
         The arc is centered at ``(xc, yc)``,
         begins at :obj:`angle1`
@@ -1102,17 +1063,13 @@ class Context(object):
         :param radius: The radius of the arc.
         :param angle1: The start angle, in radians.
         :param angle2: The end angle, in radians.
-        :type xc: float
-        :type yc: float
-        :type radius: float
-        :type angle1: float
-        :type angle2: float
 
         """
         cairo.cairo_arc_negative(self._pointer, xc, yc, radius, angle1, angle2)
         self._check_status()
 
-    def curve_to(self, x1, y1, x2, y2, x3, y3):
+    def curve_to(self, x1: float, y1: float, x2: float, y2: float, x3: float,
+                 y3: float):
         """Adds a cubic Bézier spline to the path
         from the current point
         to position ``(x3, y3)`` in user-space coordinates,
@@ -1129,18 +1086,13 @@ class Context(object):
         :param y2: The Y coordinate of the second control point.
         :param x3: The X coordinate of the end of the curve.
         :param y3: The Y coordinate of the end of the curve.
-        :type x1: float
-        :type y1: float
-        :type x2: float
-        :type y2: float
-        :type x3: float
-        :type y3: float
 
         """
         cairo.cairo_curve_to(self._pointer, x1, y1, x2, y2, x3, y3)
         self._check_status()
 
-    def rel_curve_to(self, dx1, dy1, dx2, dy2, dx3, dy3):
+    def rel_curve_to(self, dx1: float, dy1: float, dx2: float, dy2: float,
+                     dx3: float, dy3: float):
         """ Relative-coordinate version of :meth:`curve_to`.
         All offsets are relative to the current point.
         Adds a cubic Bézier spline to the path from the current point
@@ -1160,12 +1112,6 @@ class Context(object):
         :param dy2: The Y offset to the second control point.
         :param dx3: The X offset to the end of the curve.
         :param dy3: The Y offset to the end of the curve.
-        :type dx1: float
-        :type dy1: float
-        :type dx2: float
-        :type dy2: float
-        :type dx3: float
-        :type dy3: float
         :raises:
             :exc:`CairoError` if there is no current point.
             Doing so will cause leave the context in an error state.
@@ -1353,14 +1299,13 @@ class Context(object):
         cairo.cairo_paint(self._pointer)
         self._check_status()
 
-    def paint_with_alpha(self, alpha):
+    def paint_with_alpha(self, alpha: float):
         """A drawing operator that paints the current source everywhere
         within the current clip region
         using a mask of constant alpha value alpha.
         The effect is similar to :meth:`paint`,
         but the drawing is faded out using the :obj:`alpha` value.
 
-        :type alpha: float
         :param alpha: Alpha value, between 0 (transparent) and 1 (opaque).
 
         """
@@ -1379,7 +1324,8 @@ class Context(object):
         cairo.cairo_mask(self._pointer, pattern._pointer)
         self._check_status()
 
-    def mask_surface(self, surface, surface_x=0, surface_y=0):
+    def mask_surface(self, surface, surface_x: float = 0,
+                     surface_y: float = 0):
         """A drawing operator that paints the current source
         using the alpha channel of :obj:`surface` as a mask.
         (Opaque areas of :obj:`surface` are painted with the source,
@@ -1388,8 +1334,6 @@ class Context(object):
         :param pattern: A :class:`Surface` object.
         :param surface_x: X coordinate at which to place the origin of surface.
         :param surface_y: Y coordinate at which to place the origin of surface.
-        :type surface_x: float
-        :type surface_y: float
 
         """
         cairo.cairo_mask_surface(
@@ -1453,7 +1397,7 @@ class Context(object):
         self._check_status()
         return tuple(extents)
 
-    def in_fill(self, x, y):
+    def in_fill(self, x: float, y: float) -> bool:
         """Tests whether the given point is inside the area
         that would be affected by a :meth:`fill` operation
         given the current path and filling parameters.
@@ -1463,8 +1407,6 @@ class Context(object):
 
         :param x: X coordinate of the point to test
         :param y: Y coordinate of the point to test
-        :type x: float
-        :type y: float
         :returns: A boolean.
 
         """
@@ -1557,7 +1499,7 @@ class Context(object):
         self._check_status()
         return tuple(extents)
 
-    def in_stroke(self, x, y):
+    def in_stroke(self, x: float, y: float):
         """Tests whether the given point is inside the area
         that would be affected by a :meth:`stroke` operation
         given the current path and stroking parameters.
@@ -1568,8 +1510,6 @@ class Context(object):
 
         :param x: X coordinate of the point to test
         :param y: Y coordinate of the point to test
-        :type x: float
-        :type y: float
         :returns: A boolean.
 
         """
@@ -1665,7 +1605,7 @@ class Context(object):
         cairo.cairo_rectangle_list_destroy(rectangle_list)
         return result
 
-    def in_clip(self, x, y):
+    def in_clip(self, x: float, y: float):
         """Tests whether the given point is inside the area
         that would be visible through the current clip,
         i.e. the area that would be filled by a :meth:`paint` operation.
@@ -1674,8 +1614,6 @@ class Context(object):
 
         :param x: X coordinate of the point to test
         :param y: Y coordinate of the point to test
-        :type x: float
-        :type y: float
         :returns: A boolean.
 
         *New in cairo 1.10.*
@@ -1774,7 +1712,7 @@ class Context(object):
         return FontFace._from_pointer(
             cairo.cairo_get_font_face(self._pointer), incref=True)
 
-    def set_font_size(self, size):
+    def set_font_size(self, size: float):
         """Sets the current font matrix to a scale by a factor of :obj:`size`,
         replacing any font matrix previously set with :meth:`set_font_size`
         or :meth:`set_font_matrix`.
@@ -1787,7 +1725,6 @@ class Context(object):
         the default font size is 10.0.
 
         :param size: The new font size, in user space units
-        :type size: float
 
         """
         cairo.cairo_set_font_size(self._pointer, size)
@@ -2092,7 +2029,7 @@ class Context(object):
         cairo.cairo_show_glyphs(self._pointer, glyphs, len(glyphs))
         self._check_status()
 
-    def show_text_glyphs(self, text, glyphs, clusters, cluster_flags=0):
+    def show_text_glyphs(self, text, glyphs, clusters, cluster_flags: int = 0):
         """This operation has rendering effects similar to :meth:`show_glyphs`
         but, if the target surface supports it
         (see :meth:`Surface.has_show_text_glyphs`),
@@ -2140,7 +2077,6 @@ class Context(object):
             are not as well supported as normal clusters.
             For example, PDF rendering applications
             typically ignore those clusters when PDF text is being selected.
-        :type cluster_flags: int
         :param cluster_flags:
             Flags (as a bit field) for the cluster mapping.
             The first cluster always covers bytes
