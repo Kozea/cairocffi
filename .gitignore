@@ -1,6 +1,8 @@
 *.pyc
 __pycache__
 cairocffi/_ffi*.py
+cairocffi/_generated/*.py
+cairocffi/_generated/__pycache__
 *.egg
 *.egg-info
 /.eggs
