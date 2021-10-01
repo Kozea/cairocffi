@@ -9,8 +9,8 @@
 
 """
 
-from pathlib import Path
 from importlib.util import spec_from_file_location, module_from_spec
+from pathlib import Path
 
 from cffi import FFI
 
