@@ -2,6 +2,28 @@ cairocffi changelog
 -------------------
 
 
+Version 1.3.0
+.............
+
+Released on 2021-10-04
+
+* `2cd512d <https://github.com/Kozea/cairocffi/commit/2cd512d>`_:
+  Drop Python 3.6 support
+* `#196 <https://github.com/Kozea/cairocffi/pull/196>`_:
+  Fix import `constants.py` import
+* `#169 <https://github.com/Kozea/cairocffi/pull/169>`_:
+  Add extra library name "cairo-2.dll"
+* `#178 <https://github.com/Kozea/cairocffi/pull/178>`_:
+  Workaround for testing date string with cairo 1.17.4
+* `#186 <https://github.com/Kozea/cairocffi/pull/186>`_:
+  Fix link in documentation
+* `#195 <https://github.com/Kozea/cairocffi/pull/195>`_:
+  Fix typo in documentation
+* `#184 <https://github.com/Kozea/cairocffi/pull/184>`_,
+  `a4fc2a7 <https://github.com/Kozea/cairocffi/commit/a4fc2a7>`_:
+  Clean .gitignore
+
+
 Version 1.2.0
 .............
 
