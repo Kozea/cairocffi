@@ -21,17 +21,18 @@ import sys
 import tempfile
 
 import cairocffi
+import pikepdf
 import pytest
 
 from . import (
     PDF_METADATA_AUTHOR, PDF_METADATA_CREATE_DATE, PDF_METADATA_CREATOR,
     PDF_METADATA_KEYWORDS, PDF_METADATA_MOD_DATE, PDF_METADATA_SUBJECT,
     PDF_METADATA_TITLE, PDF_OUTLINE_FLAG_BOLD, PDF_OUTLINE_FLAG_OPEN,
-    PDF_OUTLINE_ROOT, SVG_UNIT_PC, SVG_UNIT_PT, SVG_UNIT_PX, TAG_LINK, Context,
-    FontFace, FontOptions, ImageSurface, LinearGradient, Matrix, Pattern,
-    PDFSurface, PSSurface, RadialGradient, RecordingSurface, ScaledFont,
-    SolidPattern, Surface, SurfacePattern, SVGSurface, ToyFontFace,
-    cairo_version, cairo_version_string)
+    PDF_OUTLINE_ROOT, SVG_UNIT_USER, SVG_UNIT_PC, SVG_UNIT_PT, SVG_UNIT_PX,
+    TAG_LINK, Context, FontFace, FontOptions, ImageSurface, LinearGradient,
+    Matrix, Pattern, PDFSurface, PSSurface, RadialGradient, RecordingSurface,
+    ScaledFont, SolidPattern, Surface, SurfacePattern, SVGSurface,
+    ToyFontFace, cairo_version, cairo_version_string)
 
 if sys.byteorder == 'little':
     def pixel(argb):  # pragma: no cover
@@ -249,16 +250,16 @@ def test_metadata():
     surface.set_metadata(PDF_METADATA_CREATE_DATE, '2013-07-21T23:46:00+01:00')
     surface.set_metadata(PDF_METADATA_MOD_DATE, '2013-07-21T23:46:00Z')
     surface.finish()
-    pdf_bytes = file_obj.getvalue()
-    assert b'/Title (title)' in pdf_bytes
-    assert b'/Subject (subject)' in pdf_bytes
-    assert b'/Creator (creator)' in pdf_bytes
-    assert b'/Author (author)' in pdf_bytes
-    assert b'/Keywords (keywords)' in pdf_bytes
+    pdf = pikepdf.Pdf.open(file_obj)
+    assert pdf.docinfo['/Title'] == "title"
+    assert pdf.docinfo['/Subject'] == "subject"
+    assert pdf.docinfo['/Creator'] == "creator"
+    assert pdf.docinfo['/Author'] == "author"
+    assert pdf.docinfo['/Keywords'] == "keywords"
     # cairo 1.17.4 adds an apostrophe at the end of dates:
     # https://gitlab.freedesktop.org/cairo/cairo/-/issues/392
-    assert b"/CreationDate (20130721234600+01'00" in pdf_bytes
-    assert b'/ModDate (20130721234600Z)' in pdf_bytes
+    assert str(pdf.docinfo['/CreationDate']).startswith("20130721234600+01'00")
+    assert pdf.docinfo['/ModDate'] == "20130721234600Z"
 
 
 @pytest.mark.xfail(cairo_version() < 11504,
@@ -271,9 +272,10 @@ def test_outline():
         PDF_OUTLINE_FLAG_OPEN & PDF_OUTLINE_FLAG_BOLD)
     surface.add_outline(outline, 'title 2', 'page=1 pos=[1 1]')
     surface.finish()
-    pdf_bytes = file_obj.getvalue()
-    assert b'/Title (title 1)' in pdf_bytes
-    assert b'/Title (title 2)' in pdf_bytes
+    pdf = pikepdf.Pdf.open(file_obj)
+    outline = pdf.open_outline()
+    assert outline.root[0].title == "title 1"
+    assert outline.root[0].children[0].title == "title 2"
 
 
 @pytest.mark.xfail(cairo_version() < 11504,
@@ -283,8 +285,8 @@ def test_page_label():
     surface = PDFSurface(file_obj, 1, 1)
     surface.set_page_label('abc')
     surface.finish()
-    pdf_bytes = file_obj.getvalue()
-    assert b'/P (abc)' in pdf_bytes
+    pdf = pikepdf.Pdf.open(file_obj)
+    assert pdf.pages[0].label == "abc"
 
 
 @pytest.mark.xfail(cairo_version() < 11504,
@@ -304,9 +306,9 @@ def test_tag():
     context.tag_end('Document')
     context.show_page()
     surface.finish()
-    pdf_bytes = file_obj.getvalue()
-    assert b'/URI (https://cairocffi.readthedocs.io/)' in pdf_bytes
-    assert b'/S /Document' in pdf_bytes
+    pdf = pikepdf.Pdf.open(file_obj)
+    assert '"/URI": "https://cairocffi.readthedocs.io/"' in str(pdf.objects)
+    assert '"/S": "/Document"' in str(pdf.objects)
 
 
 @pytest.mark.xfail(cairo_version() < 11504,
@@ -331,7 +333,7 @@ def test_thumbnail_size():
                    reason='Cairo version too low')
 def test_document_unit():
     surface = SVGSurface(None, 1, 2)
-    assert surface.get_document_unit() == SVG_UNIT_PT
+    assert surface.get_document_unit() in (SVG_UNIT_USER, SVG_UNIT_PT)
 
     file_obj = io.BytesIO()
     surface = SVGSurface(file_obj, 1, 2)
@@ -408,7 +410,7 @@ def test_pdf_versions():
 
     file_obj = io.BytesIO()
     PDFSurface(file_obj, 1, 1).finish()
-    assert file_obj.getvalue().startswith(b'%PDF-1.5')
+    assert file_obj.getvalue().startswith((b'%PDF-1.5', b'%PDF-1.7'))
 
     file_obj = io.BytesIO()
     surface = PDFSurface(file_obj, 1, 1)
@@ -429,11 +431,9 @@ def test_pdf_surface():
             assert fd.read().startswith(b'%PDF')
         with open(filename_bytes, 'rb') as fd:
             assert fd.read().startswith(b'%PDF')
-        pdf_bytes = file_obj.getvalue()
-        assert pdf_bytes.startswith(b'%PDF')
-        assert b'/MediaBox [ 0 0 123 432 ]' in pdf_bytes
-        assert pdf_bytes.count(b'/Type /Pages') == 1
-        assert pdf_bytes.count(b'/Type /Page') == 2
+        pdf = pikepdf.Pdf.open(file_obj)
+        assert pdf.pages[0]['/MediaBox'] == [0, 0, 123, 432]
+        assert len(pdf.pages) == 1
 
     file_obj = io.BytesIO()
     surface = PDFSurface(file_obj, 1, 1)
@@ -443,12 +443,11 @@ def test_pdf_surface():
     surface.set_size(42, 700)
     context.copy_page()
     surface.finish()
-    pdf_bytes = file_obj.getvalue()
-    assert b'/MediaBox [ 0 0 1 1 ]' not in pdf_bytes
-    assert b'/MediaBox [ 0 0 12 100 ]' in pdf_bytes
-    assert b'/MediaBox [ 0 0 42 700 ]' in pdf_bytes
-    assert pdf_bytes.count(b'/Type /Pages') == 1
-    assert pdf_bytes.count(b'/Type /Page') == 3
+    pdf = pikepdf.Pdf.open(file_obj)
+    assert '"/MediaBox": [ 0 0 1 1 ]' not in str(pdf.objects)
+    assert pdf.pages[0]['/MediaBox'] == [0, 0, 12, 100]
+    assert pdf.pages[1]['/MediaBox'] == [0, 0, 42, 700]
+    assert len(pdf.pages) == 2
 
 
 def test_svg_surface():
