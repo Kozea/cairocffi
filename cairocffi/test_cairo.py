@@ -28,11 +28,11 @@ from . import (
     PDF_METADATA_AUTHOR, PDF_METADATA_CREATE_DATE, PDF_METADATA_CREATOR,
     PDF_METADATA_KEYWORDS, PDF_METADATA_MOD_DATE, PDF_METADATA_SUBJECT,
     PDF_METADATA_TITLE, PDF_OUTLINE_FLAG_BOLD, PDF_OUTLINE_FLAG_OPEN,
-    PDF_OUTLINE_ROOT, SVG_UNIT_USER, SVG_UNIT_PC, SVG_UNIT_PT, SVG_UNIT_PX,
+    PDF_OUTLINE_ROOT, SVG_UNIT_PC, SVG_UNIT_PT, SVG_UNIT_PX, SVG_UNIT_USER,
     TAG_LINK, Context, FontFace, FontOptions, ImageSurface, LinearGradient,
     Matrix, Pattern, PDFSurface, PSSurface, RadialGradient, RecordingSurface,
-    ScaledFont, SolidPattern, Surface, SurfacePattern, SVGSurface,
-    ToyFontFace, cairo_version, cairo_version_string)
+    ScaledFont, SolidPattern, Surface, SurfacePattern, SVGSurface, ToyFontFace,
+    cairo_version, cairo_version_string)
 
 if sys.byteorder == 'little':
     def pixel(argb):  # pragma: no cover
