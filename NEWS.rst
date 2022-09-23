@@ -2,6 +2,17 @@ cairocffi changelog
 -------------------
 
 
+Version 1.4.0
+.............
+
+Released on 2022-09-23
+
+* `#205 <https://github.com/Kozea/cairocffi/pull/205>`_:
+  Use pikepdf to parse generated PDF
+* `#171 <https://github.com/Kozea/cairocffi/pull/171>`_:
+  Don’t use deprecated pytest-runner anymore
+
+
 Version 1.3.0
 .............
 
