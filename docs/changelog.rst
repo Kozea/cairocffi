@@ -1,2 +1,2 @@
 .. currentmodule:: cairocffi
-.. include:: ../CHANGES
+.. include:: ../NEWS.rst
