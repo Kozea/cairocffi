@@ -14,7 +14,7 @@ to decode various image formats for use in cairo.
 * Free software: BSD license
 * For Python 3.7+, tested on CPython and PyPy
 * Documentation: https://cairocffi.readthedocs.io
-* Changelog: https://github.com/Kozea/cairocffi/releases
+* Changelog: https://cairocffi.readthedocs.io/en/stable/changelog.html
 * Code, issues, tests: https://github.com/Kozea/cairocffi
 * Code of conduct: https://www.courtbouillon.org/code-of-conduct
 * Professional support: https://www.courtbouillon.org
