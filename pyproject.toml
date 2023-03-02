@@ -1,3 +1,62 @@
 [build-system]
 requires = ["setuptools", "cffi >= 1.1.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "cairocffi"
+description = "cffi-based cairo bindings for Python"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+keywords = ["cairo", "cffi", "binding"]
+authors = [
+    {name = "Simon Sapin", email = "contact@courtbouillon.org"}
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Multimedia :: Graphics"
+]
+dependencies = [
+    "cffi >= 1.1.0"
+]
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {file = ["cairocffi/VERSION"]}
+
+[tool.setuptools]
+packages = ["find:"]
+
+[tool.setuptools.packages.find]
+exclude = ["cairocffi._generated"]
+
+[tool.setuptools.package-data]
+cairocffi = "VERSION"
+
+[project.urls]
+Documentation = "https://cairocffi.readthedocs.io/"
+Code = "https://github.com/Kozea/cairocffi/"
+Issues = "https://github.com/Kozea/cairocffi/issues"
+Donation = "https://opencollective.com/courtbouillon"
+
+[project.optional-dependencies]
+doc = ["sphinx", "sphinx_rtd_theme"]
+test = ["pytest", "flake8", "isort", "numpy", "pikepdf"]
+xcb = ["xcffib >= 0.3.2"]
+
+[tool.pytest.ini_options]
+addopts = "--pyargs cairocffi"
+norecursedirs = "build dist .cache .eggs .git"
+
+[tool.isort]
+default_section = "FIRSTPARTY"
+multi_line_output = 4
