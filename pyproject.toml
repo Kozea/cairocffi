@@ -37,7 +37,7 @@ version = {file = ["cairocffi/VERSION"]}
 exclude = ["cairocffi._generated"]
 
 [tool.setuptools.package-data]
-cairocffi = "VERSION"
+cairocffi = ["VERSION"]
 
 [project.urls]
 Documentation = "https://cairocffi.readthedocs.io/"
