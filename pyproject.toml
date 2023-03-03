@@ -33,9 +33,6 @@ dynamic = ["version"]
 [tool.setuptools.dynamic]
 version = {file = ["cairocffi/VERSION"]}
 
-[tool.setuptools]
-packages = ["find:"]
-
 [tool.setuptools.packages.find]
 exclude = ["cairocffi._generated"]
 
