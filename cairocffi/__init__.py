@@ -11,12 +11,11 @@
 
 import sys
 from ctypes.util import find_library
-from pathlib import Path
 
 from . import constants
 from ._generated.ffi import ffi
 
-VERSION = __version__ = (Path(__file__).parent / 'VERSION').read_text().strip()
+VERSION = __version__ = '1.4.0'
 # supported version of cairo, used to be pycairo version too:
 version = '1.17.2'
 version_info = (1, 17, 2)
