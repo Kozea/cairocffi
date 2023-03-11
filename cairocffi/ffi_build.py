@@ -22,7 +22,8 @@ constants = module_from_spec(constants_spec)
 constants_spec.loader.exec_module(constants)
 
 # Create an empty _generated folder if needed
-(Path(__file__).parent / '_generated').mkdir(exist_ok=True)
+generated = Path(__file__).parent / '_generated'
+generated.mkdir(exist_ok=True)
 
 # Primary cffi definitions
 ffi = FFI()
@@ -32,10 +33,11 @@ ffi.cdef(constants._CAIRO_HEADERS)
 # include xcffib cffi definitions for cairo xcb support
 try:
     from xcffib.ffi_build import ffi as xcb_ffi
-    ffi.include(xcb_ffi)
-    ffi.cdef(constants._CAIRO_XCB_HEADERS)
 except ImportError:
     pass
+else:
+    ffi.include(xcb_ffi)
+    ffi.cdef(constants._CAIRO_XCB_HEADERS)
 
 # gdk pixbuf cffi definitions
 ffi_pixbuf = FFI()
@@ -104,4 +106,9 @@ ffi_pixbuf.cdef('''
 
 if __name__ == '__main__':
     ffi.compile()
+    ffi_path = generated / 'ffi.py'
+    ffi_path.write_text('# flake8: noqa\n' + ffi_path.read_text())
     ffi_pixbuf.compile()
+    ffi_pixbuf_path = generated / 'ffi_pixbuf.py'
+    ffi_pixbuf_path.write_text(
+        '# flake8: noqa\n' + ffi_pixbuf_path.read_text())
