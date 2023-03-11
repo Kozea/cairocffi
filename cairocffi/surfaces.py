@@ -659,7 +659,7 @@ class Surface(object):
                 write_func = _make_write_func(target)
                 _check_status(cairo.cairo_surface_write_to_png_stream(
                     self._pointer, write_func, ffi.NULL))
-            except SystemError:  # noqa
+            except (SystemError, MemoryError):  # noqa
                 # Callback creation has failed
                 if hasattr(target, 'name'):
                     # File-like object has a name, write here
