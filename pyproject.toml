@@ -1,6 +1,7 @@
 [build-system]
 requires = ["setuptools >= 61.0.0", "cffi >= 1.1.0"]
-build-backend = "setuptools.build_meta"
+build-backend = "build"
+backend-path = ["utils"]
 
 [project]
 name = "cairocffi"
@@ -34,9 +35,6 @@ dynamic = ["version"]
 
 [tool.setuptools.dynamic]
 version = {attr = "cairocffi.VERSION"}
-
-[tool.setuptools.packages.find]
-exclude = ["cairocffi._generated"]
 
 [project.urls]
 Documentation = "https://cairocffi.readthedocs.io/"

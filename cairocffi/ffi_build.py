@@ -104,7 +104,7 @@ ffi_pixbuf.cdef('''
 ''')
 
 
-if __name__ == '__main__':
+def compile():
     ffi.compile()
     ffi_path = generated / 'ffi.py'
     ffi_path.write_text('# flake8: noqa\n' + ffi_path.read_text())
@@ -112,3 +112,7 @@ if __name__ == '__main__':
     ffi_pixbuf_path = generated / 'ffi_pixbuf.py'
     ffi_pixbuf_path.write_text(
         '# flake8: noqa\n' + ffi_pixbuf_path.read_text())
+
+
+if __name__ == '__main__':
+    compile()
