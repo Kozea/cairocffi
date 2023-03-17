@@ -2,6 +2,18 @@ cairocffi changelog
 -------------------
 
 
+Version 1.5.0
+.............
+
+Released on 2023-03-17
+
+* `#106 <https://github.com/Kozea/cairocffi/issues/106>`,
+  `#200 <https://github.com/Kozea/cairocffi/issues/200>`:
+  Fallback to manual PNG file creation on hardened systems
+* `#210 <https://github.com/Kozea/cairocffi/pull/210>`:
+  Use pyproject.toml for packaging and remove other useless files
+
+
 Version 1.4.0
 .............
 
