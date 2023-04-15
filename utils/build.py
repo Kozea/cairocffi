@@ -1,4 +1,5 @@
 import importlib.util
+import subprocess
 import sys
 from pathlib import Path
 
@@ -15,6 +16,13 @@ def build_sdist(*args, **kwargs):
 
 
 def build_wheel(*args, **kwargs):
+    # Try to install xcffib for XCB support
+    try:
+        pip = Path(sys.executable).parent / 'pip'
+        subprocess.run([str(pip), 'install', 'xcffib'])
+    except Exception:
+        pass
+
     spec = importlib.util.spec_from_file_location(
         'ffi_build', folder / 'ffi_build.py')
     module = importlib.util.module_from_spec(spec)
