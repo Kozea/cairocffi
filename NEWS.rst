@@ -2,15 +2,24 @@ cairocffi changelog
 -------------------
 
 
+Version 1.5.1
+.............
+
+Released on 2023-04-15
+
+* `#212 <https://github.com/Kozea/cairocffi/issues/212>`_:
+  Bring back XCB support during wheel generation
+
+
 Version 1.5.0
 .............
 
 Released on 2023-03-17
 
-* `#106 <https://github.com/Kozea/cairocffi/issues/106>`,
-  `#200 <https://github.com/Kozea/cairocffi/issues/200>`:
+* `#106 <https://github.com/Kozea/cairocffi/issues/106>`_,
+  `#200 <https://github.com/Kozea/cairocffi/issues/200>`_:
   Fallback to manual PNG file creation on hardened systems
-* `#210 <https://github.com/Kozea/cairocffi/pull/210>`:
+* `#210 <https://github.com/Kozea/cairocffi/pull/210>`_:
   Use pyproject.toml for packaging and remove other useless files
 
 
