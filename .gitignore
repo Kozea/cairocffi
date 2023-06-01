@@ -1,6 +1,5 @@
 __pycache__
 cairocffi/_ffi*.py
-cairocffi/_generated
 *.egg
 *.egg-info
 /build

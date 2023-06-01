@@ -21,13 +21,8 @@ constants_spec = spec_from_file_location(
 constants = module_from_spec(constants_spec)
 constants_spec.loader.exec_module(constants)
 
-# Create an empty _generated folder if needed
-generated = Path(__file__).parent / '_generated'
-generated.mkdir(exist_ok=True)
-
 # Primary cffi definitions
 ffi = FFI()
-ffi.set_source('cairocffi._generated.ffi', None)
 ffi.cdef(constants._CAIRO_HEADERS)
 
 # include xcffib cffi definitions for cairo xcb support
@@ -41,7 +36,6 @@ else:
 
 # gdk pixbuf cffi definitions
 ffi_pixbuf = FFI()
-ffi_pixbuf.set_source('cairocffi._generated.ffi_pixbuf', None)
 ffi_pixbuf.include(ffi)
 ffi_pixbuf.cdef('''
     typedef unsigned long   gsize;
@@ -102,17 +96,3 @@ ffi_pixbuf.cdef('''
     void              g_error_free                   (GError *error);
     void              g_type_init                    (void);
 ''')
-
-
-def compile():
-    ffi.compile()
-    ffi_path = generated / 'ffi.py'
-    ffi_path.write_text('# flake8: noqa\n' + ffi_path.read_text())
-    ffi_pixbuf.compile()
-    ffi_pixbuf_path = generated / 'ffi_pixbuf.py'
-    ffi_pixbuf_path.write_text(
-        '# flake8: noqa\n' + ffi_pixbuf_path.read_text())
-
-
-if __name__ == '__main__':
-    compile()
