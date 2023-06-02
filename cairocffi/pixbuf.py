@@ -15,7 +15,7 @@ from functools import partial
 from io import BytesIO
 
 from . import Context, ImageSurface, constants, dlopen
-from ._generated.ffi_pixbuf import ffi
+from .ffi import ffi_pixbuf as ffi
 
 __all__ = ['decode_to_image_surface']
 
