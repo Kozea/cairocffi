@@ -1,6 +1,6 @@
 """
-    cairocffi.ffi_build
-    ~~~~~~~~~~~~~~~~~~~
+    cairocffi.ffi
+    ~~~~~~~~~~~~~
 
     Build the cffi bindings
 
