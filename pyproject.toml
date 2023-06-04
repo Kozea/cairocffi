@@ -43,7 +43,7 @@ Donation = "https://opencollective.com/courtbouillon"
 [project.optional-dependencies]
 doc = ["sphinx", "sphinx_rtd_theme"]
 test = ["pytest", "flake8", "isort", "numpy", "pikepdf"]
-xcb = ["xcffib >= 0.3.2"]
+xcb = ["xcffib >= 1.4.0"]
 
 [tool.pytest.ini_options]
 addopts = "--pyargs cairocffi"
