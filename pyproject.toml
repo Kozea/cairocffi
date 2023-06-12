@@ -1,56 +1,62 @@
 [build-system]
-requires = ["setuptools >= 61.0.0", "cffi >= 1.1.0"]
-build-backend = "build"
-backend-path = ["utils"]
+requires = ['flit_core >=3.2,<4']
+build-backend = 'flit_core.buildapi'
 
 [project]
-name = "cairocffi"
-description = "cffi-based cairo bindings for Python"
-readme = {file = "README.rst", content-type = "text/x-rst"}
-requires-python = ">=3.7"
-license = {file = "LICENSE"}
-keywords = ["cairo", "cffi", "binding"]
-authors = [
-    {name = "Simon Sapin", email = "contact@courtbouillon.org"}
+name = 'cairocffi'
+description = 'cffi-based cairo bindings for Python'
+keywords = ['cairo', 'cffi', 'binding']
+authors = [{name = 'Simon Sapin', email = 'contact@courtbouillon.org'}]
+maintainers = [{name = 'CourtBouillon', email = 'contact@courtbouillon.org'}]
+requires-python = '>=3.7'
+readme = {file = 'README.rst', content-type = 'text/x-rst'}
+license = {file = 'LICENSE'}
+dependencies = [
+    'cffi >= 1.1.0',
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: BSD License",
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: MacOS :: MacOS X",
-    "Operating System :: Microsoft :: Windows",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Topic :: Multimedia :: Graphics"
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: BSD License',
+    'Operating System :: POSIX :: Linux',
+    'Operating System :: MacOS :: MacOS X',
+    'Operating System :: Microsoft :: Windows',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Topic :: Multimedia :: Graphics',
 ]
-dependencies = [
-    "cffi >= 1.1.0"
-]
-dynamic = ["version"]
+dynamic = ['version']
 
 [tool.setuptools.dynamic]
-version = {attr = "cairocffi.VERSION"}
+version = {attr = 'cairocffi.VERSION'}
 
 [project.urls]
-Documentation = "https://cairocffi.readthedocs.io/"
-Code = "https://github.com/Kozea/cairocffi/"
-Issues = "https://github.com/Kozea/cairocffi/issues"
-Donation = "https://opencollective.com/courtbouillon"
+Documentation = 'https://cairocffi.readthedocs.io/'
+Code = 'https://github.com/Kozea/cairocffi/'
+Issues = 'https://github.com/Kozea/cairocffi/issues'
+Changelog = 'https://cairocffi.readthedocs.io/en/stable/changelog.html'
+Donation = 'https://opencollective.com/courtbouillon'
 
 [project.optional-dependencies]
-doc = ["sphinx", "sphinx_rtd_theme"]
-test = ["pytest", "flake8", "isort", "numpy", "pikepdf"]
-xcb = ["xcffib >= 0.3.2"]
+doc = ['sphinx', 'sphinx_rtd_theme']
+test = ['pytest', 'flake8', 'isort', 'numpy', 'pikepdf']
+xcb = ['xcffib >= 1.4.0']
 
-[tool.pytest.ini_options]
-addopts = "--pyargs cairocffi"
-norecursedirs = "build dist .cache .eggs .git"
+[tool.flit.sdist]
+exclude = ['.*']
+
+[tool.coverage.run]
+branch = true
+include = ['cairocffi/*']
+
+[tool.coverage.report]
+exclude_lines = ['pragma: no cover', 'def __repr__', 'raise NotImplementedError']
+omit = ['.*']
 
 [tool.isort]
-default_section = "FIRSTPARTY"
+default_section = 'FIRSTPARTY'
 multi_line_output = 4

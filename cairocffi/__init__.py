@@ -13,7 +13,7 @@ import sys
 from ctypes.util import find_library
 
 from . import constants
-from ._generated.ffi import ffi
+from .ffi import ffi
 
 VERSION = __version__ = '1.5.1'
 # supported version of cairo, used to be pycairo version too:
