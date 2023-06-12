@@ -35,10 +35,10 @@ dynamic = ['version']
 version = {attr = 'cairocffi.VERSION'}
 
 [project.urls]
-Documentation = 'https://cairocffi.readthedocs.io/'
+Documentation = 'https://doc.courtbouillon.org/cairocffi/'
 Code = 'https://github.com/Kozea/cairocffi/'
 Issues = 'https://github.com/Kozea/cairocffi/issues'
-Changelog = 'https://cairocffi.readthedocs.io/en/stable/changelog.html'
+Changelog = 'https://doc.courtbouillon.org/cairocffi/stable/changelog.html'
 Donation = 'https://opencollective.com/courtbouillon'
 
 [project.optional-dependencies]

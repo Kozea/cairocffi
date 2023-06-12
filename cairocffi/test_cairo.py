@@ -298,7 +298,7 @@ def test_tag():
     context.tag_begin('Document')
     context.tag_begin(
         TAG_LINK,
-        attributes='rect=[1 2 4 5] uri=\'https://cairocffi.readthedocs.io/\'')
+        attributes='rect=[1 2 4 5] uri=\'https://www.courtbouillon.org/\'')
     context.set_source_rgba(1, 0, .5, 1)
     context.rectangle(2, 3, 4, 5)
     context.fill()
@@ -307,7 +307,7 @@ def test_tag():
     context.show_page()
     surface.finish()
     pdf = pikepdf.Pdf.open(file_obj)
-    assert '"/URI": "https://cairocffi.readthedocs.io/"' in str(pdf.objects)
+    assert '"/URI": "https://www.courtbouillon.org/"' in str(pdf.objects)
     assert '"/S": "/Document"' in str(pdf.objects)
 
 
