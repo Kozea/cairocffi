@@ -108,7 +108,7 @@ class Context(object):
 
     @classmethod
     def _from_pointer(cls, pointer, incref):
-        """Wrap an existing :c:type:`cairo_t *` cdata pointer.
+        """Wrap an existing ``cairo_t *`` cdata pointer.
 
         :type incref: bool
         :param incref:
@@ -206,7 +206,7 @@ class Context(object):
         by making balanced calls to :meth:`push_group` / :meth:`pop_group`.
         Each call pushes / pops the new target group onto / from a stack.
 
-        The :meth:`group` method calls :meth:`save`
+        The :meth:`push_group` method calls :meth:`save`
         so that any changes to the graphics state
         will not be visible outside the group,
         (the pop_group methods call :meth:`restore`).
@@ -241,7 +241,7 @@ class Context(object):
         to the group as a pattern,
         (either as an explicit object, or set as the source pattern).
 
-        The group will have a content type of :obj:`content`.
+        The group will have a content type of ``content``.
         The ability to control this content  type
         is the only distinction between this method and :meth:`push_group`
         which you should see for a more detailed description
@@ -342,11 +342,11 @@ class Context(object):
         """This is a convenience method for creating a pattern from surface
         and setting it as the source in this context with :meth:`set_source`.
 
-        The :obj:`x` and :obj:`y` parameters give the user-space coordinate
+        The ``x`` and ``y`` parameters give the user-space coordinate
         at which the surface origin should appear.
         (The surface origin is its upper-left corner
         before any transformation has been applied.)
-        The :obj:`x` and :obj:`y` parameters are negated
+        The ``x`` and ``y`` parameters are negated
         and then set as translation values in the pattern matrix.
 
         Other than the initial translation pattern matrix, as described above,
@@ -368,7 +368,7 @@ class Context(object):
         self._check_status()
 
     def set_source(self, source):
-        """Sets the source pattern within this context to :obj:`source`.
+        """Sets the source pattern within this context to ``source``.
         This pattern will then be used for any subsequent drawing operation
         until a new source pattern is set.
 
@@ -433,7 +433,7 @@ class Context(object):
         A dash pattern is specified by dashes, a list of positive values.
         Each value provides the length of alternate "on" and "off"
         portions of the stroke.
-        :obj:`offset` specifies an offset into the pattern
+        ``offset`` specifies an offset into the pattern
         at which the stroke begins.
 
         Each "on" segment will have caps applied
@@ -447,7 +447,7 @@ class Context(object):
         This is not necessarily the same as the user space
         at the time of :meth:`set_dash`.
 
-        If :obj:`dashes` is empty dashing is disabled.
+        If ``dashes`` is empty dashing is disabled.
         If it is of length 1 a symmetric pattern is assumed
         with alternating on and off portions of the size specified
         by the single value.
@@ -474,7 +474,7 @@ class Context(object):
 
         :returns:
             A ``(dashes, offset)`` tuple of a list and a float.
-            :obj:`dashes` is a list of floats,
+            ``dashes`` is a list of floats,
             empty if no dashing is in effect.
 
         """
@@ -512,7 +512,7 @@ class Context(object):
         """Set the current :ref:`LINE_CAP` within the cairo context.
         As with the other stroke parameters,
         the current line cap style is examined by
-        :meth:`stroke`, :meth:`stroke_extents`, and :meth:`stroke_to_path`,
+        :meth:`stroke` and :meth:`stroke_extents`,
         but does not have any effect during path construction.
 
         The default line cap is :obj:`BUTT <LINE_CAP_BUTT>`.
@@ -531,7 +531,7 @@ class Context(object):
         """Set the current :ref:`LINE_JOIN` within the cairo context.
         As with the other stroke parameters,
         the current line cap style is examined by
-        :meth:`stroke`, :meth:`stroke_extents`, and :meth:`stroke_to_path`,
+        :meth:`stroke` and :meth:`stroke_extents`,
         but does not have any effect during path construction.
 
         The default line cap is :obj:`MITER <LINE_JOIN_MITER>`.
@@ -568,7 +568,7 @@ class Context(object):
 
         As with the other stroke parameters,
         the current line cap style is examined by
-        :meth:`stroke`, :meth:`stroke_extents`, and :meth:`stroke_to_path`,
+        :meth:`stroke` and :meth:`stroke_extents`,
         but does not have any effect during path construction.
 
         The default line width value is 2.0.
@@ -597,7 +597,7 @@ class Context(object):
 
         As with the other stroke parameters,
         the current line cap style is examined by
-        :meth:`stroke`, :meth:`stroke_extents`, and :meth:`stroke_to_path`,
+        :meth:`stroke` and :meth:`stroke_extents`,
         but does not have any effect during path construction.
 
         The default miter limit value is 10.0,
@@ -687,11 +687,11 @@ class Context(object):
     def scale(self, sx, sy=None):
         """Modifies the current transformation matrix (CTM)
         by scaling the X and Y user-space axes
-        by :obj:`sx` and :obj:`sy` respectively.
+        by ``sx`` and ``sy`` respectively.
         The scaling of the axes takes place after
         any existing transformation of user space.
 
-        If :obj:`sy` is omitted, it is the same as :obj:`sx`
+        If ``sy`` is omitted, it is the same as ``sx``
         so that scaling preserves aspect ratios.
 
         :param sx: Scale factor in the X direction.
@@ -707,7 +707,7 @@ class Context(object):
 
     def rotate(self, radians):
         """Modifies the current transformation matrix (CTM)
-        by rotating the user-space axes by angle :obj:`radians`.
+        by rotating the user-space axes by angle ``radians``.
         The rotation of the axes takes places
         after any existing transformation of user space.
 
@@ -726,7 +726,7 @@ class Context(object):
 
     def transform(self, matrix):
         """Modifies the current transformation matrix (CTM)
-        by applying :obj:`matrix` as an additional transformation.
+        by applying ``matrix`` as an additional transformation.
         The new transformation of user space takes place
         after any existing transformation.
 
@@ -740,7 +740,7 @@ class Context(object):
 
     def set_matrix(self, matrix):
         """Modifies the current transformation matrix (CTM)
-        by setting it equal to :obj:`matrix`.
+        by setting it equal to ``matrix``.
 
         :param matrix:
             A transformation :class:`Matrix` from user space to device space.
@@ -873,8 +873,7 @@ class Context(object):
         :meth:`arc_negative`,
         :meth:`rectangle`,
         :meth:`text_path`,
-        :meth:`glyph_path`,
-        :meth:`stroke_to_path`.
+        :meth:`glyph_path`.
 
         Some methods use and alter the current point
         but do not otherwise change current path:
@@ -1025,12 +1024,12 @@ class Context(object):
     def arc(self, xc, yc, radius, angle1, angle2):
         """Adds a circular arc of the given radius to the current path.
         The arc is centered at ``(xc, yc)``,
-        begins at :obj:`angle1`
+        begins at ``angle1``
         and proceeds in the direction of increasing angles
-        to end at :obj:`angle2`.
-        If :obj:`angle2` is less than :obj:`angle1`
+        to end at ``angle2``.
+        If ``angle2`` is less than ``angle1``
         it will be progressively increased by ``2 * pi``
-        until it is greater than :obj:`angle1`.
+        until it is greater than ``angle1``.
 
         If there is a current point,
         an initial line segment will be added to the path
@@ -1086,12 +1085,12 @@ class Context(object):
     def arc_negative(self, xc, yc, radius, angle1, angle2):
         """Adds a circular arc of the given radius to the current path.
         The arc is centered at ``(xc, yc)``,
-        begins at :obj:`angle1`
+        begins at ``angle1``
         and proceeds in the direction of decreasing angles
-        to end at :obj:`angle2`.
-        If :obj:`angle2` is greater than :obj:`angle1`
+        to end at ``angle2``.
+        If ``angle2`` is greater than ``angle1``
         it will be progressively decreased by ``2 * pi``
-        until it is greater than :obj:`angle1`.
+        until it is greater than ``angle1``.
 
         See :meth:`arc` for more details.
         This method differs only in
@@ -1288,7 +1287,7 @@ class Context(object):
         return result
 
     def append_path(self, path):
-        """Append :obj:`path` onto the current path.
+        """Append ``path`` onto the current path.
         The path may be either the return value from one of :meth:`copy_path`
         or :meth:`copy_path_flat` or it may be constructed manually.
 
@@ -1358,7 +1357,7 @@ class Context(object):
         within the current clip region
         using a mask of constant alpha value alpha.
         The effect is similar to :meth:`paint`,
-        but the drawing is faded out using the :obj:`alpha` value.
+        but the drawing is faded out using the ``alpha`` value.
 
         :type alpha: float
         :param alpha: Alpha value, between 0 (transparent) and 1 (opaque).
@@ -1369,8 +1368,8 @@ class Context(object):
 
     def mask(self, pattern):
         """A drawing operator that paints the current source
-        using the alpha channel of :obj:`pattern` as a mask.
-        (Opaque areas of :obj:`pattern` are painted with the source,
+        using the alpha channel of ``pattern`` as a mask.
+        (Opaque areas of ``pattern`` are painted with the source,
         transparent areas are not painted.)
 
         :param pattern: A :class:`Pattern` object.
@@ -1381,8 +1380,8 @@ class Context(object):
 
     def mask_surface(self, surface, surface_x=0, surface_y=0):
         """A drawing operator that paints the current source
-        using the alpha channel of :obj:`surface` as a mask.
-        (Opaque areas of :obj:`surface` are painted with the source,
+        using the alpha channel of ``surface`` as a mask.
+        (Opaque areas of ``surface`` are painted with the source,
         transparent areas are not painted.)
 
         :param pattern: A :class:`Surface` object.
@@ -1752,7 +1751,7 @@ class Context(object):
         self._check_status()
 
     def set_font_face(self, font_face):
-        """Replaces the current font face with :obj:`font_face`.
+        """Replaces the current font face with ``font_face``.
 
         :param font_face:
             A :class:`FontFace` object,
@@ -1775,7 +1774,7 @@ class Context(object):
             cairo.cairo_get_font_face(self._pointer), incref=True)
 
     def set_font_size(self, size):
-        """Sets the current font matrix to a scale by a factor of :obj:`size`,
+        """Sets the current font matrix to a scale by a factor of ``size``,
         replacing any font matrix previously set with :meth:`set_font_size`
         or :meth:`set_font_matrix`.
         This results in a font size of size user space units.
@@ -1794,7 +1793,7 @@ class Context(object):
         self._check_status()
 
     def set_font_matrix(self, matrix):
-        """Sets the current font matrix to :obj:`matrix`.
+        """Sets the current font matrix to ``matrix``.
         The font matrix gives a transformation
         from the design space of the font
         (in this space, the em-square is 1 unit by 1 unit)
@@ -1851,9 +1850,9 @@ class Context(object):
 
     def set_scaled_font(self, scaled_font):
         """Replaces the current font face, font matrix, and font options
-        with those of :obj:`scaled_font`.
+        with those of ``scaled_font``.
         Except for some translation, the current CTM of the context
-        should be the same as that of the :obj:`scaled_font`,
+        should be the same as that of the ``scaled_font``,
         which can be accessed using :meth:`ScaledFont.get_ctm`.
 
         :param scaled_font: A :class:`ScaledFont` object.
@@ -1892,13 +1891,13 @@ class Context(object):
             A ``(ascent, descent, height, max_x_advance, max_y_advance)``
             tuple of floats.
 
-        :obj:`ascent`
+        ``ascent``
             The distance that the font extends above the baseline.
             Note that this is not always exactly equal to
             the maximum of the extents of all the glyphs in the font,
             but rather is picked to express the font designer's intent
             as to how the font should align with elements above it.
-        :obj:`descent`
+        ``descent``
             The distance that the font extends below the baseline.
             This value is positive for typical fonts
             that include portions below the baseline.
@@ -1906,17 +1905,17 @@ class Context(object):
             to the maximum of the extents of all the glyphs in the font,
             but rather is picked to express the font designer's intent
             as to how the font should align with elements below it.
-        :obj:`height`
+        ``height``
             The recommended vertical distance between baselines
             when setting consecutive lines of text with the font.
             This is greater than ``ascent + descent``
             by a quantity known as the line spacing or external leading.
             When space is at a premium, most fonts can be set
             with only a distance of ``ascent + descent`` between lines.
-        :obj:`max_x_advance`
+        ``max_x_advance``
             The maximum distance in the X direction
             that the origin is advanced for any glyph in the font.
-        :obj:`max_y_advance`
+        ``max_y_advance``
             The maximum distance in the Y direction
             that the origin is advanced for any glyph in the font.
             This will be zero for normal fonts used for horizontal writing.
@@ -1942,12 +1941,12 @@ class Context(object):
         The extents describe a user-space rectangle
         that encloses the "inked" portion of the text,
         (as it would be drawn by :meth:`show_text`).
-        Additionally, the :obj:`x_advance` and :obj:`y_advance` values
+        Additionally, the ``x_advance`` and ``y_advance`` values
         indicate the amount by which the current point would be advanced
         by :meth:`show_text`.
 
         Note that whitespace characters do not directly contribute
-        to the size of the rectangle (:obj:`width` and :obj:`height`).
+        to the size of the rectangle (``width`` and ``height``).
         They do contribute indirectly by changing the position
         of non-whitespace characters.
         In particular, trailing whitespace characters are likely
@@ -1970,28 +1969,28 @@ class Context(object):
             A ``(x_bearing, y_bearing, width, height, x_advance, y_advance)``
             tuple of floats.
 
-        :obj:`x_bearing`
+        ``x_bearing``
             The horizontal distance
             from the origin to the leftmost part of the glyphs as drawn.
             Positive if the glyphs lie entirely to the right of the origin.
 
-        :obj:`y_bearing`
+        ``y_bearing``
             The vertical distance
             from the origin to the topmost part of the glyphs as drawn.
             Positive only if the glyphs lie completely below the origin;
             will usually be negative.
 
-        :obj:`width`
+        ``width``
             Width of the glyphs as drawn.
 
-        :obj:`height`
+        ``height``
             Height of the glyphs as drawn.
 
-        :obj:`x_advance`
+        ``x_advance``
             Distance to advance in the X direction
             after drawing these glyphs.
 
-        :obj:`y_advance`
+        ``y_advance``
             Distance to advance in the Y direction
             after drawing these glyphs.
             Will typically be zero except for vertical text layout
@@ -2014,7 +2013,7 @@ class Context(object):
         The extents describe a user-space rectangle
         that encloses the "inked" portion of the glyphs,
         (as it would be drawn by :meth:`show_glyphs`).
-        Additionally, the :obj:`x_advance` and :obj:`y_advance` values
+        Additionally, the ``x_advance`` and ``y_advance`` values
         indicate the amount by which the current point would be advanced
         by :meth:`show_glyphs`.
 
@@ -2100,26 +2099,26 @@ class Context(object):
         to embed the text for the glyphs shown in the output.
         If the target does not support the extended attributes,
         this method acts like the basic :meth:`show_glyphs`
-        as if it had been passed :obj:`glyphs`.
+        as if it had been passed ``glyphs``.
 
-        The mapping between :obj:`text` and :obj:`glyphs`
+        The mapping between ``text`` and ``glyphs``
         is provided by an list of clusters.
         Each cluster covers a number of UTF-8 text bytes and glyphs,
         and neighboring clusters cover neighboring areas
-        of :obj:`text` and :obj:`glyphs`.
-        The clusters should collectively cover :obj:`text` and :obj:`glyphs`
+        of ``text`` and ``glyphs``.
+        The clusters should collectively cover ``text`` and ``glyphs``
         in entirety.
 
         :param text:
             The text to show, as an Unicode or UTF-8 string.
-            Because of how :obj:`clusters` work,
+            Because of how ``cluster`` work,
             using UTF-8 bytes might be more convenient.
         :param glyphs:
             A list of glyphs.
             Each glyph is a ``(glyph_id, x, y)`` tuple.
-            :obj:`glyph_id` is an opaque integer.
+            ``glyph_id`` is an opaque integer.
             Its exact interpretation depends on the font technology being used.
-            :obj:`x` and :obj:`y` are the float offsets
+            ``x`` and ``y`` are the float offsets
             in the X and Y direction
             between the origin used for drawing or measuring the string
             and the origin of this glyph.
@@ -2134,7 +2133,7 @@ class Context(object):
             represented as a ``(num_bytes, num_glyphs)`` tuple of integers,
             the number of UTF-8 bytes and glyphs covered by the cluster.
             For a cluster to be valid,
-            both :obj:`num_bytes` and :obj:`num_glyphs` should be non-negative,
+            both ``num_bytes`` and ``num_glyphs`` should be non-negative,
             and at least one should be non-zero.
             Note that clusters with zero glyphs
             are not as well supported as normal clusters.
@@ -2144,11 +2143,11 @@ class Context(object):
         :param cluster_flags:
             Flags (as a bit field) for the cluster mapping.
             The first cluster always covers bytes
-            from the beginning of :obj:`text`.
-            If :obj:`cluster_flags` does not have
+            from the beginning of ``text``.
+            If ``cluster_flags`` does not have
             the :obj:`TEXT_CLUSTER_FLAG_BACKWARD` flag set,
-            the first cluster also covers the beginning of :obj:`glyphs`,
-            otherwise it covers the end of the :obj:`glyphs` list
+            the first cluster also covers the beginning of ``glyphs``,
+            otherwise it covers the end of the ``glyphs`` list
             and following clusters move backward.
 
         """

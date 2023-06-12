@@ -149,7 +149,7 @@ class Surface(object):
     Alternatively, if the user passes in a reference
     to some backing storage and asks cairo to wrap that in a :class:`Surface`,
     then the contents are not modified;
-    for example, :class:`ImageSurface` with a :obj:`data` argument.
+    for example, :class:`ImageSurface` with a ``data`` argument.
 
     """
     def __init__(self, pointer, target_keep_alive=None):
@@ -171,7 +171,7 @@ class Surface(object):
 
     @staticmethod
     def _from_pointer(pointer, incref):
-        """Wrap an existing :c:type:`cairo_surface_t *` cdata pointer.
+        """Wrap an existing ``cairo_surface_t *`` cdata pointer.
 
         :type incref: bool
         :param incref:
@@ -460,7 +460,7 @@ class Surface(object):
 
     def set_mime_data(self, mime_type, data):
         """
-        Attach an image in the format :obj:`mime_type` to this surface.
+        Attach an image in the format ``mime_type`` to this surface.
 
         To remove the data from a surface,
         call this method with same mime type and :obj:`None` for data.
@@ -491,10 +491,8 @@ class Surface(object):
         if you draw on the surface afterwards.
         Use this method with care.
 
-        :param mime_type: The MIME type of the image data.
-        :type mime_type: ASCII string
-        :param data: The image data to attach to the surface.
-        :type data: bytes
+        :param str mime_type: The MIME type of the image data.
+        :param bytes data: The image data to attach to the surface.
 
         *New in cairo 1.10.*
 
@@ -517,8 +515,7 @@ class Surface(object):
         """Return mime data previously attached to surface
         using the specified mime type.
 
-        :param mime_type: The MIME type of the image data.
-        :type mime_type: ASCII string
+        :param str mime_type: The MIME type of the image data.
         :returns:
             A CFFI buffer object, or :obj:`None`
             if no data has been attached with the given mime type.
@@ -535,10 +532,9 @@ class Surface(object):
                 if buffer_address[0] != ffi.NULL else None)
 
     def supports_mime_type(self, mime_type):
-        """ Return whether surface supports :obj:`mime_type`.
+        """Return whether surface supports ``mime_type``.
 
-        :param mime_type: The MIME type of the image data.
-        :type mime_type: ASCII string
+        :param str mime_type: The MIME type of the image data.
 
         *New in cairo 1.12.*
 
@@ -644,10 +640,10 @@ class Surface(object):
 
         :param target:
             A filename,
-            a binary mode file-like object with a :meth:`~file.write` method,
+            a binary mode :term:`file object` with a `write` method,
             or :obj:`None`.
         :returns:
-            If :obj:`target` is :obj:`None`,
+            If ``target`` is :obj:`None`,
             return the PNG contents as a byte string.
 
         """
@@ -684,7 +680,7 @@ class Surface(object):
 class ImageSurface(Surface):
     """Creates an image surface of the specified format and dimensions.
 
-    If :obj:`data` is not :obj:`None`
+    If ``data`` is not :obj:`None`
     its initial contents will be used as the initial image contents;
     you must explicitly clear the buffer,
     using, for example, :meth:`Context.rectangle` and :meth:`Context.fill`
@@ -711,7 +707,7 @@ class ImageSurface(Surface):
         in the buffer as allocated.
         This value should always be computed by :meth:`format_stride_for_width`
         before allocating the data buffer.
-        If omitted but :obj:`data` is given,
+        If omitted but ``data`` is given,
         :meth:`format_stride_for_width` is used.
     :type format: str
     :type width: int
@@ -772,7 +768,7 @@ class ImageSurface(Surface):
 
         :param source:
             A filename or
-            a binary mode file-like object with a :meth:`~file.read` method.
+            a binary mode :term:`file object` with a ``read`` method.
             If you already have a byte string in memory,
             use :class:`io.BytesIO`.
         :returns: A new :class:`ImageSurface` instance.
@@ -793,8 +789,8 @@ class ImageSurface(Surface):
         """Return the buffer pointing to the image’s pixel data,
         encoded according to the surface’s :ref:`FORMAT` string.
 
-        A call to :meth:`flush` is required before accessing the pixel data
-        to ensure that all pending drawing operations are finished.
+        A call to :meth:`~Surface.flush` is required before accessing the pixel
+        data to ensure that all pending drawing operations are finished.
         A call to :meth:`~Surface.mark_dirty` is required
         after the data is modified.
 
@@ -831,7 +827,7 @@ class ImageSurface(Surface):
 
 class PDFSurface(Surface):
     """Creates a PDF surface of the specified size in PostScript points
-    to be written to :obj:`target`.
+    to be written to ``target``.
 
     Note that the size of individual pages of the PDF output can vary.
     See :meth:`set_size`.
@@ -848,13 +844,13 @@ class PDFSurface(Surface):
     (with the ``/FlateDecode`` filter),
     which typically produces PDF with a smaller file size.
 
-    :obj:`target` can be :obj:`None` to specify no output.
+    ``target`` can be :obj:`None` to specify no output.
     This will generate a surface that may be queried and used as a source,
     without generating a temporary file.
 
     :param target:
         A filename,
-        a binary mode file-like object with a :meth:`~file.write` method,
+        a binary mode :term:`file object` with a ``write`` method,
         or :obj:`None`.
     :param width_in_points:
         Width of the surface, in points (1 point == 1/72.0 inch)
@@ -981,7 +977,7 @@ class PDFSurface(Surface):
             self._pointer, width, height)
 
     def restrict_to_version(self, version):
-        """Restricts the generated PDF file to :obj:`version`.
+        """Restricts the generated PDF file to ``version``.
 
         See :meth:`get_versions` for a list of available version values
         that can be used here.
@@ -1032,12 +1028,12 @@ class PDFSurface(Surface):
 
 class PSSurface(Surface):
     """Creates a PostScript surface of the specified size in PostScript points
-    to be written to :obj:`target`.
+    to be written to ``target``.
 
     Note that the size of individual pages of the PostScript output can vary.
     See :meth:`set_size`.
 
-    :obj:`target` can be :obj:`None` to specify no output.
+    ``target`` can be :obj:`None` to specify no output.
     This will generate a surface that may be queried and used as a source,
     without generating a temporary file.
 
@@ -1051,7 +1047,7 @@ class PSSurface(Surface):
 
     :param target:
         A filename,
-        a binary mode file-like object with a :meth:`~file.write` method,
+        a binary mode :term:`file object` with a ``write`` method,
         or :obj:`None`.
     :param width_in_points:
         Width of the surface, in points (1 point == 1/72.0 inch)
@@ -1180,7 +1176,7 @@ class PSSurface(Surface):
 
     def set_eps(self, eps):
         """
-        If :obj:`eps` is True,
+        If ``eps`` is True,
         the PostScript surface will output Encapsulated PostScript.
 
         This method should only be called
@@ -1225,7 +1221,7 @@ class PSSurface(Surface):
         self._check_status()
 
     def restrict_to_level(self, level):
-        """Restricts the generated PostScript file to :obj:`level`.
+        """Restricts the generated PostScript file to ``level``.
 
         See :meth:`get_levels` for a list of available level values
         that can be used here.
@@ -1270,9 +1266,9 @@ class PSSurface(Surface):
 
 class SVGSurface(Surface):
     """Creates a SVG surface of the specified size in points
-    to be written to :obj:`target`.
+    to be written to ``target``.
 
-    :obj:`target` can be :obj:`None` to specify no output.
+    ``target`` can be :obj:`None` to specify no output.
     This will generate a surface that may be queried and used as a source,
     without generating a temporary file.
 
@@ -1296,7 +1292,7 @@ class SVGSurface(Surface):
 
     :param target:
         A filename,
-        a binary mode file-like object with a :meth:`~file.write` method,
+        a binary mode :term:`file object` with a ``write`` method,
         or :obj:`None`.
     :param width_in_points:
         Width of the surface, in points (1 point == 1/72.0 inch)
@@ -1318,7 +1314,7 @@ class SVGSurface(Surface):
         Surface.__init__(self, pointer, target_keep_alive=write_func)
 
     def restrict_to_version(self, version):
-        """Restricts the generated SVG file to :obj:`version`.
+        """Restricts the generated SVG file to ``version``.
 
         See :meth:`get_versions` for a list of available version values
         that can be used here.
@@ -1368,7 +1364,7 @@ class SVGSurface(Surface):
 
         If the surface passed as an argument is not a SVG surface, the function
         sets the error status to ``STATUS_SURFACE_TYPE_MISMATCH`` and
-        returns :ref:`SVG_UNIT_USER`.
+        returns :data:`SVG_UNIT_USER`.
 
         :return: The SVG unit of the SVG surface.
 
@@ -1415,7 +1411,7 @@ class RecordingSurface(Surface):
     The recording surface can then be "replayed" against any target surface
     by using it as a source surface.
 
-    If you want to replay a surface so that the results in :obj:`target`
+    If you want to replay a surface so that the results in ``target``
     will be identical to the results that would have been obtained
     if the original operations applied to the recording surface
     had instead been applied to the target surface,
@@ -1497,7 +1493,7 @@ class Win32Surface(Surface):  # pragma: no cover
 
     :param hdc :
         The DC to create a surface for,
-        as obtained from :func:`win32gui.CreateDC`.
+        as obtained from ``win32gui.CreateDC``.
         **Note**: this unsafely inteprets an integer as a pointer.
         Make sure it actually points to a valid DC!
     :type hdc: int
@@ -1525,7 +1521,7 @@ class Win32PrintingSurface(Surface):  # pragma: no cover
 
     :param hdc:
         The DC to create a surface for,
-        as obtained from :func:`win32gui.CreateDC`.
+        as obtained from ``win32gui.CreateDC``.
         **Note**: this unsafely inteprets an integer as a pointer.
         Make sure it actually points to a valid DC!
     :type hdc: int

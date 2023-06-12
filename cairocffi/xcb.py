@@ -22,12 +22,12 @@ class XCBSurface(Surface):
 
     .. note::
 
-        This class works using objects and libraries in :mod:`xcffib`
+        This class works using objects and libraries in ``xcffib``.
 
-    :param conn: The :class:`xcffib.Connection` for an open XCB connection
+    :param conn: The ``xcffib.Connection`` for an open XCB connection
     :param drawable:
         An XID corresponding to an XCB drawable (a pixmap or a window)
-    :param visual: An :class:`xcffib.xproto.VISUALTYPE` object.
+    :param visual: An ``xcffib.xproto.VISUALTYPE`` object.
     :param width: integer
     :param height: integer
     """

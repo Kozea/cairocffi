@@ -24,11 +24,12 @@ Module-level objects
 
 .. data:: ffi
 
-    A :class:`cffi.FFI` instance with all of the cairo C API declared.
+    A :external:cffi:doc:`FFI <ref>` instance with all of the cairo C API
+    declared.
 
 .. data:: cairo
 
-    The libcairo library, pre-loaded with :meth:`ffi.dlopen`.
+    The libcairo library, pre-loaded with :external:cffi:ref:`ffi.dlopen() <dlopen>`.
     All cairo functions are accessible as attributes of this object::
 
         import cairocffi
@@ -56,8 +57,6 @@ as to the reference count should be increased (for existing cairo objects)
 or not (for cairo objects that were just created with a refcount of 1.)
 
 
-.. _wrappers:
-
 Wrappers
 --------
 
@@ -69,31 +68,31 @@ Wrappers
 
 .. attribute:: Surface._pointer
 
-    The underlying :c:type:`cairo_surface_t *` cdata pointer.
+    The underlying ``cairo_surface_t *`` cdata pointer.
 
 .. attribute:: Pattern._pointer
 
-    The underlying :c:type:`cairo_pattern_t *` cdata pointer.
+    The underlying ``cairo_pattern_t *`` cdata pointer.
 
 .. attribute:: FontFace._pointer
 
-    The underlying :c:type:`cairo_font_face_t *` cdata pointer.
+    The underlying ``cairo_font_face_t *`` cdata pointer.
 
 .. attribute:: ScaledFont._pointer
 
-    The underlying :c:type:`cairo_scaled_font_t *` cdata pointer.
+    The underlying ``cairo_scaled_font_t *`` cdata pointer.
 
 .. attribute:: FontOptions._pointer
 
-    The underlying :c:type:`cairo_scaled_font_t *` cdata pointer.
+    The underlying ``cairo_scaled_font_t *`` cdata pointer.
 
 .. attribute:: Matrix._pointer
 
-    The underlying :c:type:`cairo_matrix_t *` cdata pointer.
+    The underlying ``cairo_matrix_t *`` cdata pointer.
 
 .. attribute:: Context._pointer
 
-    The underlying :c:type:`cairo_t *` cdata pointer.
+    The underlying ``cairo_t *`` cdata pointer.
 
 
 .. _converting_pycairo:
@@ -103,7 +102,7 @@ Converting pycairo wrappers to cairocffi
 
 Some libraries such as PyGTK or PyGObject
 provide a pycairo :class:`~cairo.Context` object for you to draw on.
-It is possible to extract the underlying :c:type:`cairo_t *` pointer
+It is possible to extract the underlying ``cairo_t *`` pointer
 and create a cairocffi wrapper for the same cairo context.
 
 The follwing function does that with unsafe pointer manipulation.

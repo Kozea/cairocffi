@@ -38,7 +38,7 @@ class FontFace(object):
 
     @staticmethod
     def _from_pointer(pointer, incref):
-        """Wrap an existing :c:type:`cairo_font_face_t *` cdata pointer.
+        """Wrap an existing ``cairo_font_face_t *`` cdata pointer.
 
         :type incref: bool
         :param incref:
@@ -145,7 +145,7 @@ class ScaledFont(object):
 
     @staticmethod
     def _from_pointer(pointer, incref):
-        """Wrap an existing :c:type:`cairo_scaled_font_t *` cdata pointer.
+        """Wrap an existing ``cairo_scaled_font_t *`` cdata pointer.
 
         :type incref: bool
         :param incref:
@@ -247,10 +247,10 @@ class ScaledFont(object):
 
         The extents describe a user-space rectangle
         that encloses the "inked" portion of the text,
-        (as it would be drawn by :meth:`show_text`).
-        Additionally, the :obj:`x_advance` and :obj:`y_advance` values
+        (as it would be drawn by :meth:`Context.show_text`).
+        Additionally, the ``x_advance`` and ``y_advance`` values
         indicate the amount by which the current point would be advanced
-        by :meth:`show_text`.
+        by :meth:`Context.show_text`.
 
         :param text: The text to measure, as an Unicode or UTF-8 string.
         :returns:
@@ -273,10 +273,10 @@ class ScaledFont(object):
 
         The extents describe a user-space rectangle
         that encloses the "inked" portion of the glyphs,
-        (as it would be drawn by :meth:`show_glyphs`).
-        Additionally, the :obj:`x_advance` and :obj:`y_advance` values
+        (as it would be drawn by :meth:`Context.show_glyphs`).
+        Additionally, the ``x_advance`` and ``y_advance`` values
         indicate the amount by which the current point would be advanced
-        by :meth:`show_glyphs`.
+        by :meth:`Context.show_glyphs`.
 
         :param glyphs:
             A list of glyphs, as returned by :meth:`text_to_glyphs`.
@@ -318,7 +318,7 @@ class ScaledFont(object):
         :param with_clusters: Whether to compute the cluster mapping.
         :returns:
             A ``(glyphs, clusters, clusters_flags)`` tuple
-            if :obj:`with_clusters` is true, otherwise just :obj:`glyphs`.
+            if ``with_clusters`` is true, otherwise just ``glyphs``.
             See :meth:`Context.show_text_glyphs` for the data structure.
 
         .. note::
@@ -371,7 +371,7 @@ class FontOptions(object):
 
     Individual features of a :class:`FontOptions`
     can be set or accessed using method
-    named :meth:`set_FEATURE_NAME` and :meth:`get_FEATURE_NAME`,
+    named ``set_FEATURE_NAME`` and ``get_FEATURE_NAME``,
     like :meth:`set_antialias` and :meth:`get_antialias`.
 
     New features may be added to :class:`FontOptions` in the future.
@@ -380,7 +380,7 @@ class FontOptions(object):
     or compute a hash value of :class:`FontOptions` objects.
 
     :param values:
-        Call the corresponding :meth:`set_FEATURE_NAME` methods
+        Call the corresponding ``set_FEATURE_NAME`` methods
         after creating a new :class:`FontOptions`::
 
             options = FontOptions()
@@ -409,7 +409,7 @@ class FontOptions(object):
         return other
 
     def merge(self, other):
-        """Merges non-default options from :obj:`other`,
+        """Merges non-default options from ``other``,
         replacing existing values.
         This operation can be thought of as somewhat similar
         to compositing other onto options
@@ -521,9 +521,10 @@ class FontOptions(object):
         string format.
 
         :return: the font variations for the font options object. The
-        returned string belongs to the ``options`` and must not be modified.
-        It is valid until either the font options object is destroyed or the
-        font variations in this object is modified with :meth:`set_variations`.
+          returned string belongs to the ``options`` and must not be modified.
+          It is valid until either the font options object is destroyed or the
+          font variations in this object is modified with
+          :meth:`set_variations`.
 
         *New in cairo 1.16.*
 

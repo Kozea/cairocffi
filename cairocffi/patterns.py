@@ -41,7 +41,7 @@ class Pattern(object):
 
     @staticmethod
     def _from_pointer(pointer, incref):
-        """Wrap an existing :c:type:`cairo_pattern_t *` cdata pointer.
+        """Wrap an existing ``cairo_pattern_t *`` cdata pointer.
 
         :type incref: bool
         :param incref:
@@ -109,7 +109,7 @@ class Pattern(object):
         return cairo.cairo_pattern_get_filter(self._pointer)
 
     def set_matrix(self, matrix):
-        """Sets the pattern’s transformation matrix to :obj:`matrix`.
+        """Sets the pattern’s transformation matrix to ``matrix``.
         This matrix is a transformation from user space to pattern space.
 
         When a pattern is first created

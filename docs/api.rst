@@ -1,7 +1,8 @@
 Python API reference
 ####################
 
-.. module:: cairocffi
+.. currentmodule:: cairocffi
+
 
 Meta
 ====
@@ -17,70 +18,80 @@ Meta
 
 Surfaces
 ========
-
 .. autoclass:: Surface
+    :members:
 
 ImageSurface
 ------------
 .. autoclass:: ImageSurface
+    :members:
 
 PDFSurface
 ----------
 .. autoclass:: PDFSurface
+    :members:
 
 PSSurface
 ---------
 .. autoclass:: PSSurface
+    :members:
 
 SVGSurface
 ----------
 .. autoclass:: SVGSurface
+    :members:
 
 RecordingSurface
 ----------------
 .. autoclass:: RecordingSurface
+    :members:
 
 Win32PrintingSurface
 --------------------
 .. autoclass:: Win32PrintingSurface
-
+    :members:
 
 Context
 =======
-
 .. autoclass:: Context
+    :members:
 
 
 Matrix
 ======
-
 .. autoclass:: Matrix
+    :members:
 
 
 Patterns
 ========
-
 .. autoclass:: Pattern()
+    :members:
 
 SolidPattern
 ------------
 .. autoclass:: SolidPattern
+    :members:
 
 SurfacePattern
 --------------
 .. autoclass:: SurfacePattern
+    :members:
 
 Gradient
 --------
 .. autoclass:: Gradient()
+    :members:
 
 LinearGradient
 ..............
 .. autoclass:: LinearGradient
+    :members:
 
 RadialGradient
 ..............
 .. autoclass:: RadialGradient
+    :members:
 
 
 .. _fonts:
@@ -116,22 +127,24 @@ Font faces
     but they can not be instantiated directly.
 
 .. autoclass:: FontFace()
+    :members:
 
 ToyFontFace
 ...........
 .. autoclass:: ToyFontFace
+    :members:
 
 
 ScaledFont
 ----------
 .. autoclass:: ScaledFont
+    :members:
 
 FontOptions
 -----------
 .. autoclass:: FontOptions(**values)
+    :members:
 
-
-.. _enumerated values:
 
 Enumerated values
 =================
@@ -140,14 +153,12 @@ Some parameters or return values in the cairo API
 only have a fixed, finite set of valid values.
 These are represented as *enumerated types* in C, and as integers in CFFI.
 Users are encouraged to use the constants defined here
-in the :mod:`cairocffi` module
+in the ``cairocffi`` module
 rather than literal integers.
 For example::
 
     surface = cairocffi.ImageSurface(cairocffi.FORMAT_ARGB32, 300, 400)
 
-
-.. _CONTENT:
 
 Content
 -------

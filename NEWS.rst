@@ -257,7 +257,7 @@ Released on 2013-07-16.
 
 Fix `#15 <https://github.com/SimonSapin/cairocffi/pull/15>`_:
 Work around `CFFI bug #92 <https://bitbucket.org/cffi/cffi/issue/92/>`_
-that caused memory leaks when file-like :obj:`target` objects
+that caused memory leaks when file-like ``target`` objects
 are passed to :meth:`Surface.write_to_png`, :class:`PDFSurface`,
 :class:`PSSurface` and :class:`SVGSurface`.
 
@@ -269,8 +269,8 @@ Released on 2013-06-20.
 
 Change :func:`~cairocffi.pixbuf.decode_to_image_surface`
 to raise a specific :exc:`~cairocffi.pixbuf.ImageLoadingError` exception
-instead of a generic :exc:`~exceptions.ValueError`.
-This new exception type inherits from :exc:`~exceptions.ValueError`.
+instead of a generic :exc:`ValueError`.
+This new exception type inherits from :exc:`ValueError`.
 
 
 Version 0.4.3

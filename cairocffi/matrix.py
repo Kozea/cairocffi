@@ -43,7 +43,7 @@ class Matrix(object):
     @classmethod
     def init_rotate(cls, radians):
         """Return a new :class:`Matrix` for a transformation
-        that rotates by :obj:`radians`.
+        that rotates by ``radians``.
 
         :type radians: float
         :param radians:
@@ -104,11 +104,11 @@ class Matrix(object):
     __mul__ = multiply
 
     def translate(self, tx, ty):
-        """Applies a translation by :obj:`tx`, :obj:`ty`
+        """Applies a translation by ``tx``, ``ty``
         to the transformation in this matrix.
 
         The effect of the new transformation is to
-        first translate the coordinates by :obj:`tx` and :obj:`ty`,
+        first translate the coordinates by ``tx`` and ``ty``,
         then apply the original transformation to the coordinates.
 
         .. note::
@@ -123,14 +123,14 @@ class Matrix(object):
         cairo.cairo_matrix_translate(self._pointer, tx, ty)
 
     def scale(self, sx, sy=None):
-        """Applies scaling by :obj:`sx`, :obj:`sy`
+        """Applies scaling by ``sx``, ``sy``
         to the transformation in this matrix.
 
         The effect of the new transformation is to
-        first scale the coordinates by :obj:`sx` and :obj:`sy`,
+        first scale the coordinates by ``sx`` and ``sy``,
         then apply the original transformation to the coordinates.
 
-        If :obj:`sy` is omitted, it is the same as :obj:`sx`
+        If ``sy`` is omitted, it is the same as ``sx``
         so that scaling preserves aspect ratios.
 
         .. note::
@@ -147,11 +147,11 @@ class Matrix(object):
         cairo.cairo_matrix_scale(self._pointer, sx, sy)
 
     def rotate(self, radians):
-        """Applies a rotation by :obj:`radians`
+        """Applies a rotation by ``radians``
         to the transformation in this matrix.
 
         The effect of the new transformation is to
-        first rotate the coordinates by :obj:`radians`,
+        first rotate the coordinates by ``radians``,
         then apply the original transformation to the coordinates.
 
         .. note::

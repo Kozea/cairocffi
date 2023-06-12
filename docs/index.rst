@@ -1,3 +1,5 @@
+.. currentmodule:: cairocffi
+
 .. include:: ../README.rst
 
 
