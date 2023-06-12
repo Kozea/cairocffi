@@ -2,6 +2,23 @@ cairocffi changelog
 -------------------
 
 
+Version 1.6.0
+.............
+
+Released on 2023-06-12
+
+**This version uses a new CFFI mode that may break your program.**
+
+CairoCFFI now uses Flit for packaging and is also distributed as a Python
+wheel.
+
+Please test carefully and don’t hesitate to report issues before using it in
+production.
+
+* `#216 <https://github.com/Kozea/cairocffi/pull/216>`_:
+  Use ABI-level in-line CFFI mode
+
+
 Version 1.5.1
 .............
 
