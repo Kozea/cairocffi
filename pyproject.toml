@@ -31,9 +31,6 @@ classifiers = [
 ]
 dynamic = ['version']
 
-[tool.setuptools.dynamic]
-version = {attr = 'cairocffi.VERSION'}
-
 [project.urls]
 Documentation = 'https://doc.courtbouillon.org/cairocffi/'
 Code = 'https://github.com/Kozea/cairocffi/'
