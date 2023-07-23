@@ -9,17 +9,9 @@
 
 """
 
-from importlib.util import module_from_spec, spec_from_file_location
-from pathlib import Path
-
 from cffi import FFI
 
-# Path hack to import constants when this file is exec'd by setuptools
-constants_spec = spec_from_file_location(
-    'constants', Path(__file__).parent.joinpath('constants.py')
-)
-constants = module_from_spec(constants_spec)
-constants_spec.loader.exec_module(constants)
+from . import constants
 
 # Primary cffi definitions
 ffi = FFI()
