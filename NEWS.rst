@@ -2,6 +2,15 @@ cairocffi changelog
 -------------------
 
 
+Version 1.6.1
+.............
+
+Released on 2023-07-24
+
+* `#217 <https://github.com/Kozea/cairocffi/issues/217>`_:
+  Repair installation with PyInstaller
+
+
 Version 1.6.0
 .............
 
