@@ -9,6 +9,7 @@
 
 """
 
+import os
 import sys
 from ctypes.util import find_library
 
@@ -19,6 +20,24 @@ VERSION = __version__ = '1.6.1'
 # supported version of cairo, used to be pycairo version too:
 version = '1.17.2'
 version_info = (1, 17, 2)
+
+
+def set_dll_search_path():
+    # Python 3.8 no longer searches for DLLs in PATH, so we have to add
+    # everything in PATH manually. Note that unlike PATH add_dll_directory
+    # has no defined order, so if there are two cairo DLLs in PATH we
+    # might get a random one.
+    if os.name != "nt" or not hasattr(os, "add_dll_directory"):
+        return
+    for path in os.environ.get("PATH", "").split(os.pathsep):
+        try:
+            os.add_dll_directory(path)
+        except OSError:
+            pass
+
+
+if not find_library("libcairo-2") and sys.version_info >= (3, 8):
+    set_dll_search_path()
 
 
 def dlopen(ffi, library_names, filenames):
