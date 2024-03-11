@@ -17,19 +17,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: xvfb daemon (Ubuntu)
+      - name: Start xvfb daemon (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: sudo /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16
-      - name: Pip installs (Ubuntu)
+      - name: Installs XCB support (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: python -m pip install -e .[xcb]
-      - name: Install cairo gdk-pixbuf (MacOS)
+      - name: Install Cairo and GdkPixbuf (MacOS)
         if: matrix.os == 'macos-latest'
         run: brew install cairo gdk-pixbuf
-      - name: Install msys2 and DejaVu (Windows)
+      - name: Install Gtk and DejaVu fonts (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          C:\msys64\usr\bin\bash -lc 'pacman -S mingw-w64-x86_64-ttf-dejavu mingw-w64-x86_64-cairo --noconfirm'
+          C:\msys64\usr\bin\bash -lc 'pacman -S mingw-w64-x86_64-ttf-dejavu mingw-w64-x86_64-gtk3 --noconfirm'
           xcopy "C:\msys64\mingw64\share\fonts\TTF" "C:\Users\runneradmin\.fonts" /e /i
           echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH
           rm C:\msys64\mingw64\bin\python.exe
