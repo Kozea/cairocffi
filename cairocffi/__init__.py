@@ -11,6 +11,7 @@
 
 import os
 import sys
+from contextlib import suppress
 from ctypes.util import find_library
 
 from . import constants
