@@ -60,8 +60,12 @@ If it fails to find it, you will see an exception like this::
 
 Make sure cairo is correctly installed and available through your system’s
 usual mechanisms.
+
 On Linux, the ``LD_LIBRARY_PATH`` environment variable can be used to indicate
 where to find shared libraries.
+
+On Windows, you can put the folder where Cairo and other DLLs are installed in
+the ``CAIROCFFI_DLL_DIRECTORIES`` environment variable.
 
 .. _Pycairo: http://cairographics.org/pycairo/
 
