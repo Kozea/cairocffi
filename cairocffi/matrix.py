@@ -88,7 +88,7 @@ class Matrix(object):
     def __repr__(self):
         class_ = type(self)
         return '%s(%g, %g, %g, %g, %g, %g)' % (
-            (class_.__name__,) + self.as_tuple())
+            (class_.__name__, *self.as_tuple()))
 
     def multiply(self, other):
         """Multiply with another matrix
@@ -235,7 +235,7 @@ class Matrix(object):
         cairo.cairo_matrix_transform_distance(self._pointer, xy + 0, xy + 1)
         return tuple(xy)
 
-    def _component_property(name):
+    def _component_property(name):  # noqa: N805
         return property(
             lambda self: getattr(self._pointer, name),
             lambda self, value: setattr(self._pointer, name, value),

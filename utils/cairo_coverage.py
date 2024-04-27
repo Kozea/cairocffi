@@ -1,7 +1,8 @@
 import inspect
 
-import cairocffi
 import pycparser
+
+import cairocffi
 
 ALL_THE_CODE = ''.join(
     line
@@ -12,7 +13,7 @@ ALL_THE_CODE = ''.join(
 
 
 class Visitor(pycparser.c_ast.NodeVisitor):
-    def visit_Decl(self, node):
+    def visit_Decl(self, node):  # noqa: N802
         for _, child in node.children():
             if isinstance(child, pycparser.c_ast.FuncDecl):
                 if ('cairo.' + node.name) not in ALL_THE_CODE and not (

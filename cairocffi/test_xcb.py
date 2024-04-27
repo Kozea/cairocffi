@@ -14,7 +14,7 @@ import time
 
 import pytest
 
-xcffib = pytest.importorskip('xcffib')  # noqa
+xcffib = pytest.importorskip('xcffib')
 
 import xcffib.xproto  # noqa isort:skip
 from xcffib.xproto import ConfigWindow, CW, EventMask, GC  # noqa isort:skip

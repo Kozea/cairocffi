@@ -41,7 +41,7 @@ def dlopen(ffi, library_names, filenames):
     for library_name in library_names:
         library_filename = find_library(library_name)
         if library_filename:
-            filenames = (library_filename,) + filenames
+            filenames = (library_filename, *filenames)
         else:
             exceptions.append(
                 'no library called "{}" was found'.format(library_name))
@@ -62,7 +62,7 @@ cairo = dlopen(
     ('libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll'))
 
 
-class _keepref(object):
+class _keepref(object):  # noqa: N801
     """Function wrapper that keeps a reference to another object."""
     def __init__(self, ref, func):
         self.ref = ref

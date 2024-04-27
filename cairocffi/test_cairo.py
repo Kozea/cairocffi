@@ -20,11 +20,12 @@ import shutil
 import sys
 import tempfile
 
-import cairocffi
 import pikepdf
 import pytest
 
-from . import (
+import cairocffi
+
+from . import (  # isort:skip
     PDF_METADATA_AUTHOR, PDF_METADATA_CREATE_DATE, PDF_METADATA_CREATOR,
     PDF_METADATA_KEYWORDS, PDF_METADATA_MOD_DATE, PDF_METADATA_SUBJECT,
     PDF_METADATA_TITLE, PDF_OUTLINE_FLAG_BOLD, PDF_OUTLINE_FLAG_OPEN,
@@ -1033,7 +1034,7 @@ def test_context_mask():
     context.mask(SurfacePattern(mask_surface))
     o = pixel(b'\x00\x00\x00\x00')
     b = pixel(b'\x80\x00\x00\x00')
-    B = pixel(b'\xFF\x00\x00\x00')
+    B = pixel(b'\xFF\x00\x00\x00')  # noqa: N806
     assert surface.get_data()[:] == (
         B + o + o + o +
         o + b + o + o +
@@ -1046,7 +1047,7 @@ def test_context_mask():
     context.mask_surface(mask_surface, surface_x=1, surface_y=2)
     o = pixel(b'\x00\x00\x00\x00')
     b = pixel(b'\x80\x00\x00\x00')
-    B = pixel(b'\xFF\x00\x00\x00')
+    B = pixel(b'\xFF\x00\x00\x00')  # noqa: N806
     assert surface.get_data()[:] == (
         o + o + o + o +
         o + o + o + o +
