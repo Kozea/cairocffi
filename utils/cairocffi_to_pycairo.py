@@ -1,6 +1,7 @@
 import ctypes
 
 import cairo  # pycairo
+
 import cairocffi
 
 pycairo = ctypes.PyDLL(cairo._cairo.__file__)
@@ -9,7 +10,7 @@ pycairo.PycairoContext_FromContext.argtypes = 3 * [ctypes.c_void_p]
 ctypes.pythonapi.PyList_Append.argtypes = 2 * [ctypes.c_void_p]
 
 
-def _UNSAFE_cairocffi_context_to_pycairo(cairocffi_context):
+def _UNSAFE_cairocffi_context_to_pycairo(cairocffi_context):  # noqa: N802
     # Sanity check. Continuing with another type would probably segfault.
     if not isinstance(cairocffi_context, cairocffi.Context):
         raise TypeError('Expected a cairocffi.Context, got %r'

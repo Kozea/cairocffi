@@ -1,8 +1,9 @@
 import cairo  # pycairo
+
 import cairocffi
 
 
-def _UNSAFE_pycairo_context_to_cairocffi(pycairo_context):
+def _UNSAFE_pycairo_context_to_cairocffi(pycairo_context):  # noqa: N802
     # Sanity check. Continuing with another type would probably segfault.
     if not isinstance(pycairo_context, cairo.Context):
         raise TypeError('Expected a cairo.Context, got %r' % pycairo_context)

@@ -1,10 +1,11 @@
 import io
 
-import cairo  # noqa, pycairo
-import cairocffi
+import cairo  # noqa: F401
 import pango_example
 from cairocffi_to_pycairo import _UNSAFE_cairocffi_context_to_pycairo
 from pycairo_to_cairocffi import _UNSAFE_pycairo_context_to_cairocffi
+
+import cairocffi
 
 
 def test():

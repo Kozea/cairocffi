@@ -16,7 +16,7 @@ def parse_constant(node):
 
 
 class PrintEnumsVisitor(pycparser.c_ast.NodeVisitor):
-    def visit_Decl(self, node):
+    def visit_Decl(self, node):  # noqa: N802
         if node.name and node.name.startswith('CAIRO_'):  # len('CAIRO_') == 6
             if node.init.type == 'string':
                 print('%s = b%s' % (node.name[6:], node.init.value))
@@ -24,7 +24,7 @@ class PrintEnumsVisitor(pycparser.c_ast.NodeVisitor):
                 print('%s = %s' % (node.name[6:], node.init.value))
             print('')
 
-    def visit_Enum(self, node):
+    def visit_Enum(self, node):  # noqa: N802
         value = 0
         for enumerator in node.values.enumerators:
             if enumerator.value is not None:

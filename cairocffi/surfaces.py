@@ -103,7 +103,7 @@ class KeepAlive(object):
     or none of them must be called.
 
     """
-    instances = set()
+    instances = set()  # noqa: RUF012
 
     def __init__(self, *objects):
         self.objects = objects
@@ -655,7 +655,7 @@ class Surface(object):
                 write_func = _make_write_func(target)
                 _check_status(cairo.cairo_surface_write_to_png_stream(
                     self._pointer, write_func, ffi.NULL))
-            except (SystemError, MemoryError):  # noqa
+            except (SystemError, MemoryError):  # pragma: no cover
                 # Callback creation has failed
                 if hasattr(target, 'name'):
                     # File-like object has a name, write here

@@ -1,5 +1,6 @@
-import cairocffi
 import cffi
+
+import cairocffi
 
 ffi = cffi.FFI()
 ffi.cdef('''

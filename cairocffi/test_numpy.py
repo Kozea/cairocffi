@@ -1,7 +1,8 @@
 import math
 
-import cairocffi as cairo
 import numpy
+
+import cairocffi as cairo
 
 
 def test_numpy():
