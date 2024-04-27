@@ -2,6 +2,18 @@ cairocffi changelog
 -------------------
 
 
+Version 1.7.0
+.............
+
+Released on 2024-04-27
+
+* Drop Python 3.7 support, add Python 3.12 support
+* `#221 <https://github.com/Kozea/cairocffi/pull/225>`_:
+  Add environment variable to set folder where DLLs are installed on Windows
+* `#225 <https://github.com/Kozea/cairocffi/pull/225>`_:
+  Use Ruff instead of Flake8 and isort
+
+
 Version 1.6.1
 .............
 
