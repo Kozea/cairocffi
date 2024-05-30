@@ -482,6 +482,9 @@ cairo_set_fill_rule (cairo_t *cr, cairo_fill_rule_t fill_rule);
 void
 cairo_set_line_width (cairo_t *cr, double width);
 
+void
+cairo_set_hairline (cairo_t *cr, cairo_bool_t set_hairline);
+
 typedef enum _cairo_line_cap {
     CAIRO_LINE_CAP_BUTT,
     CAIRO_LINE_CAP_ROUND,
@@ -1097,6 +1100,9 @@ cairo_get_fill_rule (cairo_t *cr);
 
 double
 cairo_get_line_width (cairo_t *cr);
+
+cairo_bool_t
+cairo_get_hairline (cairo_t *cr);
 
 cairo_line_cap_t
 cairo_get_line_cap (cairo_t *cr);
