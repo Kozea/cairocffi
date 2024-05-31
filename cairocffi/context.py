@@ -2259,7 +2259,8 @@ class Context(object):
     def set_hairline(self, enabled):
         """Sets lines within the cairo context to be hairlines.
 
-        Hairlines are logically zero-width lines that are drawn at the thinnest renderable width possible in the current context.
+        Hairlines are logically zero-width lines that are drawn at the thinnest
+        renderable width possible in the current context.
 
         :type enabled: bool
         :param enabled: whether or not to set hairline mode
