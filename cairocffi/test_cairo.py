@@ -1269,6 +1269,8 @@ def test_from_null_pointer():
             class_._from_pointer(cairocffi.ffi.NULL, 'unused')
 
 
+@pytest.mark.xfail(cairo_version() < 11800,
+                   reason='Cairo version too low')
 def test_hairline():
     for extents in [None, (0, 0, 140, 80)]:
         surface = RecordingSurface(cairocffi.CONTENT_COLOR_ALPHA, extents)
