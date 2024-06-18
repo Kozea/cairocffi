@@ -2,6 +2,15 @@ cairocffi changelog
 -------------------
 
 
+Version 1.7.1
+.............
+
+Released on 2024-06-18
+
+* `#227 <https://github.com/Kozea/cairocffi/pull/227>`_:
+  Add get_hairline() and set_hairline() functions
+
+
 Version 1.7.0
 .............
 
