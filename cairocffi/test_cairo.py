@@ -1267,3 +1267,15 @@ def test_from_null_pointer():
     for class_ in [Surface, Context, Pattern, FontFace, ScaledFont]:
         with pytest.raises(ValueError):
             class_._from_pointer(cairocffi.ffi.NULL, 'unused')
+
+
+@pytest.mark.xfail(cairo_version() < 11800,
+                   reason='Cairo version too low')
+def test_hairline():
+    for extents in [None, (0, 0, 140, 80)]:
+        surface = RecordingSurface(cairocffi.CONTENT_COLOR_ALPHA, extents)
+        ctx = Context(surface)
+        ctx.set_hairline(True)
+        assert(ctx.get_hairline() is True)
+        ctx.set_hairline(False)
+        assert(ctx.get_hairline() is False)

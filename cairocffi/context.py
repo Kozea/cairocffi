@@ -2255,3 +2255,26 @@ class Context(object):
         """
         cairo.cairo_tag_end(self._pointer, _encode_string(tag_name))
         self._check_status()
+
+    def set_hairline(self, enabled):
+        """Sets lines within the cairo context to be hairlines.
+
+        Hairlines are logically zero-width lines that are drawn at the thinnest
+        renderable width possible in the current context.
+
+        :type enabled: bool
+        :param enabled: whether or not to set hairline mode
+
+        *New in cairo 1.18.*
+        """
+        cairo.cairo_set_hairline(self._pointer, int(enabled))
+        self._check_status()
+
+    def get_hairline(self):
+        """Returns whether or not hairline mode is set, as set by cairo_set_hairline().
+
+        :returns: whether hairline mode is set
+
+        *New in cairo 1.18.*
+        """
+        return bool(cairo.cairo_get_hairline(self._pointer))
