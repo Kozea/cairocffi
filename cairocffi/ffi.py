@@ -9,11 +9,24 @@
 
 """
 
+import importlib.util
 import platform
+import sys
+from pathlib import Path
 
 from cffi import FFI
 
-import constants
+
+# import constants
+# without loading the module via import which would invoke __init__.py
+sys.path.append(str(Path(__file__).parent))
+spec = importlib.util.spec_from_file_location(
+    'constants',
+    str(Path(__file__).parent / 'constants.py')
+)
+constants = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(constants)
+
 
 # Primary cffi definitions
 ffi = FFI()
