@@ -10,6 +10,7 @@
 """
 
 import importlib.util
+import os
 import platform
 import sys
 from pathlib import Path
@@ -42,8 +43,9 @@ try:
 except ImportError:
     pass
 else:
-    ffi.include(xcb_ffi)
-    ffi.cdef(constants._CAIRO_XCB_HEADERS)
+    pass
+    #ffi.include(xcb_ffi)
+    #ffi.cdef(constants._CAIRO_XCB_HEADERS)
 
 # gdk pixbuf cffi definitions
 ffi_pixbuf = FFI()
@@ -108,25 +110,27 @@ ffi_pixbuf.cdef('''
     void              g_type_init                    (void);
 ''')
 
-ffi.set_source_pkgconfig(
-    '_cairocffi',
-    ['cairo', 'xcb'],
-    """
-    #include "cairo.h"
-    #include "cairo-pdf.h"
-    #include "cairo-svg.h"
-    #include "cairo-ps.h"
-    #include "cairo-quartz.h"
-    #include "cairo-ft.h"
-    #include "xcb/xcb.h"
-    #include "xcb/xproto.h"
-    #include "xcb/xevie.h"
-    #include "xcb/xcbext.h"
-    #include "xcb/render.h"
-    #include "cairo-xcb.h"
-    """,
-    sources=[]
-)
+if ('CAIROCFFI_API_MODE' in os.environ and
+        int(os.environ['CAIROCFFI_API_MODE']) == 1):
+    ffi.set_source_pkgconfig(
+        '_cairocffi',
+        ['cairo', 'xcb'],
+        """
+        #include "cairo.h"
+        #include "cairo-pdf.h"
+        #include "cairo-svg.h"
+        #include "cairo-ps.h"
+        #include "cairo-quartz.h"
+        #include "cairo-ft.h"
+        #include "xcb/xcb.h"
+        #include "xcb/xproto.h"
+        #include "xcb/xevie.h"
+        #include "xcb/xcbext.h"
+        #include "xcb/render.h"
+        #include "cairo-xcb.h"
+        """,
+        sources=[]
+    )
 
-if __name__ == "__main__":
-    ffi.compile(verbose=True)
+    if __name__ == "__main__":
+        ffi.compile(verbose=True)

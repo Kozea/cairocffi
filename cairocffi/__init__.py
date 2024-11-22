@@ -17,23 +17,31 @@ from ctypes.util import find_library
 from . import constants
 
 
-api_mode = False
-try:
-    from _cairocffi import ffi
-    from _cairocffi import lib as cairo
-    api_mode = True
-except ImportError:
-    api_mode = False
-
-if not api_mode:
-    from .ffi import ffi  # noqa
-
 VERSION = __version__ = '1.7.1'
 # supported version of cairo, used to be pycairo version too:
 version = '1.17.2'
 version_info = (1, 17, 2)
 
+
+# Attempt api mode if installed
+api_mode = True
+if ('CAIROCFFI_API_MODE' in os.environ and
+        int(os.environ['CAIROCFFI_API_MODE']) == 0):
+    # Allow explicit disable of api_mode
+    api_mode = False
+
+if api_mode:
+    try:
+        from _cairocffi import ffi
+        from _cairocffi import lib as cairo
+        api_mode = True
+    except ImportError:
+        api_mode = False
+
+# Fall back to non api mode
 if not api_mode:
+    from .ffi import ffi  # noqa
+
     # Python 3.8 no longer searches for DLLs in PATH, so we can add everything in
     # CAIROCFFI_DLL_DIRECTORIES manually. Note that unlike PATH, add_dll_directory
     # has no defined order, so if there are two cairo DLLs in PATH we might get a
@@ -43,7 +51,6 @@ if not api_mode:
         for path in dll_directories.split(';'):
             with suppress((OSError, FileNotFoundError)):
                 os.add_dll_directory(path)
-
 
     def dlopen(ffi, library_names, filenames):
         """Try various names for the same library, for different platforms."""
@@ -67,8 +74,7 @@ if not api_mode:
             str(exception) for exception in exceptions)
         raise OSError(error_message)  # pragma: no cover
 
-
-    cairo = dlopen(
+    cairo = dlopen(  # noqa
         ffi, ('cairo-2', 'cairo', 'libcairo-2'),
         ('libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll'))
 
