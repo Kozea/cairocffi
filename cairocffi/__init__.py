@@ -19,11 +19,10 @@ from . import constants
 
 api_mode = False
 try:
-    from _cairocffi import lib as cairo
     from _cairocffi import ffi
+    from _cairocffi import lib as cairo
     api_mode = True
-except ImportError as e:
-    print("bobo",e)
+except ImportError:
     api_mode = False
 
 if not api_mode:
