@@ -9,13 +9,19 @@
 
 """
 
+import platform
+
 from cffi import FFI
 
-from . import constants
+import constants
 
 # Primary cffi definitions
 ffi = FFI()
 ffi.cdef(constants._CAIRO_HEADERS)
+if platform.system() == 'Windows':
+    ffi.cdef(constants._CAIRO_WIN32_HEADERS)
+if platform.system() == 'Darwin':
+    ffi.cdef(constants._CAIRO_QUARTZ_HEADERS)
 
 # include xcffib cffi definitions for cairo xcb support
 try:
@@ -88,3 +94,26 @@ ffi_pixbuf.cdef('''
     void              g_error_free                   (GError *error);
     void              g_type_init                    (void);
 ''')
+
+ffi.set_source_pkgconfig(
+    '_cairocffi',
+    ['cairo', 'xcb'],
+    """
+    #include "cairo.h"
+    #include "cairo-pdf.h"
+    #include "cairo-svg.h"
+    #include "cairo-ps.h"
+    #include "cairo-quartz.h"
+    #include "cairo-ft.h"
+    #include "xcb/xcb.h"
+    #include "xcb/xproto.h"
+    #include "xcb/xevie.h"
+    #include "xcb/xcbext.h"
+    #include "xcb/render.h"
+    #include "cairo-xcb.h"
+    """,
+    sources=[]
+)
+
+if __name__ == "__main__":
+    ffi.compile(verbose=True)

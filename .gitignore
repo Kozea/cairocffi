@@ -1,4 +1,7 @@
 __pycache__
+_*.o
+_*.so
+_*.c
 cairocffi/_ffi*.py
 *.egg
 *.egg-info

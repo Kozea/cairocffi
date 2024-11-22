@@ -457,12 +457,12 @@ cairo_set_tolerance (cairo_t *cr, double tolerance);
 typedef enum _cairo_antialias {
     CAIRO_ANTIALIAS_DEFAULT,
 
-    
+
     CAIRO_ANTIALIAS_NONE,
     CAIRO_ANTIALIAS_GRAY,
     CAIRO_ANTIALIAS_SUBPIXEL,
 
-    
+
     CAIRO_ANTIALIAS_FAST,
     CAIRO_ANTIALIAS_GOOD,
     CAIRO_ANTIALIAS_BEST
@@ -1827,9 +1827,9 @@ cairo_matrix_transform_point (const cairo_matrix_t *matrix,
 typedef struct _cairo_region cairo_region_t;
 
 typedef enum _cairo_region_overlap {
-    CAIRO_REGION_OVERLAP_IN,		
-    CAIRO_REGION_OVERLAP_OUT,		
-    CAIRO_REGION_OVERLAP_PART		
+    CAIRO_REGION_OVERLAP_IN,
+    CAIRO_REGION_OVERLAP_OUT,
+    CAIRO_REGION_OVERLAP_PART
 } cairo_region_overlap_t;
 
 cairo_region_t *
@@ -2085,11 +2085,12 @@ cairo_svg_surface_set_document_unit (cairo_surface_t	*surface,
 cairo_svg_unit_t
 cairo_svg_surface_get_document_unit (cairo_surface_t	*surface);
 
+"""
 
+_CAIRO_WIN32_HEADERS = r"""
         typedef void* HDC;
         typedef void* HFONT;
         typedef void LOGFONTW;
-    
 
 cairo_surface_t *
 cairo_win32_surface_create (HDC hdc);
@@ -2133,6 +2134,7 @@ cairo_win32_scaled_font_select_font (cairo_scaled_font_t *scaled_font,
 
 void
 cairo_win32_scaled_font_done_font (cairo_scaled_font_t *scaled_font);
+:w
 
 double
 cairo_win32_scaled_font_get_metrics_factor (cairo_scaled_font_t *scaled_font);
@@ -2144,12 +2146,13 @@ cairo_win32_scaled_font_get_logical_to_device (cairo_scaled_font_t *scaled_font,
 void
 cairo_win32_scaled_font_get_device_to_logical (cairo_scaled_font_t *scaled_font,
 					       cairo_matrix_t *device_to_logical);
+"""
 
-
+_CAIRO_QUARTZ_HEADERS = r"""
         typedef void* CGContextRef;
         typedef void* CGFontRef;
-        typedef void* ATSUFontID;
-    
+        typedef unsigned int ATSUFontID;
+
 
 cairo_surface_t *
 cairo_quartz_surface_create (cairo_format_t format,

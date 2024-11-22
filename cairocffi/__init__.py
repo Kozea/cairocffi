@@ -15,51 +15,63 @@ from contextlib import suppress
 from ctypes.util import find_library
 
 from . import constants
-from .ffi import ffi
+
+
+api_mode = False
+try:
+    from _cairocffi import lib as cairo
+    from _cairocffi import ffi
+    api_mode = True
+except ImportError as e:
+    print("bobo",e)
+    api_mode = False
+
+if not api_mode:
+    from .ffi import ffi  # noqa
 
 VERSION = __version__ = '1.7.1'
 # supported version of cairo, used to be pycairo version too:
 version = '1.17.2'
 version_info = (1, 17, 2)
 
-
-# Python 3.8 no longer searches for DLLs in PATH, so we can add everything in
-# CAIROCFFI_DLL_DIRECTORIES manually. Note that unlike PATH, add_dll_directory
-# has no defined order, so if there are two cairo DLLs in PATH we might get a
-# random one.
-dll_directories = os.getenv('CAIROCFFI_DLL_DIRECTORIES')
-if dll_directories and hasattr(os, 'add_dll_directory'):
-    for path in dll_directories.split(';'):
-        with suppress((OSError, FileNotFoundError)):
-            os.add_dll_directory(path)
-
-
-def dlopen(ffi, library_names, filenames):
-    """Try various names for the same library, for different platforms."""
-    exceptions = []
-
-    for library_name in library_names:
-        library_filename = find_library(library_name)
-        if library_filename:
-            filenames = (library_filename, *filenames)
-        else:
-            exceptions.append(
-                'no library called "{}" was found'.format(library_name))
-
-    for filename in filenames:
-        try:
-            return ffi.dlopen(filename)
-        except OSError as exception:  # pragma: no cover
-            exceptions.append(exception)
-
-    error_message = '\n'.join(  # pragma: no cover
-        str(exception) for exception in exceptions)
-    raise OSError(error_message)  # pragma: no cover
+if not api_mode:
+    # Python 3.8 no longer searches for DLLs in PATH, so we can add everything in
+    # CAIROCFFI_DLL_DIRECTORIES manually. Note that unlike PATH, add_dll_directory
+    # has no defined order, so if there are two cairo DLLs in PATH we might get a
+    # random one.
+    dll_directories = os.getenv('CAIROCFFI_DLL_DIRECTORIES')
+    if dll_directories and hasattr(os, 'add_dll_directory'):
+        for path in dll_directories.split(';'):
+            with suppress((OSError, FileNotFoundError)):
+                os.add_dll_directory(path)
 
 
-cairo = dlopen(
-    ffi, ('cairo-2', 'cairo', 'libcairo-2'),
-    ('libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll'))
+    def dlopen(ffi, library_names, filenames):
+        """Try various names for the same library, for different platforms."""
+        exceptions = []
+
+        for library_name in library_names:
+            library_filename = find_library(library_name)
+            if library_filename:
+                filenames = (library_filename, *filenames)
+            else:
+                exceptions.append(
+                    'no library called "{}" was found'.format(library_name))
+
+        for filename in filenames:
+            try:
+                return ffi.dlopen(filename)
+            except OSError as exception:  # pragma: no cover
+                exceptions.append(exception)
+
+        error_message = '\n'.join(  # pragma: no cover
+            str(exception) for exception in exceptions)
+        raise OSError(error_message)  # pragma: no cover
+
+
+    cairo = dlopen(
+        ffi, ('cairo-2', 'cairo', 'libcairo-2'),
+        ('libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll'))
 
 
 class _keepref(object):  # noqa: N801
