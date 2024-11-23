@@ -43,9 +43,8 @@ try:
 except ImportError:
     pass
 else:
-    pass
-    #ffi.include(xcb_ffi)
-    #ffi.cdef(constants._CAIRO_XCB_HEADERS)
+    ffi.include(xcb_ffi)
+    ffi.cdef(constants._CAIRO_XCB_HEADERS)
 
 # gdk pixbuf cffi definitions
 ffi_pixbuf = FFI()
