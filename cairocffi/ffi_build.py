@@ -114,7 +114,7 @@ if ('CAIROCFFI_API_MODE' in os.environ and
     ffi.set_source_pkgconfig(
         '_cairocffi',
         ['cairo', 'xcb'],
-        """
+        r"""
         #include "cairo.h"
         #include "cairo-pdf.h"
         #include "cairo-svg.h"
@@ -129,14 +129,23 @@ if ('CAIROCFFI_API_MODE' in os.environ and
         #include "xcb/render.h"
         #include "cairo-xcb.h"
         /* Deal with some newer definitions for compatibility */
-        #if !defined(CAIRO_FORMAT_RGBA128F)
+        #if CAIRO_VERSION < 11702
         #define CAIRO_FORMAT_RGBA128F 7
-        #endif
-        #if !defined(CAIRO_FORMAT_RGB96F)
         #define CAIRO_FORMAT_RGB96F 6
         #endif
+        #if CAIRO_VERSION < 11800
+        #include <stdio.h>
+        #include <stdbool.h>
         void cairo_set_hairline(cairo_t*, cairo_bool_t);
         cairo_bool_t cairo_get_hairline(cairo_t*);
+        void cairo_set_hairline(cairo_t*, cairo_bool_t) {
+            fprintf(stderr, "Unimplemented!!\n");
+        }
+        cairo_bool_t cairo_get_hairline(cairo_t*) {
+            fprintf(stderr, "Unimplemented!!\n");
+            return false;
+        }
+        #endif
         """,
         sources=[]
     )
