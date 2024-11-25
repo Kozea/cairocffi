@@ -40,7 +40,7 @@ if api_mode:
 
 # Fall back to non api mode
 if not api_mode:
-    from .ffi import ffi  # noqa
+    from .ffi_build import ffi  # noqa
 
     # Python 3.8 no longer searches for DLLs in PATH, so we can add everything in
     # CAIROCFFI_DLL_DIRECTORIES manually. Note that unlike PATH, add_dll_directory

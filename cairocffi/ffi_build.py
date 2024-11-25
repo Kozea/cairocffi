@@ -39,7 +39,7 @@ if platform.system() == 'Darwin':
 
 # include xcffib cffi definitions for cairo xcb support
 try:
-    from xcffib.ffi import ffi as xcb_ffi
+    from xcffib.ffi_build import ffi as xcb_ffi
 except ImportError:
     pass
 else:
