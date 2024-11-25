@@ -119,14 +119,25 @@ if ('CAIROCFFI_API_MODE' in os.environ and
         #include "cairo-pdf.h"
         #include "cairo-svg.h"
         #include "cairo-ps.h"
+        #if defined(__APPLE__)
         #include "cairo-quartz.h"
+        #endif
         #include "cairo-ft.h"
         #include "xcb/xcb.h"
         #include "xcb/xproto.h"
-        #include "xcb/xevie.h"
+        /* #include "xcb/xevie.h" */
         #include "xcb/xcbext.h"
         #include "xcb/render.h"
         #include "cairo-xcb.h"
+        /* Deal with some newer definitions for compatibility */
+        #if !defined(CAIRO_FORMAT_RGBA128F)
+        #define CAIRO_FORMAT_RGBA128F 7
+        #endif
+        #if !defined(CAIRO_FORMAT_RGB96F)
+        #define CAIRO_FORMAT_RGB96F 6
+        #endif
+        void cairo_set_hairline(cairo_t*, cairo_bool_t);
+        cairo_bool_t cairo_get_hairline(cairo_t*);
         """,
         sources=[]
     )
