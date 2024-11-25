@@ -125,7 +125,6 @@ if ('CAIROCFFI_API_MODE' in os.environ and
         #include "cairo-ft.h"
         #include "xcb/xcb.h"
         #include "xcb/xproto.h"
-        /* #include "xcb/xevie.h" */
         #include "xcb/xcbext.h"
         #include "xcb/render.h"
         #include "cairo-xcb.h"
