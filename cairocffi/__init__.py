@@ -17,7 +17,7 @@ from ctypes.util import find_library
 from . import constants
 
 
-VERSION = __version__ = '1.7.1'
+VERSION = __version__ = '1.7.2'
 # supported version of cairo, used to be pycairo version too:
 version = '1.17.2'
 version_info = (1, 17, 2)

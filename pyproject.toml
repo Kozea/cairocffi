@@ -13,6 +13,7 @@ readme = {file = 'README.rst', content-type = 'text/x-rst'}
 license = {file = 'LICENSE'}
 dependencies = [
     'cffi >= 1.1.0',
+    'xcffib >= 1.5.1'
 ]
 classifiers = [
     'Development Status :: 5 - Production/Stable',
