@@ -14,7 +14,7 @@ if ('CAIROCFFI_API_MODE' in os.environ and
 setup(
     name='cairocffi',
     use_scm_version=True,
-    version='1.7.2',
+    version='1.7.1',
     # when xcffib is updated, bump to include API mode
     install_requires=['cffi >= 1.1.0', 'xcffib >= 1.5.0'],
     setup_requires=['setuptools_scm', 'cffi >= 1.1.0', 'xcffib >= 1.5.0'],
