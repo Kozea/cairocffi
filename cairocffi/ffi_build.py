@@ -14,9 +14,15 @@ import os
 import platform
 import sys
 from pathlib import Path
+from warnings import warn
 
 from cffi import FFI
 
+
+api_mode = False
+if ('CAIROCFFI_API_MODE' in os.environ and
+        int(os.environ['CAIROCFFI_API_MODE']) == 1):
+    api_mode = True
 
 # import constants
 # without loading the module via import which would invoke __init__.py
@@ -38,11 +44,13 @@ if platform.system() == 'Darwin':
     ffi.cdef(constants._CAIRO_QUARTZ_HEADERS)
 
 # include xcffib cffi definitions for cairo xcb support
+xcffib_available = False
 try:
     from xcffib.ffi_build import ffi as xcb_ffi
 except ImportError:
-    pass
+    warn("xcfiib not available")
 else:
+    xcffib_available = True
     ffi.include(xcb_ffi)
     ffi.cdef(constants._CAIRO_XCB_HEADERS)
 
@@ -109,8 +117,7 @@ ffi_pixbuf.cdef('''
     void              g_type_init                    (void);
 ''')
 
-if ('CAIROCFFI_API_MODE' in os.environ and
-        int(os.environ['CAIROCFFI_API_MODE']) == 1):
+if api_mode:
     ffi.set_source_pkgconfig(
         '_cairocffi',
         ['cairo', 'xcb'],
@@ -122,12 +129,19 @@ if ('CAIROCFFI_API_MODE' in os.environ and
         #if defined(__APPLE__)
         #include "cairo-quartz.h"
         #endif
+        #if defined(_WIN64) || defined(_WIN32)
+        #include "cairo-win32.h"
+        #endif
         #include "cairo-ft.h"
+        """ +
+        (r"""
         #include "xcb/xcb.h"
         #include "xcb/xproto.h"
         #include "xcb/xcbext.h"
         #include "xcb/render.h"
         #include "cairo-xcb.h"
+        """ if xcffib_available else "") +
+        r"""
         /* Deal with some newer definitions for compatibility */
         #if CAIRO_VERSION < 11702
         #define CAIRO_FORMAT_RGBA128F 7

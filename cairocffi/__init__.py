@@ -25,18 +25,12 @@ version_info = (1, 17, 2)
 
 # Attempt api mode if installed
 api_mode = True
-if ('CAIROCFFI_API_MODE' in os.environ and
-        int(os.environ['CAIROCFFI_API_MODE']) == 0):
-    # Allow explicit disable of api_mode
+try:
+    from _cairocffi import ffi
+    from _cairocffi import lib as cairo
+    api_mode = True
+except ImportError:
     api_mode = False
-
-if api_mode:
-    try:
-        from _cairocffi import ffi
-        from _cairocffi import lib as cairo
-        api_mode = True
-    except ImportError:
-        api_mode = False
 
 # Fall back to non api mode
 if not api_mode:
