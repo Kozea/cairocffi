@@ -8,7 +8,7 @@ from distutils.command.build import build
 
 api_mode = False
 if ('CAIROCFFI_API_MODE' in os.environ and
-        int(os.environ['CAIROCFFI_API_MODE']) == 2):
+        int(os.environ['CAIROCFFI_API_MODE']) == 1):
     api_mode = True
 
 setup(
