@@ -2231,11 +2231,3 @@ cairo_xcb_device_debug_get_precision (cairo_device_t *device);
 
 """
 
-_CAIRO_XCB_DEFS = r"""
-typedef struct xcb_connection_t xcb_connection_t;
-typedef struct xcb_screen_t xcb_screen_t;
-typedef struct xcb_render_pictforminfo_t xcb_render_pictforminfo_t;
-typedef struct xcb_visualtype_t xcb_visualtype_t;
-typedef unsigned int xcb_drawable_t;
-typedef unsigned int xcb_pixmap_t;
-"""

@@ -93,17 +93,6 @@ def generate(cairo_git_dir):
     source = read_cairo_header(cairo_git_dir, '-xcb')
     print('_CAIRO_XCB_HEADERS = r"""%s"""' % source)
 
-    # For use when xcb was not compiled api mode
-    source = '''
-        typedef struct xcb_connection_t xcb_connection_t;
-        typedef struct xcb_screen_t xcb_screen_t;
-        typedef struct xcb_render_pictforminfo_t xcb_render_pictforminfo_t;
-        typedef struct xcb_visualtype_t xcb_visualtype_t;
-        typedef unsigned int xcb_drawable_t;
-        typedef unsigned int xcb_pixmap_t;
-    '''
-    print('_CAIRO_XCB_DEFS = r"""%s"""' % source)
-
 
 if __name__ == '__main__':
     if len(sys.argv) >= 2:

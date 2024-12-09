@@ -209,10 +209,7 @@ def xcb_ffi_for_mode(mode):
 
     # include xcffib cffi definitions for cairo xcb support
     if xcffib_available:
-        if xcb_cffi_mode == "api" and mode == "api":
-            ffi_xcb.include(_xcb_ffi_for_mode(xcb_cffi_mode))
-        else:
-            ffi_xcb.cdef(constants._CAIRO_XCB_DEFS)
+        ffi_xcb.include(_xcb_ffi_for_mode(mode))
         ffi_xcb.cdef(constants._CAIRO_XCB_HEADERS)
 
     if mode == "api":
@@ -263,4 +260,5 @@ def build_xcb_ffi():
 if __name__ == "__main__":
     build_ffi()
     build_pixbuf_ffi()
-    build_xcb_ffi()
+    if xcffib_available:
+        build_xcb_ffi()
