@@ -84,8 +84,7 @@ c_source_cairo_pixbuf = (
     r"""
         #include "gdk-pixbuf/gdk-pixbuf.h"
         #include "gdk/gdk.h"
-    """ +
-    c_source_cairo_compat)
+    """)
 
 c_source_cairo_xcb = (
     c_source_cairo +
@@ -95,8 +94,7 @@ c_source_cairo_xcb = (
         #include "xcb/xcbext.h"
         #include "xcb/render.h"
         #include "cairo-xcb.h"
-     """ if xcffib_available else "") +
-    c_source_cairo_compat)
+     """ if xcffib_available else ""))
 
 
 # Primary cffi definitions
