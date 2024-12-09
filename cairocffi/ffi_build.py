@@ -10,13 +10,12 @@
 """
 
 import importlib.util
-import os
 import platform
 import sys
 from pathlib import Path
 from warnings import warn
 
-from setuptools.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
+from setuptools.errors import CCompilerError, ExecError, PlatformError
 
 from cffi import FFI
 from cffi.error import VerificationError
@@ -236,7 +235,7 @@ def _build_ffi(ffi_gen_for_mode):
         ffi_api = ffi_gen_for_mode("api")
         ffi_api.compile(verbose=True)
         return ffi_api
-    except (CCompilerError, DistutilsExecError, DistutilsPlatformError,
+    except (CCompilerError, ExecError, PlatformError,
             VerificationError) as e:
         warn("Falling back to precompiled python mode: {}".format(str(e)))
 
