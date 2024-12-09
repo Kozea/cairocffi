@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 from warnings import warn
 
-from distutils.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
+from setuptools.errors import CCompilerError, DistutilsExecError, DistutilsPlatformError
 
 from cffi import FFI
 from cffi.error import VerificationError
