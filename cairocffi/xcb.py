@@ -34,9 +34,9 @@ except ImportError:
 
 if cffi_mode != "api":
     cairo_xcb = dlopen(
-        ffi, ('xcb', 'libxcb'),
-        ('libxcb-1.1.so.0', 'libxcb-1.1.dylib',
-         'libxcb-1.1.dll'))
+        ffi, ('xcb'),
+        ('libxcb.so', 'libxcb.dylib',
+         'libxcb.dll'))
 
 
 class XCBSurface(Surface):
