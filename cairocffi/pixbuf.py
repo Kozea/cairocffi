@@ -15,26 +15,48 @@ from functools import partial
 from io import BytesIO
 
 from . import Context, ImageSurface, constants, dlopen
-from .ffi import ffi_pixbuf as ffi
 
 __all__ = ['decode_to_image_surface']
 
-gdk_pixbuf = dlopen(
-    ffi, ('gdk_pixbuf-2.0', 'libgdk_pixbuf-2.0-0'),
-    ('libgdk_pixbuf-2.0.so.0', 'libgdk_pixbuf-2.0.0.dylib',
-     'libgdk_pixbuf-2.0-0.dll'))
-gobject = dlopen(
-    ffi, ('gobject-2.0', 'libgobject-2.0-0'),
-    ('libgobject-2.0.so.0', 'libgobject-2.0.dylib', 'libgobject-2.0-0.dll'))
-glib = dlopen(
-    ffi, ('glib-2.0', 'libglib-2.0-0'),
-    ('libglib-2.0.so.0', 'libglib-2.0.dylib', 'libglib-2.0-0.dll'))
+
+# Attempt api mode, then precompiled abi mode, then import time abi
+cffi_mode = "(unknown)"
 try:
-    gdk = dlopen(
-        ffi, ('gdk-3', 'libgdk-3-0'),
-        ('libgdk-3.so.0', 'libgdk-3.0.dylib', 'libgdk-3-0.dll'))
-except OSError:
-    gdk = None
+    # Note in ABI mode lib is already available, no dlopen() needed
+    from _cairocffi_pixbuf import ffi, lib
+    gdk_pixbuf = lib
+    gobject = lib
+    glib = lib
+    gdk = lib
+    cffi_mode = "api"
+except ImportError:
+    try:
+        # Note in ABI mode lib will be missing
+        from _cairocffi_pixbuf import ffi
+        cffi_mode = "abi_precompiled"
+    except ImportError:
+        # Fall back to importing and parsing cffi defs
+        from .ffi_build import pixbuf_ffi_for_mode
+        ffi = pixbuf_ffi_for_mode("abi")
+        cffi_mode = "abi"
+
+if cffi_mode != "api":
+    gdk_pixbuf = dlopen(
+        ffi, ('gdk_pixbuf-2.0', 'libgdk_pixbuf-2.0-0'),
+        ('libgdk_pixbuf-2.0.so.0', 'libgdk_pixbuf-2.0.0.dylib',
+         'libgdk_pixbuf-2.0-0.dll'))
+    gobject = dlopen(
+        ffi, ('gobject-2.0', 'libgobject-2.0-0'),
+        ('libgobject-2.0.so.0', 'libgobject-2.0.dylib', 'libgobject-2.0-0.dll'))
+    glib = dlopen(
+        ffi, ('glib-2.0', 'libglib-2.0-0'),
+        ('libglib-2.0.so.0', 'libglib-2.0.dylib', 'libglib-2.0-0.dll'))
+    try:
+        gdk = dlopen(
+            ffi, ('gdk-3', 'libgdk-3-0'),
+            ('libgdk-3.so.0', 'libgdk-3.0.dylib', 'libgdk-3-0.dll'))
+    except OSError:
+        gdk = None
 
 gobject.g_type_init()
 
