@@ -1,6 +1,6 @@
 [build-system]
-requires = ['flit_core >=3.2,<4']
-build-backend = 'flit_core.buildapi'
+requires = ["setuptools >= 64"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = 'cairocffi'
@@ -13,6 +13,7 @@ readme = {file = 'README.rst', content-type = 'text/x-rst'}
 license = {file = 'LICENSE'}
 dependencies = [
     'cffi >= 1.1.0',
+    'xcffib >= 1.5.0'  # when released with API mode changes should be 1.5.1
 ]
 classifiers = [
     'Development Status :: 5 - Production/Stable',
@@ -57,3 +58,6 @@ omit = ['.*']
 [tool.ruff.lint]
 select = ['E', 'W', 'F', 'I', 'N', 'RUF']
 ignore = ['RUF001', 'RUF002', 'RUF003']
+
+[tool.setuptools_scm]
+

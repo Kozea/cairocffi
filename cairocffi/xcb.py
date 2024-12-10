@@ -10,8 +10,33 @@
 
 from xcffib import visualtype_to_c_struct
 
+from . import dlopen
 from . import cairo, constants
 from .surfaces import SURFACE_TYPE_TO_CLASS, Surface
+
+# Attempt api mode, then precompiled abi mode, then import time abi
+cffi_mode = "(unknown)"
+try:
+    # Note in ABI mode lib is already available, no dlopen() needed
+    from ._cairocffi_xcb import ffi, lib as cairo_xcb
+    cffi_mode = "api"
+except ImportError:
+    try:
+        # Note in ABI mode lib will be missing
+        from ._cairocffi_xcb import ffi
+        cffi_mode = "abi_precompiled"
+    except ImportError:
+        # Fall back to importing and parsing cffi defs
+        from .ffi_build import xcb_ffi_for_mode
+        ffi = xcb_ffi_for_mode("abi")
+        cffi_mode = "abi"
+
+
+if cffi_mode != "api":
+    cairo_xcb = dlopen(
+        ffi, ('xcb'),
+        ('libxcb.so', 'libxcb.dylib',
+         'libxcb.dll'))
 
 
 class XCBSurface(Surface):
