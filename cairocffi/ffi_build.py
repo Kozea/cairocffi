@@ -11,14 +11,15 @@
 
 import importlib.util
 import platform
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 from warnings import warn
 
-from setuptools.errors import CCompilerError, ExecError, PlatformError
-
 from cffi import FFI
 from cffi.error import PkgConfigError, VerificationError
+from setuptools.errors import CCompilerError, ExecError, PlatformError
 
 
 # import constants
@@ -108,14 +109,14 @@ def ffi_for_mode(mode):
 
     if mode == "api":
         ffi.set_source_pkgconfig(
-            '_cairocffi',
+            'cairocffi._cairocffi',
             ['cairo'],
             c_source_cairo,
             sources=[]
         )
     else:
         ffi.set_source(
-            '_cairocffi', None)
+            'cairocffi._cairocffi', None)
 
     return ffi
 
@@ -187,14 +188,14 @@ def pixbuf_ffi_for_mode(mode):
 
     if mode == "api":
         ffi_pixbuf.set_source_pkgconfig(
-            '_cairocffi_pixbuf',
+            'cairocffi._cairocffi_pixbuf',
             ['cairo', 'glib-2.0', 'gdk-pixbuf-2.0', 'gobject-2.0', 'gdk-3.0'],
             c_source_cairo_pixbuf,
             sources=[]
         )
     else:
         ffi_pixbuf.set_source(
-            '_cairocffi_pixbuf', None)
+            'cairocffi._cairocffi_pixbuf', None)
 
     return ffi_pixbuf
 
@@ -211,14 +212,14 @@ def xcb_ffi_for_mode(mode):
 
     if mode == "api":
         ffi_xcb.set_source_pkgconfig(
-            '_cairocffi_xcb',
+            'cairocffi._cairocffi_xcb',
             ['cairo', 'xcb'],
             c_source_cairo_xcb,
             sources=[]
         )
     else:
         ffi_xcb.set_source(
-            '_cairocffi_xcb', None)
+            'cairocffi._cairocffi_xcb', None)
 
     return ffi_xcb
 
@@ -231,14 +232,16 @@ def _build_ffi(ffi_gen_for_mode):
     """
     try:
         ffi_api = ffi_gen_for_mode("api")
-        ffi_api.compile(verbose=True)
+        file = ffi_api.compile(verbose=True, tmpdir=tempfile.gettempdir())
+        shutil.copy(file, "cairocffi")
         return ffi_api
     except (CCompilerError, ExecError, PlatformError,
             PkgConfigError, VerificationError) as e:
         warn("Falling back to precompiled python mode: {}".format(str(e)))
 
         ffi_abi = ffi_gen_for_mode("abi")
-        ffi_abi.compile(verbose=True)
+        file = ffi_abi.compile(verbose=True, tmpdir=tempfile.gettempdir())
+        shutil.copy(file, "cairocffi")
         return ffi_abi
 
 

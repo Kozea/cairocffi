@@ -27,12 +27,12 @@ version_info = (1, 17, 2)
 cffi_mode = "(unknown)"
 try:
     # Note in ABI mode lib is already available, no dlopen() needed
-    from _cairocffi import ffi, lib as cairo
+    from ._cairocffi import ffi, lib as cairo
     cffi_mode = "api"
 except ImportError:
     try:
  # Note in ABI mode lib will be missing
-        from _cairocffi import ffi
+        from ._cairocffi import ffi
         cffi_mode = "abi_precompiled"
     except ImportError:
         # Fall back to importing and parsing cffi defs

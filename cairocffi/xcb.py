@@ -18,12 +18,12 @@ from .surfaces import SURFACE_TYPE_TO_CLASS, Surface
 cffi_mode = "(unknown)"
 try:
     # Note in ABI mode lib is already available, no dlopen() needed
-    from _cairocffi_xcb import ffi, lib as cairo_xcb
+    from ._cairocffi_xcb import ffi, lib as cairo_xcb
     cffi_mode = "api"
 except ImportError:
     try:
         # Note in ABI mode lib will be missing
-        from _cairocffi_xcb import ffi
+        from ._cairocffi_xcb import ffi
         cffi_mode = "abi_precompiled"
     except ImportError:
         # Fall back to importing and parsing cffi defs

@@ -23,7 +23,7 @@ __all__ = ['decode_to_image_surface']
 cffi_mode = "(unknown)"
 try:
     # Note in ABI mode lib is already available, no dlopen() needed
-    from _cairocffi_pixbuf import ffi, lib
+    from ._cairocffi_pixbuf import ffi, lib
     gdk_pixbuf = lib
     gobject = lib
     glib = lib
@@ -32,7 +32,7 @@ try:
 except ImportError:
     try:
         # Note in ABI mode lib will be missing
-        from _cairocffi_pixbuf import ffi
+        from ._cairocffi_pixbuf import ffi
         cffi_mode = "abi_precompiled"
     except ImportError:
         # Fall back to importing and parsing cffi defs
