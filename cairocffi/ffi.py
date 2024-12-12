@@ -20,7 +20,7 @@ ffi.cdef(constants._CAIRO_HEADERS)
 # include xcffib cffi definitions for cairo xcb support
 try:
     from xcffib.ffi import ffi as xcb_ffi
-except ImportError:
+except (ImportError, OSError):
     pass
 else:
     ffi.include(xcb_ffi)
