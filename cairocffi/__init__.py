@@ -135,7 +135,7 @@ from .surfaces import (  # noqa isort:skip
     Win32Surface, Win32PrintingSurface)
 try:
     from .xcb import XCBSurface  # noqa isort:skip
-except ImportError:
+except (ImportError, OSError):
     pass
 from .patterns import (  # noqa isort:skip
     Pattern, SolidPattern, SurfacePattern, Gradient, LinearGradient,
