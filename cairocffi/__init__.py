@@ -28,7 +28,7 @@ version_info = (1, 17, 2)
 # has no defined order, so if there are two cairo DLLs in PATH we might get a
 # random one.
 dll_directories = os.getenv('CAIROCFFI_DLL_DIRECTORIES')
-if dll_directories and hasattr(os, 'add_dll_directory'):
+if dll_directories and os.name == 'nt':
     for path in dll_directories.split(';'):
         with suppress((OSError, FileNotFoundError)):
             os.add_dll_directory(path)
