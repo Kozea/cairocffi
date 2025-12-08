@@ -56,11 +56,22 @@ def dlopen(ffi, library_names, filenames):
         str(exception) for exception in exceptions)
     raise OSError(error_message)  # pragma: no cover
 
-
-cairo = dlopen(
-    ffi, ('cairo-2', 'cairo', 'libcairo-2'),
-    ('libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll'))
-
+try:
+    cairo = dlopen(
+        ffi, ('cairo-2', 'cairo', 'libcairo-2'),
+        ('libcairo.so.2', 'libcairo.2.dylib', 'libcairo-2.dll'))
+except OSError as e:
+    error_message = ""
+    if os.name == "nt":
+        error_message = (
+            "Could not find a valid cairo DLL. Ensure that it's either available from PATH "
+            "or set `CAIROCFFI_DLL_DIRECTORIES` environment variable "
+            "to a semicolon-separated list of directories to search.\n"
+            "If you haven't yet installed cairo, it can be installed from GTK for Windows repo - "
+            "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/\n"
+            "Installation adds DLL path to PATH automatically and they should become discoverable.\n\n"
+        )
+    raise OSError(error_message + str(e)) from e
 
 class _keepref(object):  # noqa: N801
     """Function wrapper that keeps a reference to another object."""
