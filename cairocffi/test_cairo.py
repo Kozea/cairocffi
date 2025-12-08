@@ -1083,7 +1083,7 @@ def test_context_font():
         cairocffi.fonts.FONT_TYPE_TO_CLASS[cairocffi.FONT_TYPE_TOY] = \
             ToyFontFace
 
-    ascent, descent, height, max_x_advance, max_y_advance = (
+    _, _, _, max_x_advance, max_y_advance = (
         context.font_extents())
     # That’s about all we can assume for a default font.
     assert max_x_advance > 0
@@ -1128,7 +1128,7 @@ def test_context_font():
 def test_scaled_font():
     font = ScaledFont(ToyFontFace())
     font_extents = font.extents()
-    ascent, descent, height, max_x_advance, max_y_advance = font_extents
+    _, _, _, max_x_advance, max_y_advance = font_extents
     assert max_x_advance > 0
     assert max_y_advance == 0
     _, _, _, _, x_advance, y_advance = font.text_extents('i' * 10)

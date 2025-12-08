@@ -64,12 +64,14 @@ except OSError as e:
     error_message = ""
     if os.name == "nt":
         error_message = (
-            "Could not find a valid cairo DLL. Ensure that it's either available from PATH "
-            "or set `CAIROCFFI_DLL_DIRECTORIES` environment variable "
+            "Could not find a valid cairo DLL. Ensure that it's either available from "
+            "PATH or set `CAIROCFFI_DLL_DIRECTORIES` environment variable "
             "to a semicolon-separated list of directories to search.\n"
-            "If you haven't yet installed cairo, it can be installed from GTK for Windows repo - "
-            "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/\n"
-            "Installation adds DLL path to PATH automatically and they should become discoverable.\n\n"
+            "If you haven't yet installed cairo, it can be installed from GTK for "
+            "Windows repo - https://github.com/tschoonj/"
+            "GTK-for-Windows-Runtime-Environment-Installer/releases/\n"
+            "Installation adds DLL path to PATH automatically and they should become "
+            "discoverable.\n\n"
         )
     raise OSError(error_message + str(e)) from e
 
