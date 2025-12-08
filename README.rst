@@ -12,15 +12,15 @@ to decode various image formats for use in cairo.
 .. _GDK-PixBuf: https://gitlab.gnome.org/GNOME/gdk-pixbuf
 
 * Free software: BSD license
-* For Python 3.8+, tested on CPython and PyPy
+* For Python 3.10+
 * Documentation: https://doc.courtbouillon.org/cairocffi/
 * Changelog: https://doc.courtbouillon.org/cairocffi/stable/changelog.html
 * Code, issues, tests: https://github.com/Kozea/cairocffi
 * Code of conduct: https://www.courtbouillon.org/code-of-conduct
 * Professional support: https://www.courtbouillon.org
 * Donation: https://opencollective.com/courtbouillon
-* API partially compatible with Pycairo.
-* Works with any version of cairo.
+* API partially compatible with Pycairo
+* Works with any version of cairo
 
 cairocffi has been created and developed by Kozea (https://kozea.fr).
 Professional support, maintenance and community management is provided by
