@@ -12,6 +12,7 @@
 import base64
 import sys
 import zlib
+from unittest.mock import Mock
 
 import pytest
 
@@ -44,6 +45,42 @@ def test_gdk():
     pixbuf_obj, format_name = pixbuf.decode_to_pixbuf(PNG_BYTES)
     assert format_name == 'png'
     assert_decoded(pixbuf.pixbuf_to_cairo_gdk(pixbuf_obj))
+
+
+@pytest.mark.parametrize('invalid_name', [False, True])
+def test_format_name_freed(monkeypatch, invalid_name):
+    get_name = pixbuf.gdk_pixbuf.gdk_pixbuf_format_get_name
+    free = pixbuf.glib.g_free
+    allocated = []
+    freed = []
+
+    def tracked_get_name(format_):
+        pointer = get_name(format_)
+        allocated.append(pointer)
+        if invalid_name:
+            pointer[0] = b'\xff'
+        return pointer
+
+    def tracked_free(pointer):
+        freed.append(pointer)
+        free(pointer)
+
+    gdk_pixbuf = Mock(wraps=pixbuf.gdk_pixbuf)
+    gdk_pixbuf.gdk_pixbuf_format_get_name.side_effect = tracked_get_name
+    glib = Mock(wraps=pixbuf.glib)
+    glib.g_free.side_effect = tracked_free
+    monkeypatch.setattr(pixbuf, 'gdk_pixbuf', gdk_pixbuf)
+    monkeypatch.setattr(pixbuf, 'glib', glib)
+
+    if invalid_name:
+        with pytest.raises(UnicodeDecodeError):
+            pixbuf.decode_to_pixbuf(PNG_BYTES)
+    else:
+        _, format_name = pixbuf.decode_to_pixbuf(PNG_BYTES)
+        assert format_name == 'png'
+
+    assert len(allocated) == 1
+    assert freed == allocated
 
 
 def test_slices():

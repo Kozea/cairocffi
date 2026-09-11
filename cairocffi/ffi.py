@@ -85,6 +85,7 @@ ffi_pixbuf.cdef('''
 
     void              g_object_ref                   (gpointer object);
     void              g_object_unref                 (gpointer object);
+    void              g_free                         (gpointer mem);
     void              g_error_free                   (GError *error);
     void              g_type_init                    (void);
 ''')
