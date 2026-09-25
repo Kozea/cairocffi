@@ -100,10 +100,12 @@ def decode_to_pixbuf(image_data, width=None, height=None):
     handle_g_error(error, gdk_pixbuf.gdk_pixbuf_loader_close(loader, error))
 
     format_ = gdk_pixbuf.gdk_pixbuf_loader_get_format(loader)
-    format_name = (
-        ffi.string(gdk_pixbuf.gdk_pixbuf_format_get_name(format_))
-        .decode('ascii')
-        if format_ != ffi.NULL else None)
+    if format_ != ffi.NULL:
+        name_ptr = gdk_pixbuf.gdk_pixbuf_format_get_name(format_)
+        format_name = ffi.string(name_ptr).decode('ascii')
+        glib.g_free(name_ptr)
+    else:
+        format_name = None
 
     pixbuf = gdk_pixbuf.gdk_pixbuf_loader_get_pixbuf(loader)
     if pixbuf == ffi.NULL:  # pragma: no cover
